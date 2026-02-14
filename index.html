@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-<<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2c3e50">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924514.png">
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log('POS Service Worker Registered'))
-      .catch((err) => console.log('SW Error:', err));
-  }
-</script>>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TRK - POS</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924514.png">
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+          .then(() => console.log('POS Service Worker Registered'))
+          .catch((err) => console.log('SW Error:', err));
+      }
+    </script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --bg: #f3f4f6; --card: #ffffff; --text: #2d3436; --accent: #e74c3c; --success: #27ae60; --info: #2980b9; --warning: #f39c12; }
@@ -26,24 +29,22 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* SIDEBAR *//* SIDEBAR */
-.sidebar { 
-    width: 90px; 
-    background: var(--primary); 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    padding: 20px 0; 
-    gap: 15px; 
-    flex-shrink: 0; 
-    color: white; 
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1); 
-    z-index: 10;
-    
-    /* ADDS SCROLLING IF SCREEN IS TOO SHORT */
-    overflow-y: auto; 
-    max-height: 100vh;
-}
+        /* SIDEBAR */
+        .sidebar { 
+            width: 90px; 
+            background: var(--primary); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px 0; 
+            gap: 15px; 
+            flex-shrink: 0; 
+            color: white; 
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1); 
+            z-index: 10;
+            overflow-y: auto; 
+            max-height: 100vh;
+        }
         .side-btn { background: none; border: none; color: #bdc3c7; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 700; gap: 6px; width: 100%; padding: 12px 0; transition: all 0.2s; border-left: 4px solid transparent; letter-spacing: 0.5px; }
         .side-btn:hover { color: white; background: rgba(255,255,255,0.05); }
         .side-btn.active { color: white; background: rgba(255,255,255,0.1); border-left: 4px solid var(--success); }
@@ -115,7 +116,6 @@
     <button class="side-btn" onclick="document.getElementById('import-file').click()"><span class="icon">📂</span>RESTORE</button>
     
     <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(event)">
-</div>
 </div>
 
 <div class="main-content">
@@ -300,7 +300,9 @@
 
 <div id="receipt-modal" class="modal">
     <div class="modal-content">
-        <center><h3 style="margin:0; letter-spacing:2px;">TEPI RAJA KOPI</h3></center>
+        <center>
+            <h3 style="margin:0; letter-spacing:2px;">TEPI RAJA KOPI</h3>
+        </center>
         <div style="text-align:center; font-size:11px; margin-bottom:15px; color:#666;">Authentic Coffee Experience</div>
         <hr style="border:1px dashed #ccc;">
         <div id="rec-body" style="font-family:'Courier New', monospace; font-size:12px; line-height:1.4; padding:10px 0;"></div>
@@ -579,12 +581,4 @@
     const today = new Date().toISOString().split('T')[0]; document.getElementById('date-start').value = today; document.getElementById('date-end').value = today; nav('pos');
 </script>
 </body>
-
 </html>
-
-
-
-
-
-
-
