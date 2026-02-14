@@ -1,0 +1,21 @@
+{
+  "name": "Tepi Raja Kopi POS",
+  "short_name": "TRK POS",
+  "start_url": "./TRK_POS.html",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#2c3e50",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/924/924514.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/924/924514.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
