@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trk-pos-v26'; // <--- UPDATED TO V26
+const CACHE_NAME = 'trk-pos-v27'; // <--- UPDATED TO V27
 const ASSETS = [
   './',
   './index.html',
@@ -14,7 +14,7 @@ self.addEventListener('install', (e) => {
   );
 });
 
-// Activate: Clean up old caches (v25, v24, etc.)
+// Activate: Clean up old caches
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
