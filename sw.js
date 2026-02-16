@@ -1,8 +1,10 @@
-const CACHE_NAME = 'trk-pos-v14';
+const CACHE_NAME = 'trk-pos-v25';
 const ASSETS = [
-  './TRK_POS.html',
+  './',
+  './index.html',
   './manifest.json',
-  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap'
 ];
 
 // Install: Cache files
