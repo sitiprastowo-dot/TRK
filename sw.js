@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trk-pos-v27'; // <--- UPDATED TO V27
+const CACHE_NAME = 'trk-pos-v29'; // <--- UPDATED TO V29
 const ASSETS = [
   './',
   './index.html',
