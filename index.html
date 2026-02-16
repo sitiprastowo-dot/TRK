@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<<link rel="manifest" href="manifest.json">>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tepi Raja Kopi - POS System</title>
@@ -800,5 +800,14 @@
 
     const today = new Date().toISOString().split('T')[0]; document.getElementById('date-start').value = today; document.getElementById('date-end').value = today; nav('pos');
 </script>
+    <script>
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+            .then(() => console.log('Service Worker Registered'))
+            .catch((err) => console.log('SW Failed:', err));
+    }
+</script>
 </body>
 </html>
+
