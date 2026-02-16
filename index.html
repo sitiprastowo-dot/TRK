@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-<<link rel="manifest" href="manifest.json">>
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tepi Raja Kopi - POS System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tepi Raja Kopi - POS v26 (Tablet Fix)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="manifest" href="manifest.json">
+
     <style>
+        /* --- 1. GLOBAL RESET (FIXES SIDEBAR GAP) --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
         :root { 
             /* MODERN SAAS THEME */
             --primary: #0f172a;   /* Midnight Navy */
@@ -21,7 +27,8 @@
             --warning: #f59e0b;   /* Amber */
             --border: #e2e8f0;    /* Light Border */
         }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; width: 100vw; overflow: hidden; }
         
         /* SCROLLBARS */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -29,10 +36,19 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--primary); display: flex; flex-direction: column; padding: 25px; color: white; z-index: 20; }
-        .logo-area { font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.5px; margin-bottom: 40px; display: flex; align-items: center; gap: 12px; }
+        /* SIDEBAR (FIXED LEFT) */
+        .sidebar { 
+            width: 260px; 
+            background: var(--primary); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 20px; 
+            color: white; 
+            flex-shrink: 0; /* Prevents shrinking */
+        }
+        .logo-area { font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.5px; margin-bottom: 30px; display: flex; align-items: center; gap: 12px; }
         .logo-icon { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight:900; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+        
         .side-btn { 
             background: transparent; border: none; color: #94a3b8; cursor: pointer; 
             display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 15px; 
@@ -40,32 +56,59 @@
         }
         .side-btn:hover { color: white; background: rgba(255,255,255,0.08); }
         .side-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
-        .side-btn .icon { font-size: 18px; width: 24px; text-align: center; }
-
+        
         /* MAIN LAYOUT */
-        .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; overflow: hidden; }
+        .main-content { flex: 1; padding: 20px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; position: relative; }
         .section { display: none; flex: 1; flex-direction: column; min-height: 0; animation: fadeIn 0.3s ease-out; }
         .section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* --- 2. POS CONTAINER (RESPONSIVE GRID) --- */
+        .pos-container { 
+            display: grid; 
+            gap: 20px; 
+            flex: 1; 
+            min-height: 0; 
+            
+            /* DEFAULT DESKTOP: 3 Columns */
+            grid-template-columns: 1fr 340px 380px; 
+            grid-template-areas: "menu order cart";
+        }
+
+        /* TABLET ADJUSTMENT (Max Width 1200px) */
+        @media (max-width: 1200px) {
+            .pos-container {
+                /* Change to 2 Columns: Menu on Left, Order/Cart Stacked on Right */
+                grid-template-columns: 1fr 360px; 
+                grid-template-rows: auto 1fr;
+                grid-template-areas: 
+                    "menu order"
+                    "menu cart";
+            }
+        }
+
+        /* Assign Grid Areas */
+        #panel-menu { grid-area: menu; }
+        #panel-order { grid-area: order; }
+        #panel-cart { grid-area: cart; }
+
         /* PANELS */
-        .pos-container { display: grid; grid-template-columns: 1fr 340px 380px; gap: 25px; flex: 1; min-height: 0; }
         .panel { background: var(--card); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; border: 1px solid var(--border); overflow: hidden; }
-        .panel-head { padding: 18px 25px; background: white; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b; letter-spacing: 0.5px; text-transform: uppercase; }
-        .panel-body { flex: 1; padding: 25px; overflow-y: auto; overflow-x: hidden; }
+        .panel-head { padding: 15px 20px; background: white; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b; letter-spacing: 0.5px; text-transform: uppercase; }
+        .panel-body { flex: 1; padding: 20px; overflow-y: auto; overflow-x: hidden; }
 
         /* POS MENU GRID */
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
         .menu-card { 
             display: flex; flex-direction: column; height: 130px; 
             border: 1px solid var(--border); border-radius: 12px; 
-            padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; background: white; 
+            padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; background: white; 
             box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
             justify-content: space-between; 
         }
         .menu-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15); }
-        .menu-card h4 { margin: 0; font-size: 15px; color: var(--text-dark); font-weight: 800; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-        .menu-card p { margin: 0; font-size: 16px; color: var(--danger); font-weight: 800; } 
+        .menu-card h4 { margin: 0; font-size: 14px; color: var(--text-dark); font-weight: 800; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .menu-card p { margin: 0; font-size: 15px; color: var(--danger); font-weight: 800; } 
         
         /* INPUTS & BUTTONS */
         .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
@@ -76,8 +119,6 @@
         .btn-danger { background: var(--danger); color: white; } .btn-danger:hover { background: #dc2626; }
         .btn-warning { background: var(--warning); color: white; } .btn-warning:hover { background: #d97706; }
         .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
-
-        /* CLEAN TABLE ACTION BUTTONS */
         .btn-icon-sm { padding: 0; width: 30px; height: 30px; font-size: 14px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; cursor: pointer; transition: 0.2s; }
         .btn-icon-sm.btn-warning { background: #fffbeb; color: #b45309; border-color: #fcd34d; } .btn-icon-sm.btn-warning:hover { background: #fde047; }
         .btn-icon-sm.btn-danger { background: #fef2f2; color: #b91c1c; border-color: #fecaca; } .btn-icon-sm.btn-danger:hover { background: #fee2e2; }
@@ -86,12 +127,11 @@
         input:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* CLEAN TABLES */
+        /* TABLES */
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; background: white; }
         th { position: sticky; top: 0; z-index: 10; background: white; padding: 15px; text-align: left; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 800; border-bottom: 2px solid var(--border); }
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #f8fafc; }
         
         .menu-config-layout { display: grid; grid-template-columns: 1fr 350px; gap: 25px; height: 100%; overflow: hidden; }
         .config-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; overflow: hidden; height: 100%; box-sizing: border-box; }
@@ -147,7 +187,7 @@
     
     <div id="pos" class="section active">
         <div class="pos-container">
-            <div class="panel">
+            <div id="panel-menu" class="panel">
                 <div class="panel-head">
                     MENU SELECTION
                     <input type="text" style="width:220px; padding:10px; margin:0; font-size:13px;" placeholder="Search menu..." oninput="renderPOS(this.value)">
@@ -155,7 +195,7 @@
                 <div class="panel-body"><div id="pos-grid" class="menu-grid"></div></div>
             </div>
 
-            <div class="panel">
+            <div id="panel-order" class="panel">
                 <div class="panel-head">ORDER DETAILS</div>
                 <div class="panel-body">
                     <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
@@ -179,7 +219,7 @@
                 </div>
             </div>
 
-            <div class="panel">
+            <div id="panel-cart" class="panel">
                 <div class="panel-head">CART SUMMARY</div>
                 <div class="panel-body" style="padding:10px; flex:1; overflow-y:auto;" id="cart-items"></div>
                 <div style="padding:25px; border-top:1px solid var(--border); background:#f8fafc; flex-shrink:0;">
@@ -412,7 +452,7 @@
 </div>
 
 <script>
-    // === DATA STORE (LocalStorage V25) ===
+    // === DATA STORE (LocalStorage V26) ===
     let stockLog = JSON.parse(localStorage.getItem('trk_stock_v16')) || [];
     let menus = JSON.parse(localStorage.getItem('trk_menus_v16')) || {};
     let sales = JSON.parse(localStorage.getItem('trk_sales_v16')) || [];
@@ -807,15 +847,4 @@
     }
 </script>
 </body>
-    <script>
-    // Register PWA Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-            .then(() => console.log('Service Worker Registered'))
-            .catch((err) => console.log('SW Failed:', err));
-    }
-</script>
 </html>
-
-
-
