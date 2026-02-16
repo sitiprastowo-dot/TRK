@@ -3,119 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRK - POS</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2c3e50">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924514.png">
-
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-          .then(() => console.log('POS Service Worker Registered'))
-          .catch((err) => console.log('SW Error:', err));
-      }
-    </script>
-
+    <title>Tepi Raja Kopi - POS System</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2c3e50; --bg: #f3f4f6; --card: #ffffff; --text: #2d3436; --accent: #e74c3c; --success: #27ae60; --info: #2980b9; --warning: #f39c12; }
+        :root { 
+            /* MODERN SAAS THEME */
+            --primary: #0f172a;   /* Midnight Navy */
+            --accent: #3b82f6;    /* Vibrant Blue */
+            --bg: #f1f5f9;        /* Soft Slate */
+            --card: #ffffff;      /* Pure White */
+            --text: #334155;      /* Dark Slate Text */
+            --text-dark: #020617; /* Black/Dark Text */
+            
+            --success: #10b981;   /* Emerald */
+            --danger: #ef4444;    /* Bold Red */
+            --warning: #f59e0b;   /* Amber */
+            --border: #e2e8f0;    /* Light Border */
+        }
         
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* CUSTOM SLEEK SCROLLBARS */
+        /* SCROLLBARS */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         /* SIDEBAR */
-        .sidebar { 
-            width: 90px; 
-            background: var(--primary); 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 20px 0; 
-            gap: 15px; 
-            flex-shrink: 0; 
-            color: white; 
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1); 
-            z-index: 10;
-            overflow-y: auto; 
-            max-height: 100vh;
+        .sidebar { width: 260px; background: var(--primary); display: flex; flex-direction: column; padding: 25px; color: white; z-index: 20; }
+        .logo-area { font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.5px; margin-bottom: 40px; display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight:900; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+        
+        .side-btn { 
+            background: transparent; border: none; color: #94a3b8; cursor: pointer; 
+            display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 15px; 
+            transition: all 0.2s; border-radius: 10px; font-size: 14px; font-weight: 600; text-align: left; margin-bottom: 6px;
         }
-        .side-btn { background: none; border: none; color: #bdc3c7; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 700; gap: 6px; width: 100%; padding: 12px 0; transition: all 0.2s; border-left: 4px solid transparent; letter-spacing: 0.5px; }
-        .side-btn:hover { color: white; background: rgba(255,255,255,0.05); }
-        .side-btn.active { color: white; background: rgba(255,255,255,0.1); border-left: 4px solid var(--success); }
-        .side-btn .icon { font-size: 22px; margin-bottom: 2px; }
+        .side-btn:hover { color: white; background: rgba(255,255,255,0.08); }
+        .side-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .side-btn .icon { font-size: 18px; width: 24px; text-align: center; }
 
-        /* MAIN APP CONTAINER */
-        .main-content { flex: 1; padding: 20px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; overflow: hidden; }
-        .section { display: none; flex: 1; flex-direction: column; min-height: 0; animation: slideIn 0.3s ease-out; }
+        /* MAIN LAYOUT */
+        .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; overflow: hidden; }
+        .section { display: none; flex: 1; flex-direction: column; min-height: 0; animation: fadeIn 0.3s ease-out; }
         .section.active { display: flex; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
         /* PANELS */
-        .pos-container { display: grid; grid-template-columns: 1fr 320px 380px; gap: 15px; flex: 1; min-height: 0; }
-        .panel { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; border: 1px solid #e5e7eb; overflow: hidden; }
-        .panel-head { padding: 15px; background: #ffffff; font-weight: 800; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--primary); letter-spacing: 0.5px; flex-shrink: 0; }
-        .panel-body { flex: 1; padding: 15px; overflow-y: auto; overflow-x: hidden; }
+        .pos-container { display: grid; grid-template-columns: 1fr 340px 380px; gap: 25px; flex: 1; min-height: 0; }
+        .panel { background: var(--card); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; border: 1px solid var(--border); overflow: hidden; }
+        .panel-head { padding: 18px 25px; background: white; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b; letter-spacing: 0.5px; text-transform: uppercase; }
+        .panel-body { flex: 1; padding: 25px; overflow-y: auto; overflow-x: hidden; }
 
-        /* MENU CARDS */
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
-        .menu-card { display: flex; flex-direction: column; height: 110px; border: 1px solid #f0f0f0; border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; background: white; box-sizing: border-box; }
-        .menu-card:hover { border-color: var(--info); transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
-        .menu-card h4 { margin: 0; font-size: 13px; color: var(--primary); font-weight: 700; line-height: 1.3; }
-        .menu-card p { margin: auto 0 0 0; font-size: 13px; color: var(--success); font-weight: 800; } 
+        /* POS MENU GRID */
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .menu-card { 
+            display: flex; flex-direction: column; height: 130px; 
+            border: 1px solid var(--border); border-radius: 12px; 
+            padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; background: white; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
+            justify-content: space-between; 
+        }
+        .menu-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15); }
+        .menu-card h4 { margin: 0; font-size: 15px; color: var(--text-dark); font-weight: 800; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .menu-card p { margin: 0; font-size: 16px; color: var(--danger); font-weight: 800; } 
         
-        /* BUTTONS & INPUTS */
-        .btn { padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-transform: uppercase; }
+        /* INPUTS & BUTTONS */
+        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--accent); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-sm { padding: 4px 8px; font-size: 10px; border-radius: 4px; }
-        
-        input, select { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 13px; margin-bottom: 10px; transition: 0.2s; background: #f9fafb; }
-        input:focus, select:focus { border-color: var(--info); outline: none; background: white; box-shadow: inset 0 0 0 1px var(--info); }
-        label { font-size: 11px; font-weight: 800; color: #6b7280; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .btn-primary { background: var(--primary); color: white; } .btn-primary:hover { background: #1e293b; }
+        .btn-accent { background: var(--accent); color: white; } .btn-accent:hover { background: #2563eb; }
+        .btn-success { background: var(--success); color: white; } .btn-success:hover { background: #059669; }
+        .btn-danger { background: var(--danger); color: white; } .btn-danger:hover { background: #dc2626; }
+        .btn-warning { background: var(--warning); color: white; } .btn-warning:hover { background: #d97706; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
 
-        /* TABLES & STICKY HEADERS */
+        /* CLEAN TABLE ACTION BUTTONS */
+        .btn-icon-sm { padding: 0; width: 30px; height: 30px; font-size: 14px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; cursor: pointer; transition: 0.2s; }
+        .btn-icon-sm.btn-warning { background: #fffbeb; color: #b45309; border-color: #fcd34d; } .btn-icon-sm.btn-warning:hover { background: #fde047; }
+        .btn-icon-sm.btn-danger { background: #fef2f2; color: #b91c1c; border-color: #fecaca; } .btn-icon-sm.btn-danger:hover { background: #fee2e2; }
+        
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; margin-bottom: 12px; transition: 0.2s; background: #fff; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-dark); font-weight: 500; }
+        input:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* CLEAN TABLES */
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; background: white; }
-        th { position: sticky; top: 0; z-index: 10; background: #f8fafc; padding: 12px; text-align: left; font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 800; white-space: nowrap; box-shadow: 0 1px 0 #e2e8f0; }
-        td { padding: 12px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+        th { position: sticky; top: 0; z-index: 10; background: white; padding: 15px; text-align: left; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 800; border-bottom: 2px solid var(--border); }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
         tr:hover td { background: #f8fafc; }
         
-        /* INGREDIENT RECIPE LIST */
-        .ing-header { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 30px; gap: 5px; padding: 10px 8px; background: #f1f5f9; font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 0 #cbd5e1; }
-        .ing-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 30px; gap: 5px; align-items: center; padding: 8px; background: #ffffff; border-bottom: 1px solid #f1f5f9; }
+        .menu-config-layout { display: grid; grid-template-columns: 1fr 350px; gap: 25px; height: 100%; overflow: hidden; }
+        .config-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; overflow: hidden; height: 100%; box-sizing: border-box; }
+        
+        .profit-badge { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 20px; border-radius: 12px; text-align: center; margin-top: auto; }
+        .profit-badge.low { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
 
-        /* MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
-        .modal-content { background: white; width: 380px; padding: 30px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: zoomIn 0.2s ease; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .stat-val { font-size: 24px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; }
+
+        /* MODALS */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: white; width: 450px; padding: 30px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-lg { width: 850px; }
         @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .editing-highlight { background-color: #fff7ed; border: 1px solid #fed7aa; }
 
-        /* DASHBOARD CARDS */
-        .stat-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb; display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .stat-val { font-size: 24px; font-weight: 800; color: var(--primary); }
+        /* RECEIPT STYLES */
+        .receipt-container { font-family: 'Space Mono', monospace; color: #1e293b; width: 100%; margin: 0 auto; background: white; }
+        .rec-header { text-align: center; margin-bottom: 15px; }
+        .rec-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; letter-spacing: 1px; }
+        .rec-sub { font-size: 11px; color: #64748b; }
+        .rec-meta { font-size: 11px; margin-bottom: 15px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px; }
+        .rec-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .rec-item { font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .rec-line { border-bottom: 1px dashed #cbd5e1; margin: 10px 0; }
+        .rec-total { font-weight: 700; font-size: 16px; display: flex; justify-content: space-between; margin: 10px 0; }
+        .rec-footer { text-align: center; margin-top: 15px; font-size: 11px; color: #64748b; }
     </style>
 </head>
 <body>
+
 <div class="sidebar">
-    <button class="side-btn active" onclick="nav('pos')"><span class="icon">🛒</span>POS</button>
-    <button class="side-btn" onclick="nav('sales')"><span class="icon">📊</span>SALES</button>
-    <button class="side-btn" onclick="nav('menu')"><span class="icon">☕</span>MENU</button>
-    <button class="side-btn" onclick="nav('stock')"><span class="icon">📦</span>STOCK</button>
-    <button class="side-btn" onclick="nav('bop')"><span class="icon">📉</span>BOP</button>
-
-    <div style="width: 50%; height: 2px; background: rgba(255,255,255,0.2); margin: 5px 0; border-radius: 2px;"></div>
-
-    <button class="side-btn" onclick="exportData()"><span class="icon">💾</span>BACKUP</button>
-    <button class="side-btn" onclick="document.getElementById('import-file').click()"><span class="icon">📂</span>RESTORE</button>
+    <div class="logo-area">
+        <div class="logo-icon">TRK</div>
+        TEPI RAJA KOPI
+    </div>
+    <button class="side-btn active" onclick="nav('pos')"><span class="icon">🛒</span>POS Terminal</button>
+    <button class="side-btn" onclick="nav('sales')"><span class="icon">📊</span>Sales Analytics</button>
+    <button class="side-btn" onclick="nav('menu')"><span class="icon">☕</span>Menu Config</button>
+    <button class="side-btn" onclick="nav('stock')"><span class="icon">📦</span>Inventory</button>
+    <button class="side-btn" onclick="nav('bop')"><span class="icon">📉</span>Overhead / BOP</button>
     
-    <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(event)">
+    <div style="margin-top:auto; width: 100%; display:flex; flex-direction:column; gap:8px;">
+        <button class="side-btn" onclick="exportData()"><span class="icon">💾</span>Backup Data</button>
+        <button class="side-btn" onclick="document.getElementById('import-file').click()"><span class="icon">📂</span>Restore Data</button>
+        <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(event)">
+    </div>
 </div>
 
 <div class="main-content">
@@ -125,7 +152,7 @@
             <div class="panel">
                 <div class="panel-head">
                     MENU SELECTION
-                    <input type="text" style="width:140px; padding:6px; margin:0; background:white;" placeholder="Search..." oninput="renderPOS(this.value)">
+                    <input type="text" style="width:220px; padding:10px; margin:0; font-size:13px;" placeholder="Search menu..." oninput="renderPOS(this.value)">
                 </div>
                 <div class="panel-body"><div id="pos-grid" class="menu-grid"></div></div>
             </div>
@@ -133,26 +160,23 @@
             <div class="panel">
                 <div class="panel-head">ORDER DETAILS</div>
                 <div class="panel-body">
-                    <div style="background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:15px; border:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#64748b; font-weight:700;">TRANSACTION ID</span>
-                        <span id="trx-id" style="font-weight:800; color:var(--info); font-size:14px;">TX-000</span>
+                    <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:11px; color:#64748b; font-weight:700;">TRANSACTION ID</span>
+                        <span id="trx-id" style="font-weight:800; color:var(--primary); font-size:14px;">TX-000</span>
                     </div>
-                    
                     <label>Customer Name</label>
                     <input type="text" id="cust-name" placeholder="Guest Name">
                     <label>Payment Method</label>
                     <select id="pay-method" onchange="togglePay()"><option value="Cash">Cash Payment</option><option value="QRIS">QRIS / Digital</option></select>
                     
-                    <div id="cash-box" style="background:#f0fdf4; padding:15px; border-radius:10px; border:1px solid #bbf7d0; margin-top:10px;">
+                    <div id="cash-box" style="background:#f0fdf4; padding:15px; border-radius:12px; border:1px solid #bbf7d0; margin-top:5px;">
                         <label style="color:#15803d;">Cash Received</label>
-                        <input type="text" inputmode="decimal" id="cash-in" oninput="formatNum(this); calcExchange()" placeholder="0" style="font-size:18px; font-weight:800; color:#15803d; border-color:#86efac;">
-                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:14px; color:#166534; margin-top:5px; border-top:1px dashed #86efac; padding-top:10px;">
-                            <span>Change:</span><span id="exchange-val">Rp 0</span>
-                        </div>
+                        <input type="text" inputmode="decimal" id="cash-in" oninput="formatNum(this); calcExchange()" placeholder="0" style="font-size:20px; font-weight:800; color:#15803d; border-color:#86efac; margin-bottom:5px;">
+                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:14px; color:#166534; margin-top:10px; border-top:1px dashed #86efac; padding-top:10px;"><span>Change:</span><span id="exchange-val">Rp 0</span></div>
                     </div>
-                    <div id="qris-box" style="display:none; background:#eff6ff; padding:15px; border-radius:10px; border:1px solid #bfdbfe; margin-top:10px;">
+                    <div id="qris-box" style="display:none; background:#eff6ff; padding:15px; border-radius:12px; border:1px solid #bfdbfe; margin-top:5px;">
                         <label style="color:#1e40af;">Reference No.</label>
-                        <input type="text" id="qris-ref" placeholder="Ref ID" style="border-color:#93c5fd;">
+                        <input type="text" id="qris-ref" placeholder="Ref ID" style="border-color:#93c5fd; font-weight:bold;">
                     </div>
                 </div>
             </div>
@@ -160,10 +184,10 @@
             <div class="panel">
                 <div class="panel-head">CART SUMMARY</div>
                 <div class="panel-body" style="padding:10px; flex:1; overflow-y:auto;" id="cart-items"></div>
-                <div style="padding:20px; border-top:1px solid #e5e7eb; background:#f8fafc; flex-shrink:0;">
-                    <div style="display:flex; justify-content:space-between; font-size:13px; color:#64748b; margin-bottom:5px;"><span>Subtotal</span><span id="cart-subtotal">Rp 0</span></div>
-                    <div style="display:flex; justify-content:space-between; font-size:24px; font-weight:800; color:var(--primary); margin-bottom:20px;"><span>TOTAL</span><span id="cart-total">Rp 0</span></div>
-                    <button id="btn-checkout" class="btn btn-success" style="width:100%; height:55px; font-size:16px;" onclick="checkout()" disabled>FINALIZE ORDER</button>
+                <div style="padding:25px; border-top:1px solid var(--border); background:#f8fafc; flex-shrink:0;">
+                    <div style="display:flex; justify-content:space-between; font-size:13px; color:#64748b; margin-bottom:8px;"><span>Subtotal</span><span id="cart-subtotal">Rp 0</span></div>
+                    <div style="display:flex; justify-content:space-between; font-size:26px; font-weight:800; color:var(--text-dark); margin-bottom:25px;"><span>TOTAL</span><span id="cart-total">Rp 0</span></div>
+                    <button id="btn-checkout" class="btn btn-primary" style="width:100%; height:55px; font-size:15px; border-radius:12px; box-shadow:0 4px 15px rgba(15, 23, 42, 0.2);" onclick="checkout()" disabled>FINALIZE ORDER</button>
                 </div>
             </div>
         </div>
@@ -171,88 +195,104 @@
 
     <div id="sales" class="section">
         <div style="flex-shrink:0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 style="margin:0; color:var(--primary);">Sales Analytics</h2>
-                <div style="display:flex; gap:10px; background:white; padding:10px; border-radius:8px; border:1px solid #eee; align-items:center;">
-                    <input type="date" id="date-start" style="width:130px; margin:0;">
-                    <span style="font-size:12px; font-weight:bold; color:#ccc;">TO</span>
-                    <input type="date" id="date-end" style="width:130px; margin:0;">
-                    <button class="btn btn-primary" onclick="filterSales()">Filter</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                <h2 style="margin:0; color:var(--text-dark); font-size:24px; font-weight:800;">Sales Analytics</h2>
+                <div style="display:flex; gap:10px; background:white; padding:10px; border-radius:12px; border:1px solid var(--border); align-items:center;">
+                    <input type="date" id="date-start" style="width:130px; margin:0; border:none; background:transparent;">
+                    <span style="font-size:12px; font-weight:bold; color:#cbd5e1;">TO</span>
+                    <input type="date" id="date-end" style="width:130px; margin:0; border:none; background:transparent;">
+                    <button class="btn btn-primary btn-sm" onclick="filterSales()">Filter</button>
                 </div>
             </div>
             
-            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:15px; margin-bottom:20px;">
-                <div class="stat-card"><label>Transactions</label><div id="sum-count" class="stat-val">0</div></div>
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:20px; margin-bottom:25px;">
+                <div class="stat-card"><label>Transactions</label><div id="sum-count" class="stat-val" style="font-size:20px;">0</div></div>
                 <div class="stat-card"><label>Revenue</label><div id="sum-rev" class="stat-val" style="color:var(--success);">Rp 0</div></div>
-                <div class="stat-card"><label>COGS (HPP)</label><div id="sum-hpp" class="stat-val" style="color:var(--accent);">Rp 0</div></div>
-                <div class="stat-card" style="border-left:4px solid var(--warning);"><label>BOP (Overhead)</label><div id="sum-bop" class="stat-val" style="color:var(--warning);">Rp 0</div></div>
-                <div class="stat-card" style="background:#f0fdf4; border:1px solid #bbf7d0;"><label>Net Profit</label><div id="sum-profit" class="stat-val" style="color:var(--info);">Rp 0</div></div>
+                <div class="stat-card"><label>COGS (HPP)</label><div id="sum-hpp" class="stat-val" style="color:var(--danger);">Rp 0</div></div>
+                <div class="stat-card"><label>Overhead</label><div id="sum-bop" class="stat-val" style="color:var(--warning);">Rp 0</div></div>
+                <div class="stat-card" style="background:#f0fdf4; border-color:#bbf7d0;"><label>Net Profit</label><div id="sum-profit" class="stat-val" style="color:var(--success);">Rp 0</div></div>
             </div>
         </div>
 
         <div class="panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
-            <div style="padding: 15px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: flex-end; flex-shrink: 0; background: #fff;">
-                <button class="btn btn-success" onclick="exportSales()">Export to Excel</button>
+            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; flex-shrink: 0; background: #fff;">
+                <button class="btn btn-accent" onclick="openProductSummary()">View Product Summary</button>
+                <button class="btn btn-success" onclick="exportSales()">Export Sales (XLSX)</button>
             </div>
             <div style="flex: 1; overflow-y: auto;">
-                <table>
-                    <thead><tr><th>Date</th><th>ID</th><th>Customer</th><th>Total</th><th>Method</th><th>Gross Profit</th><th>Action</th></tr></thead>
-                    <tbody id="sales-body"></tbody>
-                </table>
+                <table><thead><tr><th>Date</th><th>ID</th><th>Customer</th><th>Menu Details</th><th>Total</th><th>Method</th><th>Gross Profit</th><th>Action</th></tr></thead><tbody id="sales-body"></tbody></table>
             </div>
         </div>
     </div>
 
     <div id="menu" class="section">
-        <h2 style="margin-top:0; color:var(--primary); flex-shrink:0;">Menu Engineering</h2>
-        <div class="panel" style="flex:1; min-height:0; display:flex; flex-direction:column;">
-            <div class="panel-body" style="flex:1; overflow-y:auto; display:flex; flex-direction:column;">
-                <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:20px; flex-shrink:0;">
-                    <select id="menu-select" onchange="loadMenu()" style="width:250px; margin:0;"></select>
-                    <button class="btn btn-primary" onclick="newMenu()">+ New Menu</button>
-                    <button class="btn btn-danger" onclick="deleteMenu()">Delete Menu</button>
-                    <button class="btn btn-warning" onclick="exportMenuHPP()">Export Analysis</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0; color:var(--text-dark); font-size:24px; font-weight:800;">Menu Configuration</h2>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" onclick="newMenu()">+ New Menu</button>
+                <button class="btn btn-danger" onclick="deleteMenu()">Delete</button>
+                <button class="btn btn-warning" onclick="exportMenuHPP()">Export HPP Analysis</button>
+            </div>
+        </div>
+
+        <div class="menu-config-layout">
+            <div class="config-card" style="overflow:hidden;">
+                <div style="margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:20px; display:flex; gap:20px; align-items:center;">
+                    <div style="flex:1;"><label>Select Menu to Edit</label><select id="menu-select" onchange="loadMenu()" style="margin:0; font-weight:bold;"></select></div>
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <label style="margin:0;">Recipe Ingredients</label>
+                        <button class="btn btn-sm btn-primary" onclick="addIngRow()">+ Add Ingredient</button>
+                    </div>
+                    <div style="flex:1; overflow-y:auto; border:1px solid var(--border); border-radius:12px;">
+                        <table style="width:100%;">
+                            <thead><tr><th style="width:35%;">Ingredient</th><th style="width:15%;">Unit</th><th style="width:15%;">Qty</th><th style="width:15%;">Waste %</th><th style="text-align:right;">Cost</th><th style="width:30px;"></th></tr></thead>
+                            <tbody id="recipe-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-card">
+                <h3 style="margin-top:0; color:var(--text-dark);">Pricing Strategy</h3>
+                <label>Menu Name</label><input type="text" id="m-name" placeholder="Ex: Caffe Latte">
+                <label>Selling Price (Rp)</label><input type="text" inputmode="decimal" id="m-price" oninput="formatNum(this); calcLiveProfit()" placeholder="0" style="font-size:20px; font-weight:800; color:var(--text-dark);">
+
+                <div style="margin-top:20px; padding:20px; background:#f8fafc; border-radius:16px; border:1px solid var(--border);">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;"><span style="color:#64748b; font-size:13px;">Total HPP (Cost)</span><span id="m-hpp" style="font-weight:bold; color:var(--danger);">Rp 0</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0;"><span style="color:#64748b; font-size:13px;">Gross Profit</span><span id="m-profit-val" style="font-weight:bold; color:var(--success);">Rp 0</span></div>
                 </div>
 
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:20px; margin-bottom:25px; flex-shrink:0;">
-                    <div><label>Menu Name</label><input type="text" id="m-name" placeholder="Ex: Caffe Latte"></div>
-                    <div><label>Selling Price</label><input type="text" inputmode="decimal" id="m-price" oninput="formatNum(this); calcLiveProfit()" placeholder="0"></div>
-                    <div><label>Gross Profit (Margin)</label><div id="m-profit" style="font-size:18px; font-weight:800; color:var(--success); margin-top:10px;">Rp 0 (0%)</div></div>
+                <div id="margin-badge" class="profit-badge">
+                    <div style="font-size:12px; opacity:0.8; font-weight:700;">PROFIT MARGIN</div>
+                    <div id="m-margin-val" style="font-size:36px; font-weight:800;">0%</div>
                 </div>
-
-                <h4 style="margin-bottom:10px; color:var(--primary); flex-shrink:0;">Recipe Composition</h4>
-                <div style="border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; max-height: 280px; flex-shrink:0;">
-                    <div class="ing-header"><span>Ingredient</span><span>Stock UOM</span><span>Used Qty</span><span>Waste %</span><span>Cost</span><span></span></div>
-                    <div id="recipe-list" style="overflow-y: auto; flex: 1; background: white;"></div>
-                </div>
-                
-                <div style="display:flex; justify-content:space-between; margin-top:20px; align-items:center; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; flex-shrink:0;">
-                    <button class="btn btn-primary" onclick="addIngRow()">+ Add Ingredient</button>
-                    <div style="text-align:right;"><div style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:bold;">Total Cost (HPP)</div><div id="m-hpp" style="font-size:22px; font-weight:800; color:var(--accent);">Rp 0</div></div>
-                </div>
-                <hr style="margin:20px 0; border:0; border-top:1px solid #eee; flex-shrink:0;">
-                <button class="btn btn-success" style="width:100%; height:50px; flex-shrink:0;" onclick="saveMenu()">SAVE MENU CONFIGURATION</button>
+                <button class="btn btn-success" style="width:100%; margin-top:20px; height:50px;" onclick="saveMenu()">SAVE CHANGES</button>
             </div>
         </div>
     </div>
 
     <div id="stock" class="section">
-        <h2 style="margin-top:0; color:var(--primary); flex-shrink:0;">Inventory Management</h2>
+        <h2 style="margin-top:0; color:var(--text-dark); font-size:24px; font-weight:800;">Inventory Management</h2>
         <div class="panel" style="margin-bottom:20px; flex-shrink:0;">
             <div class="panel-head">RECORD PURCHASE</div>
             <div class="panel-body">
-                <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr auto; gap:10px; align-items:end;">
-                    <div><label>Select or Add Item</label><select id="s-name-select" onchange="handleStockDropdownChange()"></select><input type="text" id="s-name-new" placeholder="Type new item name..." style="display:none; margin-top:5px; border-color:var(--info);"></div>
+                <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr auto; gap:20px; align-items:end;">
+                    <div><label>Select or Add Item</label><select id="s-name-select" onchange="handleStockDropdownChange()"></select><input type="text" id="s-name-new" placeholder="Type new item name..." style="display:none; margin-top:5px; border-color:var(--accent);"></div>
                     <div><label>Buy Unit / Use Unit</label><select id="s-type" onchange="updateStockHint()"><option value="weight">Kilograms -> Grams</option><option value="volume">Liters -> Milliliters</option><option value="unit">Pieces -> Pieces</option></select></div>
                     <div><label>Qty (Buy Unit)</label><input type="text" inputmode="decimal" id="s-qty" placeholder="Ex: 5" oninput="formatNum(this)"></div>
                     <div><label>Total Price</label><input type="text" inputmode="decimal" id="s-price" placeholder="Ex: 100,000" oninput="formatNum(this)"></div>
-                    <button class="btn btn-primary" style="height:42px; margin-bottom:10px;" onclick="addStock()">Record</button>
+                    <div style="display:flex; gap:10px; margin-bottom:12px;">
+                        <button class="btn btn-primary" style="height:46px; flex:1;" onclick="addStock()">Record</button>
+                        <button class="btn btn-danger" style="height:46px;" onclick="cancelStock()">Cancel</button>
+                    </div>
                 </div>
-                <div id="stock-hint" style="font-size:11px; color:#666; margin-top:5px; background:#fff3cd; padding:8px; border-radius:4px; border:1px solid #ffeeba;">System will convert <b>Kilograms</b> to <b>Grams</b> (x1000) for recipes.</div>
+                <div id="stock-hint" style="font-size:12px; color:#64748b; margin-top:5px; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid var(--border);">System will convert <b>Kilograms</b> to <b>Grams</b> (x1000) for recipes.</div>
             </div>
         </div>
         <div class="panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
-            <div style="padding: 15px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: flex-end; flex-shrink: 0; background: #fff;">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; background: #fff;">
                 <button class="btn btn-success" onclick="exportStock()">Export Inventory</button>
             </div>
             <div style="flex: 1; overflow-y: auto;">
@@ -262,32 +302,51 @@
     </div>
 
     <div id="bop" class="section">
-        <h2 style="margin-top:0; color:var(--primary); flex-shrink:0;">BOP & Overhead Costs</h2>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; flex:1; min-height:0;">
-            
+        <h2 style="margin-top:0; color:var(--text-dark); font-size:24px; font-weight:800;">Overhead & BOP</h2>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px; flex:1; min-height:0;">
             <div class="panel">
-                <div class="panel-head">ADD EQUIPMENT / ASSET (Depreciation)</div>
+                <div class="panel-head">ADD ASSET / BILL</div>
                 <div class="panel-body">
-                    <label>Equipment Name</label><input type="text" id="bop-name" placeholder="Ex: Espresso Machine">
-                    <label>Purchase Price</label><input type="text" inputmode="decimal" id="bop-price" oninput="formatNum(this)" placeholder="Rp">
-                    <label>Useful Life (Months)</label><input type="number" id="bop-life" placeholder="Ex: 36">
-                    <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="addBOP('Asset')">Add Asset</button>
-                    <hr>
-                    <label>Monthly Fixed Bill</label><input type="text" id="bill-name" placeholder="Ex: Rent / Staff / WiFi">
-                    <label>Monthly Cost</label><input type="text" inputmode="decimal" id="bill-cost" oninput="formatNum(this)" placeholder="Rp">
-                    <button class="btn btn-warning" style="width:100%; margin-top:10px;" onclick="addBOP('Bill')">Add Fixed Bill</button>
+                    <input type="hidden" id="bop-edit-id"> 
+                    
+                    <div id="asset-form-container" style="padding:15px; border:1px solid transparent; border-radius:12px; transition:0.2s;">
+                        <label>Equipment Name</label><input type="text" id="bop-name" placeholder="Ex: Espresso Machine">
+                        <label>Purchase Price</label><input type="text" inputmode="decimal" id="bop-price" oninput="formatNum(this)" placeholder="Rp">
+                        <label>Useful Life (Months)</label><input type="number" id="bop-life" placeholder="Ex: 36">
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button id="btn-add-asset" class="btn btn-primary" style="flex:1;" onclick="addBOP('Asset')">Add Asset</button>
+                            <button id="btn-cancel-asset" class="btn btn-danger" style="display:none; width:auto;" onclick="cancelEditBOP()">Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <hr style="margin:20px 0; border-top:1px dashed var(--border);">
+                    
+                    <div id="bill-form-container" style="padding:15px; border:1px solid transparent; border-radius:12px; transition:0.2s;">
+                        <label>Monthly Fixed Bill</label><input type="text" id="bill-name" placeholder="Ex: Rent / Staff / WiFi">
+                        <label>Monthly Cost</label><input type="text" inputmode="decimal" id="bill-cost" oninput="formatNum(this)" placeholder="Rp">
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button id="btn-add-bill" class="btn btn-warning" style="flex:1;" onclick="addBOP('Bill')">Add Fixed Bill</button>
+                            <button id="btn-cancel-bill" class="btn btn-danger" style="display:none; width:auto;" onclick="cancelEditBOP()">Cancel</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-
             <div class="panel">
-                <div class="panel-head">ACTIVE OVERHEAD COSTS</div>
+                <div class="panel-head">ACTIVE COSTS</div>
                 <div class="panel-body" style="padding:0;">
-                    <div style="padding:15px; background:#fff3cd; border-bottom:1px solid #ffeeba; font-size:12px; color:#856404;">
-                        <b>Total Daily Overhead:</b> <span id="total-daily-bop" style="font-weight:800; font-size:14px;">Rp 0</span>
-                    </div>
-                    <div style="overflow-y:auto; height:calc(100% - 50px);">
-                        <table>
-                            <thead><tr><th>Item</th><th>Type</th><th>Daily Cost</th><th>Action</th></tr></thead>
+                    <div style="padding:20px; background:#f0fdf4; border-bottom:1px solid #bbf7d0; font-size:14px; color:#15803d; display:flex; justify-content:space-between;"><span>Total Daily Overhead:</span><span id="total-daily-bop" style="font-weight:800;">Rp 0</span></div>
+                    <div style="overflow-y:auto; height:calc(100% - 65px);">
+                        <table style="border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="border-bottom:none; color:#94a3b8;">Item</th>
+                                    <th style="border-bottom:none; color:#94a3b8;">Type</th>
+                                    <th style="border-bottom:none; color:#94a3b8;">Input Price</th>
+                                    <th style="border-bottom:none; color:#94a3b8;">Life (Mos)</th>
+                                    <th style="border-bottom:none; color:#94a3b8;">Daily Cost</th>
+                                    <th style="border-bottom:none; text-align:right; color:#94a3b8;">Actions</th>
+                                </tr>
+                            </thead>
                             <tbody id="bop-list"></tbody>
                         </table>
                     </div>
@@ -299,49 +358,88 @@
 </div>
 
 <div id="receipt-modal" class="modal">
-    <div class="modal-content">
-        <center>
-            <h3 style="margin:0; letter-spacing:2px;">TEPI RAJA KOPI</h3>
-        </center>
-        <div style="text-align:center; font-size:11px; margin-bottom:15px; color:#666;">Authentic Coffee Experience</div>
-        <hr style="border:1px dashed #ccc;">
-        <div id="rec-body" style="font-family:'Courier New', monospace; font-size:12px; line-height:1.4; padding:10px 0;"></div>
-        <hr style="border:1px dashed #ccc;">
-        <div style="display:flex; justify-content:space-between; font-weight:bold; margin-top:10px; font-size:14px;"><span>TOTAL:</span><span id="rec-total"></span></div>
-        <div id="rec-change-info" style="font-size:11px; margin-top:5px; text-align:right;"></div>
+    <div class="modal-content" style="width:360px;"> <div class="receipt-container">
+            <div class="rec-header">
+                <div class="rec-title">TEPI RAJA KOPI</div>
+                <div class="rec-sub">Authentic Coffee Experience</div>
+            </div>
+            
+            <div class="rec-meta">
+                <div class="rec-row"><span>Date:</span><span id="rec-date"></span></div>
+                <div class="rec-row"><span>ID:</span><span id="rec-id"></span></div>
+                <div class="rec-row"><span>Customer:</span><span id="rec-cust"></span></div>
+            </div>
+            
+            <div id="rec-items"></div>
+            
+            <div class="rec-line"></div>
+            
+            <div class="rec-row" style="font-weight:700;"><span>TOTAL</span><span id="rec-total-print"></span></div>
+            <div class="rec-row"><span>Method</span><span id="rec-method"></span></div>
+            <div class="rec-row"><span>Cash/Ref</span><span id="rec-cash"></span></div>
+            <div class="rec-row"><span>Change</span><span id="rec-change"></span></div>
+            
+            <div class="rec-footer">Thank you for your visit!</div>
+        </div>
         <br>
-        <button class="btn btn-primary" style="width:100%;" onclick="window.print()">PRINT RECEIPT</button>
-        <button class="btn btn-danger" style="width:100%; margin-top:8px; background:white; color:#e74c3c; border:1px solid #e74c3c;" onclick="closeModal()">CLOSE</button>
+        <button class="btn btn-primary" style="width:100%; height:50px;" onclick="window.print()">PRINT RECEIPT</button>
+        <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="closeModal()">CLOSE</button>
+    </div>
+</div>
+
+<div id="stock-edit-modal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:var(--text-dark);">Edit Stock Details</h3>
+        <input type="hidden" id="edit-stock-name">
+        <label>Item Name</label><input type="text" id="edit-stock-newname">
+        <label>Current Quantity (Base Unit)</label><input type="number" id="edit-stock-qty">
+        <label>Avg Cost / Unit (Rp)</label><input type="number" id="edit-stock-cost">
+        <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:20px; font-size:12px; color:#64748b; border:1px solid var(--border);">
+            Changing these values will update the <b>Asset Value</b> automatically.<br>
+            Asset Value = Quantity × Avg Cost
+        </div>
+        <button class="btn btn-success" onclick="saveStockEdit()">Save Changes</button>
+        <button class="btn btn-danger" style="margin-top:10px;" onclick="document.getElementById('stock-edit-modal').style.display='none'">Cancel</button>
+    </div>
+</div>
+
+<div id="product-modal" class="modal">
+    <div class="modal-content modal-lg">
+        <h3 style="margin-top:0; color:var(--text-dark);">Product Sales Summary</h3>
+        <div style="overflow-y:auto; flex:1; margin-bottom:20px; border:1px solid var(--border); border-radius:16px;">
+            <table style="width:100%;"><thead><tr style="background:#f8fafc;"><th style="padding:15px;">Menu Name</th><th style="text-align:right;">Qty Sold</th><th style="text-align:right;">Total Revenue</th></tr></thead><tbody id="product-summary-body"></tbody></table>
+        </div>
+        <button class="btn btn-primary" onclick="document.getElementById('product-modal').style.display='none'">Close</button>
     </div>
 </div>
 
 <script>
-    // === DATA STORE (LocalStorage V14) ===
-    let stockLog = JSON.parse(localStorage.getItem('trk_stock_v14')) || [];
-    let menus = JSON.parse(localStorage.getItem('trk_menus_v14')) || {};
-    let sales = JSON.parse(localStorage.getItem('trk_sales_v14')) || [];
-    let bopLog = JSON.parse(localStorage.getItem('trk_bop_v14')) || [];
+    // === DATA STORE (LocalStorage V25) ===
+    let stockLog = JSON.parse(localStorage.getItem('trk_stock_v16')) || [];
+    let menus = JSON.parse(localStorage.getItem('trk_menus_v16')) || {};
+    let sales = JSON.parse(localStorage.getItem('trk_sales_v16')) || [];
+    let bopLog = JSON.parse(localStorage.getItem('trk_bop_v16')) || [];
     let cart = []; let activeMenuId = null;
+    let isEditingBop = false; 
 
-    // Auto Migrate v13 -> v14
-    if(stockLog.length === 0 && localStorage.getItem('trk_stock_v13')) {
-        stockLog = JSON.parse(localStorage.getItem('trk_stock_v13'));
-        menus = JSON.parse(localStorage.getItem('trk_menus_v13'));
-        sales = JSON.parse(localStorage.getItem('trk_sales_v13'));
-        localStorage.setItem('trk_stock_v14', JSON.stringify(stockLog));
-        localStorage.setItem('trk_menus_v14', JSON.stringify(menus));
-        localStorage.setItem('trk_sales_v14', JSON.stringify(sales));
+    if(stockLog.length === 0 && localStorage.getItem('trk_stock_v14')) {
+        stockLog = JSON.parse(localStorage.getItem('trk_stock_v14'));
+        menus = JSON.parse(localStorage.getItem('trk_menus_v14'));
+        sales = JSON.parse(localStorage.getItem('trk_sales_v14'));
+        bopLog = JSON.parse(localStorage.getItem('trk_bop_v14'));
+        saveAll();
+    }
+    
+    function saveAll() {
+        localStorage.setItem('trk_stock_v16', JSON.stringify(stockLog));
+        localStorage.setItem('trk_menus_v16', JSON.stringify(menus));
+        localStorage.setItem('trk_sales_v16', JSON.stringify(sales));
+        localStorage.setItem('trk_bop_v16', JSON.stringify(bopLog));
     }
 
-    // === UTILITIES ===
-    function formatNum(el) {
-        if (!el.value) return; let val = el.value.replace(/[^0-9.]/g, ''); 
-        let parts = val.split('.'); if (parts[0]) parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
-        el.value = parts.slice(0, 2).join('.');
-    }
-    function getNum(val) { if(!val) return 0; return parseFloat(val.toString().replace(/,/g, '')) || 0; }
+    function formatNum(el) { if (!el.value) return; let val = el.value.replace(/[^0-9.]/g, ''); let parts = val.split('.'); if (parts[0]) parts[0] = parseInt(parts[0], 10).toLocaleString('en-US'); el.value = parts.slice(0, 2).join('.'); }
+    function getNum(val) { if(!val) return 0; let cleaned = val.toString().replace(/[^0-9.]/g, ''); return parseFloat(cleaned) || 0; }
 
-    // === NAVIGATION ===
     function nav(id) {
         document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.side-btn').forEach(el => el.classList.remove('active'));
@@ -356,108 +454,84 @@
         document.getElementById('receipt-modal').style.display = 'none'; 
     }
 
-    // === 1. BOP LOGIC (NEW) ===
-    function addBOP(type) {
-        let name, dailyCost = 0;
-        
-        if (type === 'Asset') {
-            name = document.getElementById('bop-name').value;
-            const price = getNum(document.getElementById('bop-price').value);
-            const life = parseFloat(document.getElementById('bop-life').value);
-            if(!name || !price || !life) return alert("Fill all Asset fields");
-            // Formula: Price / (Months * 30 days)
-            dailyCost = price / (life * 30);
-        } else {
-            name = document.getElementById('bill-name').value;
-            const monthly = getNum(document.getElementById('bill-cost').value);
-            if(!name || !monthly) return alert("Fill all Bill fields");
-            // Formula: Monthly / 30 days
-            dailyCost = monthly / 30;
-        }
-
-        bopLog.push({ id: Date.now(), name: name, type: type, daily: dailyCost });
-        localStorage.setItem('trk_bop_v14', JSON.stringify(bopLog));
-        
-        document.getElementById('bop-name').value = ''; document.getElementById('bop-price').value = ''; document.getElementById('bop-life').value = '';
-        document.getElementById('bill-name').value = ''; document.getElementById('bill-cost').value = '';
-        renderBOP();
+    // === STOCK LOGIC ===
+    function updateStockHint() { const type = document.getElementById('s-type').value; document.getElementById('stock-hint').innerHTML = type === 'weight' ? "System converts <b>Kg</b> to <b>Grams</b> (x1000)." : type === 'volume' ? "System converts <b>Liters</b> to <b>Milliliters</b> (x1000)." : "System keeps <b>Pieces</b> as <b>Pieces</b> (x1)."; }
+    function updateStockDropdown() { const sel = document.getElementById('s-name-select'); const agg = getAggregatedStock(); sel.innerHTML = '<option value="">-- Select Item --</option><option value="NEW" style="color:var(--accent); font-weight:bold;">+ ADD NEW ITEM</option>'; Object.keys(agg).forEach(k => sel.add(new Option(k, k))); handleStockDropdownChange(); }
+    function handleStockDropdownChange() { const val = document.getElementById('s-name-select').value; const newInp = document.getElementById('s-name-new'); const typeSel = document.getElementById('s-type'); if (val === 'NEW') { newInp.style.display = 'block'; typeSel.disabled = false; } else { newInp.style.display = 'none'; const existing = stockLog.find(x => x.name === val); if (existing) { typeSel.value = existing.type; typeSel.disabled = true; } } }
+    
+    function cancelStock() {
+        document.getElementById('s-name-select').value = "";
+        document.getElementById('s-name-new').value = "";
+        document.getElementById('s-qty').value = "";
+        document.getElementById('s-price').value = "";
+        handleStockDropdownChange();
     }
 
-    function renderBOP() {
-        const tbody = document.getElementById('bop-list'); tbody.innerHTML = '';
-        let totalDaily = 0;
-        bopLog.forEach((item, i) => {
-            totalDaily += item.daily;
-            tbody.innerHTML += `<tr>
-                <td>${item.name}</td>
-                <td><span style="padding:2px 6px; border-radius:4px; font-size:10px; background:${item.type==='Asset'?'#e0f2fe':'#fef3c7'}">${item.type}</span></td>
-                <td>Rp ${Math.round(item.daily).toLocaleString('en-US')} / day</td>
-                <td><button onclick="bopLog.splice(${i},1);localStorage.setItem('trk_bop_v14',JSON.stringify(bopLog));renderBOP()" class="btn btn-danger btn-sm">x</button></td>
-            </tr>`;
-        });
-        document.getElementById('total-daily-bop').innerText = "Rp " + Math.round(totalDaily).toLocaleString('en-US');
-        return totalDaily;
-    }
-
-    // === 2. STOCK LOGIC ===
-    function updateStockHint() {
-        const type = document.getElementById('s-type').value;
-        const hint = document.getElementById('stock-hint');
-        if(type === 'weight') hint.innerHTML = "System converts <b>Kg</b> to <b>Grams</b> (x1000).";
-        else if(type === 'volume') hint.innerHTML = "System converts <b>Liters</b> to <b>Milliliters</b> (x1000).";
-        else hint.innerHTML = "System keeps <b>Pieces</b> as <b>Pieces</b> (x1).";
-    }
-    function updateStockDropdown() {
-        const sel = document.getElementById('s-name-select'); const agg = getAggregatedStock();
-        sel.innerHTML = '<option value="">-- Select Item --</option><option value="NEW" style="font-weight:bold; color:var(--info);">+ ADD NEW ITEM</option>';
-        Object.keys(agg).forEach(k => sel.add(new Option(k, k))); handleStockDropdownChange();
-    }
-    function handleStockDropdownChange() {
-        const val = document.getElementById('s-name-select').value; const newInp = document.getElementById('s-name-new'); const typeSel = document.getElementById('s-type');
-        if (val === 'NEW') { newInp.style.display = 'block'; typeSel.disabled = false; } 
-        else if (val === '') { newInp.style.display = 'none'; typeSel.disabled = false; } 
-        else { newInp.style.display = 'none'; const existing = stockLog.find(x => x.name === val); if (existing) { typeSel.value = existing.type; typeSel.disabled = true; updateStockHint(); } }
-    }
     function addStock() {
         const selVal = document.getElementById('s-name-select').value;
         let name = selVal === 'NEW' ? document.getElementById('s-name-new').value.trim() : selVal;
-        if (!name) return alert("Please select or enter an item name.");
+        if (!name) return alert("Select item");
         const type = document.getElementById('s-type').value; const qty = getNum(document.getElementById('s-qty').value); const price = getNum(document.getElementById('s-price').value); 
-        if(!qty || !price) return alert("Fill Quantity and Price fields");
-        let factor = 1; let useUnit = "Pcs";
-        if(type === 'weight') { factor = 1000; useUnit = "Gram"; } if(type === 'volume') { factor = 1000; useUnit = "ml"; }
-        stockLog.push({ id: Date.now(), name: name, type: type, buyQty: qty, totalVal: price, totalBaseUnits: qty * factor, useUnit: useUnit });
-        localStorage.setItem('trk_stock_v14', JSON.stringify(stockLog));
-        document.getElementById('s-name-new').value = ''; document.getElementById('s-qty').value = ''; document.getElementById('s-price').value = '';
-        updateStockDropdown(); renderStock();
+        if(!qty || !price) return alert("Fill data");
+        let factor = (type === 'weight' || type === 'volume') ? 1000 : 1;
+        stockLog.push({ id: Date.now(), name: name, type: type, buyQty: qty, totalVal: price, totalBaseUnits: qty * factor, useUnit: (type==='weight'?'Gram':type==='volume'?'ml':'Pcs') });
+        saveAll(); updateStockDropdown(); renderStock(); document.getElementById('s-qty').value = ''; document.getElementById('s-price').value = '';
     }
+    
     function getAggregatedStock() {
         let agg = {}; stockLog.forEach(log => { if(!agg[log.name]) agg[log.name] = { totalBase: 0, totalVal: 0, useUnit: log.useUnit }; agg[log.name].totalBase += log.totalBaseUnits; agg[log.name].totalVal += log.totalVal; });
-        Object.keys(agg).forEach(key => agg[key].avgCost = agg[key].totalVal / agg[key].totalBase); return agg;
+        Object.keys(agg).forEach(key => agg[key].avgCost = agg[key].totalBase !== 0 ? agg[key].totalVal / agg[key].totalBase : 0); return agg;
     }
     function renderStock() {
         const agg = getAggregatedStock(); const tbody = document.getElementById('stock-body'); tbody.innerHTML = '';
-        Object.keys(agg).forEach(name => { const item = agg[name]; tbody.innerHTML += `<tr><td><b>${name}</b></td><td>${item.totalBase.toLocaleString('en-US')} ${item.useUnit}</td><td>Rp ${item.avgCost.toLocaleString('en-US', {maximumFractionDigits:2})} / ${item.useUnit}</td><td>Rp ${item.totalVal.toLocaleString('en-US')}</td><td><button onclick="editStockItem('${name}')" class="btn btn-warning btn-sm">Edit</button> <button onclick="clearStockItem('${name}')" class="btn btn-danger btn-sm">Clear</button></td></tr>`; });
+        Object.keys(agg).forEach(name => { const item = agg[name]; 
+            tbody.innerHTML += `<tr><td style="font-weight:600; color:var(--text-dark);">${name}</td><td>${item.totalBase.toLocaleString('en-US')} ${item.useUnit}</td><td>Rp ${item.avgCost.toFixed(2)}</td><td>Rp ${item.totalVal.toLocaleString('en-US')}</td><td><button onclick="openStockEdit('${name}')" class="btn-icon-sm btn-warning">✏️</button><button onclick="adjustStock('${name}')" class="btn-icon-sm btn-primary" style="margin-left:5px;">±</button></td></tr>`; 
+        });
     }
-    function editStockItem(oldName) {
-        const newName = prompt("Enter new name for: " + oldName, oldName); if (!newName || newName.trim() === "" || newName === oldName) return;
-        const cleanNewName = newName.trim(); const agg = getAggregatedStock(); if (agg[cleanNewName]) return alert("An item with this name already exists!");
-        stockLog.forEach(log => { if (log.name === oldName) log.name = cleanNewName; }); localStorage.setItem('trk_stock_v14', JSON.stringify(stockLog));
-        Object.values(menus).forEach(m => { if (m.ings) m.ings.forEach(ing => { if (ing.name === oldName) ing.name = cleanNewName; }); });
-        localStorage.setItem('trk_menus_v14', JSON.stringify(menus)); renderStock(); updateStockDropdown(); initMenu(); alert(`Successfully renamed '${oldName}' to '${cleanNewName}'.`);
-    }
-    function clearStockItem(name) {
-        if(confirm("Clear history for " + name + "? This may break Menu HPP calculations.")) { stockLog = stockLog.filter(x => x.name !== name); localStorage.setItem('trk_stock_v14', JSON.stringify(stockLog)); renderStock(); updateStockDropdown(); }
-    }
-    function exportStock() {
-        const agg = getAggregatedStock(); const data = [["Item Name", "Total Stock (Use Unit)", "Unit", "Avg Cost", "Total Value"]];
-        Object.keys(agg).forEach(k => data.push([k, agg[k].totalBase, agg[k].useUnit, agg[k].avgCost, agg[k].totalVal]));
-        const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Inventory"); XLSX.writeFile(wb, "Inventory.xlsx");
+    
+    function adjustStock(name) {
+        const agg = getAggregatedStock(); const item = agg[name];
+        const adj = prompt(`Adjust ${name} Qty (+/-):\nCurrent: ${item.totalBase} ${item.useUnit}`);
+        if(adj) {
+            const val = parseFloat(adj); if(isNaN(val) || val===0) return;
+            stockLog.push({ id: Date.now(), name: name, type: 'adjustment', buyQty: 0, totalVal: val * item.avgCost, totalBaseUnits: val, useUnit: item.useUnit });
+            saveAll(); renderStock();
+        }
     }
 
-    // === 3. MENU LOGIC ===
+    function openStockEdit(name) {
+        const agg = getAggregatedStock(); const item = agg[name];
+        document.getElementById('edit-stock-name').value = name;
+        document.getElementById('edit-stock-newname').value = name;
+        document.getElementById('edit-stock-qty').value = item.totalBase;
+        document.getElementById('edit-stock-cost').value = item.avgCost.toFixed(2);
+        document.getElementById('stock-edit-modal').style.display = 'flex';
+    }
+    function saveStockEdit() {
+        const oldName = document.getElementById('edit-stock-name').value;
+        const newName = document.getElementById('edit-stock-newname').value;
+        const newQty = parseFloat(document.getElementById('edit-stock-qty').value);
+        const newCost = parseFloat(document.getElementById('edit-stock-cost').value);
+        if(!newName || isNaN(newQty) || isNaN(newCost)) return alert("Invalid Input");
+
+        if(oldName !== newName) {
+            stockLog.forEach(log => { if(log.name === oldName) log.name = newName; });
+            Object.values(menus).forEach(m => { if(m.ings) m.ings.forEach(i => { if(i.name === oldName) i.name = newName; }); });
+        }
+        
+        const agg = getAggregatedStock(); const item = agg[newName] || agg[oldName];
+        const targetVal = newQty * newCost;
+        const currentQty = item ? item.totalBase : 0;
+        const currentVal = item ? item.totalVal : 0;
+        
+        stockLog.push({ id: Date.now(), name: newName, type: 'manual_correction', buyQty: 0, totalBaseUnits: newQty - currentQty, totalVal: targetVal - currentVal, useUnit: item ? item.useUnit : 'Unit' });
+        saveAll(); renderStock(); updateStockDropdown(); initMenu();
+        document.getElementById('stock-edit-modal').style.display = 'none';
+    }
+
+    // === MENU LOGIC ===
     function initMenu() {
-        const sel = document.getElementById('menu-select'); sel.innerHTML = '<option value="">-- Select Menu --</option><option value="new" style="font-weight:bold; color:var(--info);">+ CREATE NEW MENU</option>';
+        const sel = document.getElementById('menu-select'); sel.innerHTML = '<option value="">-- Select Menu --</option><option value="new" style="color:var(--accent); font-weight:bold;">+ CREATE NEW</option>';
         Object.keys(menus).forEach(k => sel.add(new Option(menus[k].name, k)));
     }
     function loadMenu() {
@@ -469,113 +543,259 @@
         document.getElementById('recipe-list').innerHTML = ''; (m.ings || []).forEach(ing => addIngRow(ing)); calcLiveHPP();
     }
     function newMenu() { document.getElementById('menu-select').value = 'new'; loadMenu(); }
-    function deleteMenu() {
-        if(!activeMenuId || activeMenuId.startsWith('new') || !menus[activeMenuId]) return alert("Please select a saved menu to delete.");
-        if(confirm("Are you sure you want to permanently delete: " + menus[activeMenuId].name + "?")) {
-            delete menus[activeMenuId]; localStorage.setItem('trk_menus_v14', JSON.stringify(menus));
-            document.getElementById('m-name').value = ''; document.getElementById('m-price').value = ''; document.getElementById('recipe-list').innerHTML = ''; document.getElementById('m-hpp').innerText = 'Rp 0'; document.getElementById('m-profit').innerText = 'Rp 0 (0%)'; activeMenuId = null;
-            initMenu(); renderPOS(); alert("Menu deleted successfully.");
-        }
-    }
+    function deleteMenu() { if(!activeMenuId || activeMenuId.startsWith('new')) return; if(confirm("Delete menu?")) { delete menus[activeMenuId]; saveAll(); initMenu(); newMenu(); } }
     function addIngRow(data = {name: '', qty: 0, waste: 0}) {
-        const agg = getAggregatedStock(); const div = document.createElement('div'); div.className = 'ing-row';
-        let opts = `<option value="">Select Ingredient...</option>`; let unitLabel = "-";
-        Object.keys(agg).forEach(k => { opts += `<option value="${k}" ${data.name===k?'selected':''}>${k}</option>`; if(data.name === k) unitLabel = agg[k].useUnit; });
-        div.innerHTML = `<select class="i-name" onchange="updateUnitLabel(this); calcLiveHPP()" style="margin:0;">${opts}</select><span class="i-unit" style="font-size:11px; font-weight:bold; color:#666; text-align:center;">${unitLabel}</span><input type="text" inputmode="decimal" class="i-qty" value="${data.qty?data.qty.toLocaleString('en-US'):''}" oninput="formatNum(this); calcLiveHPP()" placeholder="Qty Used" style="margin:0;"><input type="text" inputmode="decimal" class="i-waste" value="${data.waste?data.waste.toLocaleString('en-US'):''}" oninput="formatNum(this); calcLiveHPP()" placeholder="%" style="margin:0;"><span class="i-cost" style="font-size:12px; font-weight:bold; color:#7f8c8d; text-align:right;">0</span><button onclick="this.parentElement.remove();calcLiveHPP()" style="color:red;border:none;background:none;cursor:pointer;font-weight:bold;font-size:16px;">✕</button>`;
-        document.getElementById('recipe-list').appendChild(div);
+        const agg = getAggregatedStock(); const tr = document.createElement('tr'); tr.className = 'ing-row';
+        let opts = `<option value="">Select...</option>`; Object.keys(agg).forEach(k => { opts += `<option value="${k}" ${data.name===k?'selected':''}>${k}</option>`; });
+        tr.innerHTML = `<td><select class="i-name" onchange="updateRowUnit(this); calcLiveHPP()">${opts}</select></td><td class="i-unit" style="font-size:11px; font-weight:bold; color:#64748b;">${data.name && agg[data.name] ? agg[data.name].useUnit : '-'}</td><td><input type="text" class="i-qty" value="${data.qty?data.qty.toLocaleString('en-US'):''}" oninput="formatNum(this); calcLiveHPP()" placeholder="0"></td><td><input type="text" class="i-waste" value="${data.waste||''}" oninput="calcLiveHPP()" placeholder="0"></td><td class="i-cost" style="text-align:right; font-weight:bold;">0</td><td><button onclick="this.closest('tr').remove();calcLiveHPP()" style="color:var(--danger); border:none; background:none; font-weight:bold; cursor:pointer;">✕</button></td>`;
+        document.getElementById('recipe-list').appendChild(tr); if(data.name) calcLiveHPP();
     }
-    function updateUnitLabel(selectEl) { const agg = getAggregatedStock(); const name = selectEl.value; const row = selectEl.parentElement; if(agg[name]) row.querySelector('.i-unit').innerText = agg[name].useUnit; }
+    function updateRowUnit(sel) { const agg = getAggregatedStock(); const name = sel.value; const row = sel.closest('tr'); row.querySelector('.i-unit').innerText = agg[name] ? agg[name].useUnit : '-'; }
     function calcLiveHPP() {
         const agg = getAggregatedStock(); let totalHPP = 0;
         document.querySelectorAll('.ing-row').forEach(row => {
             const name = row.querySelector('.i-name').value; const qty = getNum(row.querySelector('.i-qty').value); const waste = getNum(row.querySelector('.i-waste').value);
             if(name && agg[name]) { const cost = (qty * agg[name].avgCost) * (1 + (waste/100)); row.querySelector('.i-cost').innerText = Math.round(cost).toLocaleString('en-US'); totalHPP += cost; }
         });
-        document.getElementById('m-hpp').innerText = "Rp " + Math.round(totalHPP).toLocaleString('en-US'); calcLiveProfit(totalHPP); return totalHPP;
-    }
-    function calcLiveProfit(hppInput) {
-        const hpp = hppInput || getNum(document.getElementById('m-hpp').innerText.replace(/[^0-9]/g,'')) || 0; const sell = getNum(document.getElementById('m-price').value) || 0; const profit = sell - hpp; const margin = sell > 0 ? ((profit / sell) * 100).toFixed(1) : 0;
-        document.getElementById('m-profit').innerText = `Rp ${Math.round(profit).toLocaleString('en-US')} (${margin}%)`;
+        document.getElementById('m-hpp').innerText = "Rp " + Math.round(totalHPP).toLocaleString('en-US'); 
+        let sell = getNum(document.getElementById('m-price').value); let profit = sell - totalHPP; let margin = sell > 0 ? ((profit / sell) * 100).toFixed(1) : 0;
+        document.getElementById('m-profit-val').innerText = `Rp ${Math.round(profit).toLocaleString('en-US')}`;
+        const badge = document.getElementById('margin-badge'); document.getElementById('m-margin-val').innerText = margin + "%";
+        if(margin < 30) badge.classList.add('low'); else badge.classList.remove('low');
+        return totalHPP;
     }
     function saveMenu() {
-        if(!activeMenuId) return; if(document.getElementById('m-name').value.trim() === '') return alert("Menu name cannot be empty.");
-        const ings = []; document.querySelectorAll('.ing-row').forEach(row => { ings.push({ name: row.querySelector('.i-name').value, qty: getNum(row.querySelector('.i-qty').value), waste: getNum(row.querySelector('.i-waste').value) }); });
-        menus[activeMenuId].name = document.getElementById('m-name').value; menus[activeMenuId].sellPrice = getNum(document.getElementById('m-price').value); menus[activeMenuId].ings = ings; menus[activeMenuId].hpp = calcLiveHPP(); 
-        localStorage.setItem('trk_menus_v14', JSON.stringify(menus)); alert("Menu Saved!"); initMenu(); document.getElementById('menu-select').value = activeMenuId;
+        if(!activeMenuId) return; const ings = []; document.querySelectorAll('.ing-row').forEach(row => { ings.push({ name: row.querySelector('.i-name').value, qty: getNum(row.querySelector('.i-qty').value), waste: getNum(row.querySelector('.i-waste').value) }); });
+        menus[activeMenuId].name = document.getElementById('m-name').value; menus[activeMenuId].sellPrice = getNum(document.getElementById('m-price').value); menus[activeMenuId].ings = ings; menus[activeMenuId].hpp = getNum(document.getElementById('m-hpp').innerText);
+        saveAll(); alert("Menu Saved!"); initMenu(); document.getElementById('menu-select').value = activeMenuId;
     }
-    function exportMenuHPP() {
-        const data = [["Menu Name", "Sell Price", "HPP", "Profit", "Details"]]; Object.values(menus).forEach(m => { let detail = (m.ings || []).map(i => `${i.name}:${i.qty}(W:${i.waste}%)`).join(", "); data.push([m.name, m.sellPrice, m.hpp, m.sellPrice - m.hpp, detail]); });
-        const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Menu"); XLSX.writeFile(wb, "Menu_Analysis.xlsx");
+    
+    // === EXPORT MENU HPP FUNCTION ===
+    function exportMenuHPP() { 
+        const agg = getAggregatedStock();
+        const data = [["Menu Name", "Sell Price", "Ingredient", "Unit", "Qty Required", "Waste %", "Cost Contribution"]];
+        
+        Object.values(menus).forEach(m => {
+            if (m.ings && m.ings.length > 0) {
+                m.ings.forEach(ing => {
+                    let stockItem = agg[ing.name];
+                    let cost = 0;
+                    if(stockItem && stockItem.avgCost) {
+                        cost = (ing.qty * stockItem.avgCost) * (1 + (ing.waste/100));
+                    }
+                    data.push([m.name, m.sellPrice, ing.name, stockItem ? stockItem.useUnit : '-', ing.qty, ing.waste, cost]);
+                });
+            } else {
+                data.push([m.name, m.sellPrice, "NO INGREDIENTS", "-", 0, 0, 0]);
+            }
+        });
+
+        const wb = XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Recipe Breakdown"); 
+        XLSX.writeFile(wb, "Menu_HPP_Analysis.xlsx"); 
     }
 
-    // === 4. POS LOGIC ===
+    // === POS LOGIC ===
     function initPOS() { document.getElementById('trx-id').innerText = "TX-" + Date.now().toString().slice(-6); renderPOS(); }
-    function renderPOS(filter='') {
-        const g = document.getElementById('pos-grid'); g.innerHTML = '';
-        Object.keys(menus).forEach(k => { const m = menus[k]; if(m.name.toLowerCase().includes(filter.toLowerCase())) { g.innerHTML += `<div class="menu-card" onclick="addToCart('${k}')"><h4>${m.name}</h4><p>Rp ${m.sellPrice.toLocaleString('en-US')}</p></div>`; } });
-    }
+    function renderPOS(filter='') { const g = document.getElementById('pos-grid'); g.innerHTML = ''; Object.keys(menus).forEach(k => { const m = menus[k]; if(m.name.toLowerCase().includes(filter.toLowerCase())) { g.innerHTML += `<div class="menu-card" onclick="addToCart('${k}')"><h4>${m.name}</h4><p>Rp ${m.sellPrice.toLocaleString('en-US')}</p></div>`; } }); }
     function addToCart(id) { const existing = cart.find(x => x.id === id); if(existing) existing.qty++; else { const m = menus[id]; cart.push({ ...m, id: id, qty: 1 }); } renderCart(); }
-    function updateCartQty(idx, change) { cart[idx].qty += change; if(cart[idx].qty <= 0) cart.splice(idx, 1); renderCart(); }
     function renderCart() {
         const c = document.getElementById('cart-items'); c.innerHTML = ''; let total = 0;
-        cart.forEach((it, i) => { const lineTotal = it.sellPrice * it.qty; c.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:13px; border-bottom:1px dashed #e2e8f0; padding-bottom:10px;"><div style="flex:1;"><div style="font-weight:bold;">${it.name}</div><div style="color:#7f8c8d; font-size:11px;">@${it.sellPrice.toLocaleString('en-US')}</div></div><div style="display:flex; align-items:center; gap:5px; margin: 0 10px;"><button class="btn btn-primary btn-sm" onclick="updateCartQty(${i}, -1)">-</button><span style="font-weight:bold; width:20px; text-align:center;">${it.qty}</span><button class="btn btn-primary btn-sm" onclick="updateCartQty(${i}, 1)">+</button></div><div style="font-weight:bold; min-width:60px; text-align:right;">${lineTotal.toLocaleString('en-US')}</div></div>`; total += lineTotal; });
+        cart.forEach((it, i) => { const lineTotal = it.sellPrice * it.qty; c.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border); padding-bottom:8px;"><div style="flex:1;"><div style="font-weight:700; color:var(--primary);">${it.name}</div><div style="color:#64748b; font-size:11px;">@${it.sellPrice.toLocaleString('en-US')}</div></div><div style="display:flex; align-items:center; gap:8px;"><button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, -1)">-</button><span style="font-weight:bold; width:20px; text-align:center;">${it.qty}</span><button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, 1)">+</button></div><div style="font-weight:bold; min-width:70px; text-align:right;">${lineTotal.toLocaleString('en-US')}</div></div>`; total += lineTotal; });
         document.getElementById('cart-total').innerText = "Rp " + total.toLocaleString('en-US'); document.getElementById('cart-subtotal').innerText = "Rp " + total.toLocaleString('en-US'); calcExchange();
     }
+    function updateCartQty(idx, change) { cart[idx].qty += change; if(cart[idx].qty <= 0) cart.splice(idx, 1); renderCart(); }
     function togglePay() { const m = document.getElementById('pay-method').value; document.getElementById('cash-box').style.display = m === 'Cash' ? 'block' : 'none'; document.getElementById('qris-box').style.display = m === 'QRIS' ? 'block' : 'none'; calcExchange(); }
-    function calcExchange() {
-        const total = getNum(document.getElementById('cart-total').innerText); const cash = getNum(document.getElementById('cash-in').value); const method = document.getElementById('pay-method').value;
-        let valid = true; if(method === 'Cash') { const ex = cash - total; document.getElementById('exchange-val').innerText = "Rp " + ex.toLocaleString('en-US'); if(cash < total) valid = false; } document.getElementById('btn-checkout').disabled = (total === 0 || !valid);
-    }
+    function calcExchange() { const total = getNum(document.getElementById('cart-total').innerText); const cash = getNum(document.getElementById('cash-in').value); const method = document.getElementById('pay-method').value; let valid = true; if(method === 'Cash') { const ex = cash - total; document.getElementById('exchange-val').innerText = "Rp " + (ex >= 0 ? ex.toLocaleString('en-US') : "0"); if(cash < total) valid = false; } document.getElementById('btn-checkout').disabled = (total === 0 || !valid); }
+    
     function checkout() {
-        const total = getNum(document.getElementById('cart-total').innerText); const method = document.getElementById('pay-method').value; const cash = getNum(document.getElementById('cash-in').value);
-        let totalCost = 0; cart.forEach(item => totalCost += ((item.hpp || 0) * item.qty));
-        const sale = { id: document.getElementById('trx-id').innerText, date: new Date().toISOString().split('T')[0], time: new Date().toLocaleTimeString(), customer: document.getElementById('cust-name').value || 'Guest', items: [...cart], total: total, cost: totalCost, profit: total - totalCost, method: method, cash: cash, change: method==='Cash' ? cash-total : 0 };
-        sales.push(sale); localStorage.setItem('trk_sales_v14', JSON.stringify(sales));
-        document.getElementById('receipt-modal').style.display = 'flex'; document.getElementById('rec-body').innerHTML = `ID: ${sale.id}<br>Date: ${sale.date} ${sale.time}<br>Cust: ${sale.customer}<br>--------------------------------<br>${cart.map(i => `${i.name.padEnd(15)} x${i.qty} ${(i.sellPrice*i.qty).toLocaleString('en-US')}`).join('<br>')}`; document.getElementById('rec-total').innerText = "Rp " + sale.total.toLocaleString('en-US'); document.getElementById('rec-change-info').innerText = method==='Cash' ? `Cash: ${sale.cash.toLocaleString('en-US')} | Change: ${sale.change.toLocaleString('en-US')}` : `Ref: ${document.getElementById('qris-ref').value}`;
-    }
-    function closeModal() { document.getElementById('receipt-modal').style.display = 'none'; cart = []; document.getElementById('cash-in').value = ''; initPOS(); renderCart(); }
-
-    // === 5. SALES ANALYTICS (UPGRADED) ===
-    function filterSales() {
-        const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value;
-        let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end);
-
-        let rev = 0, cost = 0, grossProfit = 0, count = 0;
-        const tbody = document.getElementById('sales-body'); tbody.innerHTML = '';
+        const total = getNum(document.getElementById('cart-total').innerText); 
+        const method = document.getElementById('pay-method').value; 
+        const cash = getNum(document.getElementById('cash-in').value); 
+        let totalCost = 0; 
         
-        filtered.slice().reverse().forEach(s => {
-            rev += s.total; cost += s.cost; grossProfit += s.profit; count++;
-            tbody.innerHTML += `<tr><td>${s.date}<br><small>${s.time}</small></td><td>${s.id}</td><td>${s.customer}</td><td>${s.total.toLocaleString('en-US')}</td><td><span style="padding:2px 6px; border-radius:4px; font-size:10px; background:${s.method==='Cash'?'#dcfce7':'#dbeafe'}">${s.method}</span></td><td style="color:var(--success)">${s.profit.toLocaleString('en-US')}</td><td><button onclick="delSale('${s.id}')" class="btn btn-danger btn-sm">x</button></td></tr>`;
+        const agg = getAggregatedStock(); 
+        cart.forEach(item => { totalCost += ((item.hpp || 0) * item.qty); if(item.ings) { item.ings.forEach(ing => { if(agg[ing.name]) { const totalReduce = ing.qty * item.qty; const valueReduce = totalReduce * agg[ing.name].avgCost; stockLog.push({ id: Date.now() + Math.random(), name: ing.name, type: 'sale_usage', buyQty: 0, totalVal: -valueReduce, totalBaseUnits: -totalReduce, useUnit: agg[ing.name].useUnit }); } }); } });
+        
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const timeStr = now.toLocaleTimeString();
+
+        const sale = { id: document.getElementById('trx-id').innerText, date: dateStr, time: timeStr, customer: document.getElementById('cust-name').value || 'Guest', items: [...cart], total: total, cost: totalCost, profit: total - totalCost, method: method, cash: cash, change: method==='Cash' ? (cash - total) : 0 };
+        sales.push(sale); saveAll();
+        
+        document.getElementById('rec-date').innerText = dateStr + " " + timeStr;
+        document.getElementById('rec-id').innerText = sale.id;
+        document.getElementById('rec-cust').innerText = sale.customer;
+        
+        const recItems = document.getElementById('rec-items'); recItems.innerHTML = '';
+        cart.forEach(item => {
+            recItems.innerHTML += `
+            <div class="rec-item">
+                <span>${item.name} x${item.qty}</span>
+                <span>${(item.sellPrice * item.qty).toLocaleString('en-US')}</span>
+            </div>`;
         });
         
-        // Calculate BOP for this period
-        // Rough estimate: Number of unique days in filter * Daily BOP
-        const days = new Set(filtered.map(s => s.date)).size || 1; 
-        const dailyBopCost = renderBOP();
-        const totalBop = dailyBopCost * days;
-
-        const netProfit = grossProfit - totalBop;
-
-        document.getElementById('sum-count').innerText = count.toLocaleString('en-US'); 
-        document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US');
-        document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); 
-        document.getElementById('sum-bop').innerText = "Rp " + totalBop.toLocaleString('en-US');
-        document.getElementById('sum-profit').innerText = "Rp " + netProfit.toLocaleString('en-US');
+        document.getElementById('rec-total-print').innerText = sale.total.toLocaleString('en-US');
+        document.getElementById('rec-method').innerText = sale.method;
+        document.getElementById('rec-cash').innerText = method === 'Cash' ? sale.cash.toLocaleString('en-US') : document.getElementById('qris-ref').value;
+        document.getElementById('rec-change').innerText = sale.change.toLocaleString('en-US');
+        
+        document.getElementById('receipt-modal').style.display = 'flex'; 
+        
+        document.getElementById('cust-name').value = ''; document.getElementById('qris-ref').value = ''; document.getElementById('cash-in').value = ''; cart = []; renderCart(); initPOS();
     }
-
-    function delSale(id) { if(confirm("Delete record?")) { sales = sales.filter(s => s.id !== id); localStorage.setItem('trk_sales_v14', JSON.stringify(sales)); filterSales(); } }
     
-    function exportData() {
-        const backup = { stock: stockLog, menu: menus, sales: sales, bop: bopLog }; const blob = new Blob([JSON.stringify(backup)], {type: "application/json"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "TRK_Backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click();
+    function closeModal() { document.getElementById('receipt-modal').style.display = 'none'; }
+    
+    function addBOP(type) { 
+        let id = Date.now();
+        if(isEditingBop) {
+            id = parseInt(document.getElementById('bop-edit-id').value);
+            const idx = bopLog.findIndex(b => b.id == id);
+            if(idx !== -1) bopLog.splice(idx, 1);
+        }
+        
+        let name, dailyCost = 0, originVal = 0, life = 0; 
+        if (type === 'Asset') { 
+            name = document.getElementById('bop-name').value; const price = getNum(document.getElementById('bop-price').value); life = parseFloat(document.getElementById('bop-life').value); 
+            if(!name || !price || !life) return alert("Fill Asset fields"); 
+            dailyCost = price / (life * 30); originVal = price;
+        } else { 
+            name = document.getElementById('bill-name').value; const monthly = getNum(document.getElementById('bill-cost').value); 
+            if(!name || !monthly) return alert("Fill Bill fields"); 
+            dailyCost = monthly / 30; originVal = monthly;
+        } 
+        
+        bopLog.push({ id: id, name: name, type: type, daily: dailyCost, originVal: originVal, life: life }); 
+        saveAll(); clearBopInputs(); renderBOP(); 
     }
-    function importData(event) {
-        const file = event.target.files[0]; if(!file) return; const reader = new FileReader();
-        reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if(data.stock && data.menu && data.sales) { if(confirm("Overwrite data?")) { localStorage.setItem('trk_stock_v14', JSON.stringify(data.stock)); localStorage.setItem('trk_menus_v14', JSON.stringify(data.menu)); localStorage.setItem('trk_sales_v14', JSON.stringify(data.sales)); if(data.bop) localStorage.setItem('trk_bop_v14', JSON.stringify(data.bop)); location.reload(); } } } catch(err) { alert("Error reading backup."); } }; reader.readAsText(file);
+
+    function editBOP(id) { 
+        const item = bopLog.find(b => b.id == id); if(!item) return;
+        isEditingBop = true;
+        document.getElementById('bop-edit-id').value = id;
+        
+        if(item.type === 'Asset') { 
+            document.getElementById('bop-name').value = item.name; 
+            document.getElementById('bop-price').value = Math.round(item.originVal || (item.daily * item.life * 30)).toLocaleString('en-US');
+            document.getElementById('bop-life').value = item.life || 36;
+            
+            document.getElementById('asset-form-container').classList.add('editing-highlight');
+            document.getElementById('btn-add-asset').innerText = 'Update Asset';
+            document.getElementById('btn-cancel-asset').style.display = 'block';
+            
+            document.getElementById('bill-form-container').style.opacity = '0.5';
+            document.getElementById('btn-add-bill').disabled = true;
+        } else { 
+            document.getElementById('bill-name').value = item.name; 
+            document.getElementById('bill-cost').value = Math.round(item.originVal || (item.daily * 30)).toLocaleString('en-US'); 
+            
+            document.getElementById('bill-form-container').classList.add('editing-highlight');
+            document.getElementById('btn-add-bill').innerText = 'Update Bill';
+            document.getElementById('btn-cancel-bill').style.display = 'block';
+            
+            document.getElementById('asset-form-container').style.opacity = '0.5';
+            document.getElementById('btn-add-asset').disabled = true;
+        } 
     }
-    function exportSales() {
-        const data = [["Date", "Time", "ID", "Customer", "Total", "Cost", "Gross Profit", "Method"]]; sales.forEach(s => data.push([s.date, s.time, s.id, s.customer, s.total, s.cost, s.profit, s.method]));
-        const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Sales"); XLSX.writeFile(wb, "Sales_Report.xlsx");
+
+    function cancelEditBOP() { clearBopInputs(); }
+
+    function clearBopInputs() { 
+        document.getElementById('bop-name').value = ''; document.getElementById('bop-price').value = ''; document.getElementById('bop-life').value = ''; document.getElementById('bill-name').value = ''; document.getElementById('bill-cost').value = ''; 
+        
+        document.getElementById('asset-form-container').classList.remove('editing-highlight');
+        document.getElementById('bill-form-container').classList.remove('editing-highlight');
+        document.getElementById('asset-form-container').style.opacity = '1';
+        document.getElementById('bill-form-container').style.opacity = '1';
+
+        document.getElementById('btn-add-asset').innerText = 'Add Asset';
+        document.getElementById('btn-add-asset').disabled = false;
+        document.getElementById('btn-cancel-asset').style.display = 'none';
+        
+        document.getElementById('btn-add-bill').innerText = 'Add Fixed Bill';
+        document.getElementById('btn-add-bill').disabled = false;
+        document.getElementById('btn-cancel-bill').style.display = 'none';
+        
+        isEditingBop = false;
+    }
+    
+    function renderBOP() { 
+        const tbody = document.getElementById('bop-list'); tbody.innerHTML = ''; let totalDaily = 0; 
+        bopLog.forEach((item, i) => { 
+            totalDaily += item.daily; 
+            let costDisplay = item.originVal ? item.originVal.toLocaleString('en-US') : Math.round(item.daily * (item.type==='Asset'? (item.life*30) : 30)).toLocaleString('en-US');
+            
+            tbody.innerHTML += `<tr>
+                <td style="font-weight:700; color:#334155;">${item.name}</td>
+                <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; background:${item.type==='Asset'?'#eff6ff':'#fffbeb'}; color:${item.type==='Asset'?'#1d4ed8':'#b45309'}; font-weight:700; border:1px solid ${item.type==='Asset'?'#bfdbfe':'#fde68a'};">${item.type}</span></td>
+                <td style="font-weight:600;">${costDisplay}</td>
+                <td style="color:#64748b;">${item.type==='Asset' ? item.life : '-'}</td>
+                <td style="font-weight:700; color:#0f172a;">Rp ${Math.round(item.daily).toLocaleString('en-US')}</td>
+                <td style="text-align:right;"><div style="display:flex; gap:6px; justify-content:flex-end;"><button onclick="editBOP(${item.id})" class="btn-icon-sm btn-warning">✏️</button><button onclick="bopLog.splice(${i},1);saveAll();renderBOP()" class="btn-icon-sm btn-danger">🗑️</button></div></td>
+            </tr>`; 
+        }); 
+        document.getElementById('total-daily-bop').innerText = "Rp " + Math.round(totalDaily).toLocaleString('en-US'); return totalDaily; 
+    }
+
+    function filterSales() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; filtered.slice().reverse().forEach(s => { rev += s.total; cost += s.cost; grossProfit += s.profit; let itemsStr = ""; if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } tbody.innerHTML += `<tr><td><b style="color:var(--text-dark)">${s.date}</b><br><small style="color:#64748b">${s.time}</small></td><td>${s.id}</td><td>${s.customer}</td><td style="font-size:11px; color:#64748b;">${itemsStr}</td><td>${s.total.toLocaleString('en-US')}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; background:${s.method==='Cash'?'#dcfce7':'#dbeafe'}; color:${s.method==='Cash'?'#166534':'#1e40af'}">${s.method}</span></td><td style="color:var(--success); font-weight:800;">${s.profit.toLocaleString('en-US')}</td><td><button onclick="delSale('${s.id}')" class="btn-icon-sm btn-danger">🗑️</button></td></tr>`; }); const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; document.getElementById('sum-count').innerHTML = `${filtered.length} Txns <br><small style="color:#94a3b8; font-weight:normal;">${totalItems} Items Sold</small>`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); }
+    function openProductSummary() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let agg = {}; filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; Object.keys(agg).forEach(k => { tb.innerHTML += `<tr><td style="padding:15px; border-bottom:1px solid #f1f5f9;">${k}</td><td style="padding:15px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].qty}</td><td style="padding:15px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].rev.toLocaleString('en-US')}</td></tr>`; }); document.getElementById('product-modal').style.display = 'flex'; }
+    
+    // === UPDATED DELETE SALE LOGIC (REVERSE INVENTORY) ===
+    function delSale(id) { 
+        if(confirm("Delete record and RESTORE stock?")) {
+            const saleToDel = sales.find(s => s.id === id);
+            if(saleToDel) {
+                // Reverse Stock
+                const agg = getAggregatedStock();
+                saleToDel.items.forEach(saleItem => {
+                    if(saleItem.ings) {
+                        saleItem.ings.forEach(ing => {
+                            if(agg[ing.name]) {
+                                // Add positive adjustment to reverse usage
+                                const totalRestore = ing.qty * saleItem.qty;
+                                const valRestore = totalRestore * agg[ing.name].avgCost;
+                                stockLog.push({ 
+                                    id: Date.now() + Math.random(), 
+                                    name: ing.name, 
+                                    type: 'sale_reversal', 
+                                    buyQty: 0, 
+                                    totalVal: valRestore, 
+                                    totalBaseUnits: totalRestore, 
+                                    useUnit: agg[ing.name].useUnit 
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+            sales = sales.filter(s => s.id !== id); 
+            saveAll(); 
+            filterSales(); 
+        } 
+    }
+
+    function exportData() { const backup = { stock: stockLog, menu: menus, sales: sales, bop: bopLog }; const blob = new Blob([JSON.stringify(backup)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "TRK_Backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); }
+    function importData(event) { const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if(data.stock && data.menu && data.sales) { if(confirm("Overwrite data?")) { localStorage.setItem('trk_stock_v16', JSON.stringify(data.stock)); localStorage.setItem('trk_menus_v16', JSON.stringify(data.menu)); localStorage.setItem('trk_sales_v16', JSON.stringify(data.sales)); if(data.bop) localStorage.setItem('trk_bop_v16', JSON.stringify(data.bop)); location.reload(); } } } catch(err) { alert("Error reading backup."); } }; reader.readAsText(file); }
+    
+    // EXPORT SALES FUNCTION (V24 Format)
+    function exportSales() { 
+        const dataDetailed = [["Date", "Time", "Transaction ID", "Customer", "Menu Item", "Qty", "Sell Price", "Total Sales", "Item Cost (HPP)", "Item Gross Profit"]];
+        
+        sales.forEach(s => {
+            s.items.forEach(i => {
+                let itemTotal = i.sellPrice * i.qty;
+                let itemHpp = (i.hpp || 0) * i.qty;
+                let itemProfit = itemTotal - itemHpp;
+                dataDetailed.push([s.date, s.time, s.id, s.customer, i.name, i.qty, i.sellPrice, itemTotal, itemHpp, itemProfit]);
+            });
+        });
+
+        const wb = XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dataDetailed), "Detailed Sales"); 
+        XLSX.writeFile(wb, "TRK_Sales_Report.xlsx"); 
     }
 
     const today = new Date().toISOString().split('T')[0]; document.getElementById('date-start').value = today; document.getElementById('date-end').value = today; nav('pos');
