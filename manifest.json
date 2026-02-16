@@ -1,10 +1,10 @@
 {
   "name": "Tepi Raja Kopi POS",
   "short_name": "TRK POS",
-  "start_url": "./TRK_POS.html",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f3f4f6",
-  "theme_color": "#2c3e50",
+  "background_color": "#f1f5f9",
+  "theme_color": "#0f172a",
   "orientation": "landscape",
   "icons": [
     {
