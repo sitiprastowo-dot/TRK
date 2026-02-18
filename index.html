@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v29 (No Gap Fix)</title>
+    <title>Tepi Raja Kopi - POS v30 (Tablet Cart Fix)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -41,10 +41,10 @@
             background: var(--primary); 
             display: flex; 
             flex-direction: column; 
-            padding: 25px; /* Internal padding only */
+            padding: 25px; 
             color: white; 
             flex-shrink: 0; 
-            height: 100vh; /* Force full height */
+            height: 100vh; 
             z-index: 50;
             transition: width 0.3s ease;
         }
@@ -71,7 +71,7 @@
         .side-btn .icon { font-size: 18px; width: 24px; text-align: center; display: inline-block; }
 
         /* SEPARATOR LINE */
-        .sidebar-sep { border-top: 1px dashed rgba(255,255,255,0.2); margin: 15px 0; width: 100%; }
+        .sidebar-sep { border-top: 1px dashed rgba(255,255,255,0.2); margin: 10px 0 15px 0; width: 100%; }
 
         /* --- TABLET MODE (Compact Sidebar) --- */
         @media (max-width: 1100px) {
@@ -85,7 +85,7 @@
         /* --- MAIN CONTENT --- */
         .main-content { 
             flex: 1; 
-            padding: 20px; /* Internal padding for content */
+            padding: 20px; 
             display: flex; 
             flex-direction: column; 
             height: 100vh; 
@@ -97,18 +97,24 @@
         .section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- POS GRID --- */
+        /* --- POS GRID (FIXED FOR TABLET) --- */
         .pos-container { 
             display: grid; gap: 20px; flex: 1; min-height: 0; 
+            
+            /* DESKTOP: 3 Columns (Menu | Order | Cart) */
             grid-template-columns: 1fr 340px 380px; 
             grid-template-areas: "menu order cart";
         }
-        /* Tablet Grid Adjustments */
+
+        /* TABLET FIX: 2 Columns (Menu | RightColumn) */
         @media (max-width: 1200px) {
             .pos-container {
-                grid-template-columns: 1fr 340px; 
-                grid-template-rows: auto 1fr;
-                grid-template-areas: "menu order" "menu cart";
+                /* Menu takes left (60%), Order & Cart stack on right (40%) */
+                grid-template-columns: 1.5fr 1fr; 
+                grid-template-rows: auto 1fr; /* Top row auto height, bottom fills rest */
+                grid-template-areas: 
+                    "menu order"   /* Menu left, Order details top-right */
+                    "menu cart";   /* Menu left, Cart bottom-right */
             }
         }
 
@@ -185,7 +191,8 @@
 <div class="sidebar">
     <div class="logo-area">
         <div class="logo-icon">TRK</div>
-        <span>TEPI RAJA KOPI</span> </div>
+        <span>TEPI RAJA KOPI</span>
+    </div>
     
     <button class="side-btn active" onclick="nav('pos')"><span class="icon">🛒</span><span class="lbl">POS Terminal</span></button>
     <button class="side-btn" onclick="nav('sales')"><span class="icon">📊</span><span class="lbl">Sales Analytics</span></button>
@@ -193,12 +200,11 @@
     <button class="side-btn" onclick="nav('stock')"><span class="icon">📦</span><span class="lbl">Inventory</span></button>
     <button class="side-btn" onclick="nav('bop')"><span class="icon">📉</span><span class="lbl">Overhead / BOP</span></button>
     
-    <div style="margin-top: auto; width: 100%;">
-        <div class="sidebar-sep"></div>
-        <button class="side-btn" onclick="exportData()"><span class="icon">💾</span><span class="lbl">Backup Data</span></button>
-        <button class="side-btn" onclick="document.getElementById('import-file').click()"><span class="icon">📂</span><span class="lbl">Restore Data</span></button>
-        <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(event)">
-    </div>
+    <div class="sidebar-sep"></div>
+    <button class="side-btn" onclick="exportData()"><span class="icon">💾</span><span class="lbl">Backup Data</span></button>
+    <button class="side-btn" onclick="document.getElementById('import-file').click()"><span class="icon">📂</span><span class="lbl">Restore Data</span></button>
+    <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(event)">
+    
 </div>
 
 <div class="main-content">
@@ -470,7 +476,7 @@
 </div>
 
 <script>
-    // === DATA STORE (LocalStorage V29) ===
+    // === DATA STORE (LocalStorage V30) ===
     let stockLog = JSON.parse(localStorage.getItem('trk_stock_v16')) || [];
     let menus = JSON.parse(localStorage.getItem('trk_menus_v16')) || {};
     let sales = JSON.parse(localStorage.getItem('trk_sales_v16')) || [];
