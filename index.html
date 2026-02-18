@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v30 (Tablet Cart Fix)</title>
+    <title>Tepi Raja Kopi - POS v31 (Compact Tablet)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <link rel="manifest" href="manifest.json">
 
     <style>
-        /* --- 1. GLOBAL RESET (STRICT NO GAP) --- */
+        /* --- 1. GLOBAL RESET --- */
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         :root { 
@@ -19,15 +19,10 @@
             --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --border: #e2e8f0; 
         }
         
-        /* BODY: NO PADDING, FULL WIDTH/HEIGHT */
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            display: flex; 
-            height: 100vh; 
-            width: 100vw; 
-            overflow: hidden; 
+            background: var(--bg); color: var(--text); 
+            display: flex; height: 100vh; width: 100vw; overflow: hidden; 
         }
         
         /* SCROLLBARS */
@@ -35,45 +30,19 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* --- SIDEBAR (FULL HEIGHT, LEFT ALIGNED) --- */
+        /* --- SIDEBAR --- */
         .sidebar { 
-            width: 260px; 
-            background: var(--primary); 
-            display: flex; 
-            flex-direction: column; 
-            padding: 25px; 
-            color: white; 
-            flex-shrink: 0; 
-            height: 100vh; 
-            z-index: 50;
-            transition: width 0.3s ease;
+            width: 260px; background: var(--primary); display: flex; flex-direction: column; 
+            padding: 25px; color: white; flex-shrink: 0; height: 100vh; z-index: 50; transition: width 0.3s ease;
         }
-
-        .logo-area { 
-            font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.5px; 
-            margin-bottom: 30px; display: flex; align-items: center; gap: 12px; white-space: nowrap; overflow: hidden;
-        }
-        .logo-icon { 
-            width: 40px; height: 40px; min-width: 40px; 
-            background: var(--accent); border-radius: 10px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 16px; font-weight:900; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); 
-        }
-        
-        .side-btn { 
-            background: transparent; border: none; color: #94a3b8; cursor: pointer; 
-            display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 15px; 
-            transition: all 0.2s; border-radius: 10px; font-size: 14px; font-weight: 600; 
-            text-align: left; margin-bottom: 6px; white-space: nowrap; overflow: hidden;
-        }
+        .logo-area { font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.5px; margin-bottom: 30px; display: flex; align-items: center; gap: 12px; white-space: nowrap; overflow: hidden; }
+        .logo-icon { width: 40px; height: 40px; min-width: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight:900; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+        .side-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 15px; transition: all 0.2s; border-radius: 10px; font-size: 14px; font-weight: 600; text-align: left; margin-bottom: 6px; white-space: nowrap; overflow: hidden; }
         .side-btn:hover { color: white; background: rgba(255,255,255,0.08); }
         .side-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
-        .side-btn .icon { font-size: 18px; width: 24px; text-align: center; display: inline-block; }
-
-        /* SEPARATOR LINE */
         .sidebar-sep { border-top: 1px dashed rgba(255,255,255,0.2); margin: 10px 0 15px 0; width: 100%; }
 
-        /* --- TABLET MODE (Compact Sidebar) --- */
+        /* TABLET SIDEBAR */
         @media (max-width: 1100px) {
             .sidebar { width: 80px; padding: 20px 10px; }
             .logo-area span { display: none; }
@@ -83,42 +52,37 @@
         }
 
         /* --- MAIN CONTENT --- */
-        .main-content { 
-            flex: 1; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            overflow: hidden; 
-            position: relative; 
-        }
-        
+        .main-content { flex: 1; padding: 20px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; position: relative; }
         .section { display: none; flex: 1; flex-direction: column; min-height: 0; animation: fadeIn 0.3s ease-out; }
         .section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- POS GRID (FIXED FOR TABLET) --- */
+        /* --- POS GRID (OPTIMIZED) --- */
         .pos-container { 
             display: grid; gap: 20px; flex: 1; min-height: 0; 
-            
-            /* DESKTOP: 3 Columns (Menu | Order | Cart) */
+            /* Desktop: 3 Columns */
             grid-template-columns: 1fr 340px 380px; 
             grid-template-areas: "menu order cart";
         }
+        
+        .compact-row { display: block; } /* Default stacked */
 
-        /* TABLET FIX: 2 Columns (Menu | RightColumn) */
+        /* TABLET LAYOUT FIX */
         @media (max-width: 1200px) {
             .pos-container {
-                /* Menu takes left (60%), Order & Cart stack on right (40%) */
-                grid-template-columns: 1.5fr 1fr; 
-                grid-template-rows: auto 1fr; /* Top row auto height, bottom fills rest */
+                /* Menu left, Right Column (Order+Cart) */
+                grid-template-columns: 1.4fr 1fr; 
+                /* ROW 1: Order (tight fit), ROW 2: Cart (fills rest) */
+                grid-template-rows: max-content 1fr; 
                 grid-template-areas: 
-                    "menu order"   /* Menu left, Order details top-right */
-                    "menu cart";   /* Menu left, Cart bottom-right */
+                    "menu order"
+                    "menu cart";
             }
+            /* Inputs side-by-side on tablet to save height */
+            .compact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+            #panel-order .panel-body { padding: 15px; } /* Less padding */
         }
 
-        /* Assign Grid Areas */
         #panel-menu { grid-area: menu; }
         #panel-order { grid-area: order; }
         #panel-cart { grid-area: cart; }
@@ -128,12 +92,7 @@
         .panel-body { flex: 1; padding: 20px; overflow-y: auto; }
 
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-        .menu-card { 
-            display: flex; flex-direction: column; height: 130px; 
-            border: 1px solid var(--border); border-radius: 12px; 
-            padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; background: white; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05); justify-content: space-between; 
-        }
+        .menu-card { display: flex; flex-direction: column; height: 130px; border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); justify-content: space-between; }
         .menu-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15); }
         .menu-card h4 { margin: 0; font-size: 14px; color: var(--text-dark); font-weight: 800; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
         .menu-card p { margin: 0; font-size: 15px; color: var(--danger); font-weight: 800; } 
@@ -200,11 +159,12 @@
     <button class="side-btn" onclick="nav('stock')"><span class="icon">📦</span><span class="lbl">Inventory</span></button>
     <button class="side-btn" onclick="nav('bop')"><span class="icon">📉</span><span class="lbl">Overhead / BOP</span></button>
     
-    <div class="sidebar-sep"></div>
-    <button class="side-btn" onclick="exportData()"><span class="icon">💾</span><span class="lbl">Backup Data</span></button>
-    <button class="side-btn" onclick="document.getElementById('import-file').click()"><span class="icon">📂</span><span class="lbl">Restore Data</span></button>
-    <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(event)">
-    
+    <div style="margin-top: auto; width: 100%;">
+        <div class="sidebar-sep"></div>
+        <button class="side-btn" onclick="exportData()"><span class="icon">💾</span><span class="lbl">Backup Data</span></button>
+        <button class="side-btn" onclick="document.getElementById('import-file').click()"><span class="icon">📂</span><span class="lbl">Restore Data</span></button>
+        <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(event)">
+    </div>
 </div>
 
 <div class="main-content">
@@ -226,10 +186,17 @@
                         <span style="font-size:11px; color:#64748b; font-weight:700;">TRANSACTION ID</span>
                         <span id="trx-id" style="font-weight:800; color:var(--primary); font-size:14px;">TX-000</span>
                     </div>
-                    <label>Customer Name</label>
-                    <input type="text" id="cust-name" placeholder="Guest Name">
-                    <label>Payment Method</label>
-                    <select id="pay-method" onchange="togglePay()"><option value="Cash">Cash Payment</option><option value="QRIS">QRIS / Digital</option></select>
+                    
+                    <div class="compact-row">
+                        <div>
+                            <label>Customer Name</label>
+                            <input type="text" id="cust-name" placeholder="Guest Name">
+                        </div>
+                        <div>
+                            <label>Payment Method</label>
+                            <select id="pay-method" onchange="togglePay()"><option value="Cash">Cash Payment</option><option value="QRIS">QRIS / Digital</option></select>
+                        </div>
+                    </div>
                     
                     <div id="cash-box" style="background:#f0fdf4; padding:15px; border-radius:12px; border:1px solid #bbf7d0; margin-top:5px;">
                         <label style="color:#15803d;">Cash Received</label>
@@ -476,7 +443,7 @@
 </div>
 
 <script>
-    // === DATA STORE (LocalStorage V30) ===
+    // === DATA STORE (LocalStorage V31) ===
     let stockLog = JSON.parse(localStorage.getItem('trk_stock_v16')) || [];
     let menus = JSON.parse(localStorage.getItem('trk_menus_v16')) || {};
     let sales = JSON.parse(localStorage.getItem('trk_sales_v16')) || [];
