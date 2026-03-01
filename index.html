@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v31 (Compact Tablet)</title>
+    <title>Tepi Raja Kopi - POS v32 (Export BOP & Tablet Fix)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -65,22 +65,19 @@
             grid-template-areas: "menu order cart";
         }
         
-        .compact-row { display: block; } /* Default stacked */
+        .compact-row { display: block; }
 
         /* TABLET LAYOUT FIX */
         @media (max-width: 1200px) {
             .pos-container {
-                /* Menu left, Right Column (Order+Cart) */
                 grid-template-columns: 1.4fr 1fr; 
-                /* ROW 1: Order (tight fit), ROW 2: Cart (fills rest) */
                 grid-template-rows: max-content 1fr; 
                 grid-template-areas: 
                     "menu order"
                     "menu cart";
             }
-            /* Inputs side-by-side on tablet to save height */
             .compact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-            #panel-order .panel-body { padding: 15px; } /* Less padding */
+            #panel-order .panel-body { padding: 15px; } 
         }
 
         #panel-menu { grid-area: menu; }
@@ -331,7 +328,11 @@
     </div>
 
     <div id="bop" class="section">
-        <h2 style="margin-top:0; color:var(--text-dark); font-size:24px; font-weight:800;">Overhead & BOP</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0; color:var(--text-dark); font-size:24px; font-weight:800;">Overhead & BOP</h2>
+            <button class="btn btn-warning" onclick="exportBOP()">Export BOP & Assets</button>
+        </div>
+
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px; flex:1; min-height:0;">
             <div class="panel">
                 <div class="panel-head">ADD ASSET / BILL</div>
@@ -387,7 +388,8 @@
 </div>
 
 <div id="receipt-modal" class="modal">
-    <div class="modal-content" style="width:360px;"> <div class="receipt-container">
+    <div class="modal-content" style="width:360px;">
+        <div class="receipt-container">
             <div class="rec-header">
                 <div class="rec-title">TEPI RAJA KOPI</div>
                 <div class="rec-sub">Authentic Coffee Experience</div>
@@ -443,7 +445,7 @@
 </div>
 
 <script>
-    // === DATA STORE (LocalStorage V31) ===
+    // === DATA STORE ===
     let stockLog = JSON.parse(localStorage.getItem('trk_stock_v16')) || [];
     let menus = JSON.parse(localStorage.getItem('trk_menus_v16')) || {};
     let sales = JSON.parse(localStorage.getItem('trk_sales_v16')) || [];
@@ -809,7 +811,7 @@
     function exportData() { const backup = { stock: stockLog, menu: menus, sales: sales, bop: bopLog }; const blob = new Blob([JSON.stringify(backup)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "TRK_Backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); }
     function importData(event) { const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if(data.stock && data.menu && data.sales) { if(confirm("Overwrite data?")) { localStorage.setItem('trk_stock_v16', JSON.stringify(data.stock)); localStorage.setItem('trk_menus_v16', JSON.stringify(data.menu)); localStorage.setItem('trk_sales_v16', JSON.stringify(data.sales)); if(data.bop) localStorage.setItem('trk_bop_v16', JSON.stringify(data.bop)); location.reload(); } } } catch(err) { alert("Error reading backup."); } }; reader.readAsText(file); }
     
-    // EXPORT SALES FUNCTION (V24 Format)
+    // EXPORT SALES FUNCTION
     function exportSales() { 
         const dataDetailed = [["Date", "Time", "Transaction ID", "Customer", "Menu Item", "Qty", "Sell Price", "Total Sales", "Item Cost (HPP)", "Item Gross Profit"]];
         
@@ -825,6 +827,30 @@
         const wb = XLSX.utils.book_new(); 
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dataDetailed), "Detailed Sales"); 
         XLSX.writeFile(wb, "TRK_Sales_Report.xlsx"); 
+    }
+
+    // === EXPORT BOP & ASSETS FUNCTION ===
+    function exportBOP() { 
+        if(bopLog.length === 0) return alert("No overhead or asset data to export.");
+
+        const data = [["Item Name", "Type", "Input Cost / Price", "Useful Life (Months)", "Daily Cost Allocation"]];
+        
+        bopLog.forEach(item => {
+            let totalCost = item.originVal ? item.originVal : Math.round(item.daily * (item.type === 'Asset' ? (item.life * 30) : 30));
+            let lifeMos = item.type === 'Asset' ? item.life : "-";
+            
+            data.push([
+                item.name, 
+                item.type, 
+                totalCost, 
+                lifeMos, 
+                Math.round(item.daily)
+            ]);
+        });
+
+        const wb = XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BOP and Assets"); 
+        XLSX.writeFile(wb, "TRK_BOP_Assets_Report.xlsx"); 
     }
 
     const today = new Date().toISOString().split('T')[0]; document.getElementById('date-start').value = today; document.getElementById('date-end').value = today; nav('pos');
