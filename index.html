@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v32 (Export BOP & Tablet Fix)</title>
+    <title>Tepi Raja Kopi - POS v33 (Inventory Export Fix)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -60,7 +60,6 @@
         /* --- POS GRID (OPTIMIZED) --- */
         .pos-container { 
             display: grid; gap: 20px; flex: 1; min-height: 0; 
-            /* Desktop: 3 Columns */
             grid-template-columns: 1fr 340px 380px; 
             grid-template-areas: "menu order cart";
         }
@@ -72,9 +71,7 @@
             .pos-container {
                 grid-template-columns: 1.4fr 1fr; 
                 grid-template-rows: max-content 1fr; 
-                grid-template-areas: 
-                    "menu order"
-                    "menu cart";
+                grid-template-areas: "menu order" "menu cart";
             }
             .compact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
             #panel-order .panel-body { padding: 15px; } 
@@ -829,7 +826,7 @@
         XLSX.writeFile(wb, "TRK_Sales_Report.xlsx"); 
     }
 
-    // === EXPORT BOP & ASSETS FUNCTION ===
+    // EXPORT BOP & ASSETS FUNCTION
     function exportBOP() { 
         if(bopLog.length === 0) return alert("No overhead or asset data to export.");
 
@@ -851,6 +848,29 @@
         const wb = XLSX.utils.book_new(); 
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BOP and Assets"); 
         XLSX.writeFile(wb, "TRK_BOP_Assets_Report.xlsx"); 
+    }
+
+    // === NEW: EXPORT INVENTORY FUNCTION ===
+    function exportStock() {
+        const agg = getAggregatedStock();
+        if (Object.keys(agg).length === 0) return alert("No inventory data to export.");
+
+        const data = [["Item Name", "Total Stock", "Unit", "Avg Cost/Unit (Rp)", "Total Asset Value (Rp)"]];
+
+        Object.keys(agg).forEach(name => {
+            const item = agg[name];
+            data.push([
+                name,
+                item.totalBase,
+                item.useUnit,
+                item.avgCost,
+                item.totalVal
+            ]);
+        });
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Inventory Status");
+        XLSX.writeFile(wb, "TRK_Inventory_Report.xlsx");
     }
 
     const today = new Date().toISOString().split('T')[0]; document.getElementById('date-start').value = today; document.getElementById('date-end').value = today; nav('pos');
