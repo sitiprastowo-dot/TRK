@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v35 (Smart Layout Fix)</title>
+    <title>Tepi Raja Kopi - POS v36 (3:2 Strict Layout)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <link rel="manifest" href="manifest.json">
 
     <style>
-        /* --- 1. GLOBAL RESET --- */
+        /* --- 1. GLOBAL RESET & VIEWPORT LOCK --- */
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         :root { 
@@ -22,44 +22,50 @@
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: var(--bg); color: var(--text); 
-            display: flex; width: 100vw; overflow: hidden; 
-            /* DYNAMIC HEIGHT: Fixes bottom cut-off on tablets/mobile */
-            height: 100vh; height: 100dvh; 
+            /* STRICT VIEWPORT LOCK - NO BODY SCROLLING EVER */
+            display: flex; height: 100dvh; width: 100vw; overflow: hidden; 
         }
         
         /* SCROLLBARS */
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* --- COMPACT TABLET SIDEBAR --- */
+        /* --- SIDEBAR (NOW SCROLLABLE) --- */
         .sidebar { 
             width: 80px; background: var(--primary); display: flex; flex-direction: column; 
-            padding: 20px 10px; color: white; flex-shrink: 0; z-index: 50; 
-            /* Allow sidebar to scroll if screen is too short for backup buttons */
-            height: 100%; overflow-y: auto; overflow-x: hidden;
+            padding: 15px 10px; color: white; flex-shrink: 0; z-index: 50; 
+            height: 100dvh; overflow-y: auto; overflow-x: hidden;
         }
-        .logo-area { font-size: 20px; font-weight: 800; color: white; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .logo-icon { width: 40px; height: 40px; min-width: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight:900; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+        .logo-area { font-size: 20px; font-weight: 800; color: white; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .logo-icon { width: 40px; height: 40px; min-width: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight:900; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
         .logo-area span { display: none; } 
         
-        .side-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 0; transition: all 0.2s; border-radius: 10px; margin-bottom: 6px; flex-shrink: 0; }
+        .side-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; padding: 12px 0; transition: all 0.2s; border-radius: 10px; margin-bottom: 8px; flex-shrink: 0; }
         .side-btn span.lbl { display: none; } 
         .side-btn:hover { color: white; background: rgba(255,255,255,0.08); }
         .side-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
         .side-btn .icon { font-size: 20px; }
-        .sidebar-sep { border-top: 1px dashed rgba(255,255,255,0.2); margin: 10px 0 15px 0; width: 100%; flex-shrink: 0; }
+        .sidebar-sep { border-top: 1px dashed rgba(255,255,255,0.2); margin: 15px 0; width: 100%; flex-shrink: 0; }
 
-        /* --- MAIN CONTENT --- */
-        .main-content { flex: 1; padding: 15px; display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
-        .section { display: none; flex: 1; flex-direction: column; min-height: 0; animation: fadeIn 0.3s ease-out; }
+        /* --- MAIN CONTENT CONTAINER --- */
+        .main-content { 
+            flex: 1; padding: 15px; display: flex; flex-direction: column; 
+            height: 100dvh; min-height: 0; /* CRITICAL FOR FLEX SCROLL */
+            overflow: hidden; position: relative; 
+        }
+        .section { 
+            display: none; flex: 1; flex-direction: column; 
+            min-height: 0; /* CRITICAL */
+            height: 100%; animation: fadeIn 0.2s ease-out; 
+        }
         .section.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- POS GRID (3:2 FLUID OPTIMIZATION) --- */
+        /* --- POS 3-COLUMN GRID (3:2 SCALED) --- */
         .pos-container { 
             display: grid; gap: 15px; flex: 1; min-height: 0; height: 100%;
-            grid-template-columns: 1fr minmax(260px, 1.2fr) minmax(300px, 1.3fr); 
+            grid-template-columns: 1fr 280px 300px; /* Scaled for 3:2 Tablet Width */
             grid-template-areas: "menu order cart";
         }
         
@@ -67,86 +73,67 @@
         #panel-order { grid-area: order; }
         #panel-cart { grid-area: cart; }
 
-        .panel { background: var(--card); border-radius: 16px; display: flex; flex-direction: column; border: 1px solid var(--border); overflow: hidden; flex: 1; min-height: 0; }
-        .panel-head { padding: 12px 15px; background: white; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b; text-transform: uppercase; flex-shrink: 0; }
-        .panel-body { flex: 1; padding: 15px; overflow-y: auto; min-height: 0; }
-
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
-        .menu-card { display: flex; flex-direction: column; height: 120px; border: 1px solid var(--border); border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); justify-content: space-between; }
-        .menu-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15); }
-        .menu-card h4 { margin: 0; font-size: 13px; color: var(--text-dark); font-weight: 800; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-        .menu-card p { margin: 0; font-size: 14px; color: var(--danger); font-weight: 800; } 
+        /* PANELS: STRICT HEIGHT ENFORCEMENT */
+        .panel { 
+            background: var(--card); border-radius: 12px; display: flex; flex-direction: column; 
+            border: 1px solid var(--border); overflow: hidden; flex: 1; min-height: 0; height: 100%;
+        }
+        .panel-head { padding: 12px 15px; background: white; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; text-transform: uppercase; flex-shrink: 0; }
         
-        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; }
+        /* The inner body is the ONLY part that scrolls */
+        .panel-body { flex: 1; padding: 12px; overflow-y: auto; min-height: 0; }
+
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+        .menu-card { display: flex; flex-direction: column; height: 110px; border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.1s; background: white; justify-content: space-between; }
+        .menu-card:active { transform: scale(0.97); border-color: var(--accent); }
+        .menu-card h4 { margin: 0; font-size: 12px; color: var(--text-dark); font-weight: 800; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+        .menu-card p { margin: 0; font-size: 13px; color: var(--danger); font-weight: 800; } 
+        
+        .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-primary { background: var(--primary); color: white; } .btn-primary:hover { background: #1e293b; }
-        .btn-accent { background: var(--accent); color: white; } .btn-accent:hover { background: #2563eb; }
-        .btn-success { background: var(--success); color: white; } .btn-success:hover { background: #059669; }
-        .btn-danger { background: var(--danger); color: white; } .btn-danger:hover { background: #dc2626; }
-        .btn-warning { background: var(--warning); color: white; } .btn-warning:hover { background: #d97706; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
-        .btn-icon-sm { padding: 0; width: 30px; height: 30px; font-size: 14px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-accent { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 6px; }
+        .btn-icon-sm { padding: 0; width: 28px; height: 28px; font-size: 12px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; cursor: pointer; }
         .btn-icon-sm.btn-warning { background: #fffbeb; color: #b45309; border-color: #fcd34d; }
         .btn-icon-sm.btn-danger { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
         
         input, select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 13px; margin-bottom: 10px; transition: 0.2s; background: #fff; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-dark); font-weight: 500; }
-        input:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        label { font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        input:focus, select:focus { border-color: var(--accent); outline: none; }
+        label { font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block; text-transform: uppercase; }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; background: white; }
-        th { position: sticky; top: 0; z-index: 10; background: white; padding: 12px; text-align: left; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 800; border-bottom: 2px solid var(--border); }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; background: white; }
+        th { position: sticky; top: 0; z-index: 10; background: white; padding: 12px; text-align: left; font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 800; border-bottom: 2px solid var(--border); }
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
         
-        .menu-config-layout { display: grid; grid-template-columns: 1fr minmax(280px, 350px); gap: 15px; height: 100%; overflow: hidden; }
-        .config-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; overflow-y: auto; height: 100%; box-sizing: border-box; }
-        .profit-badge { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 15px; border-radius: 12px; text-align: center; margin-top: auto; flex-shrink: 0; }
-        .profit-badge.low { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
-        .stat-card { background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .stat-val { font-size: 20px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background: white; width: 400px; padding: 25px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; max-height: 90vh; }
-        .modal-lg { width: 750px; }
-        @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        /* MENU CONFIG LAYOUT: FIXED OVERFLOW */
+        .menu-config-layout { display: grid; grid-template-columns: 1fr 320px; gap: 15px; flex: 1; min-height: 0; height: 100%; }
+        .config-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 15px; display: flex; flex-direction: column; min-height: 0; height: 100%; box-sizing: border-box; overflow-y: auto; }
         
-        .editing-highlight { background-color: #fff7ed; border: 1px solid #fed7aa; }
+        .profit-badge { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 12px; border-radius: 10px; text-align: center; margin-top: auto; flex-shrink: 0; }
+        .profit-badge.low { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+        .stat-card { background: white; padding: 12px; border-radius: 10px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+        .stat-val { font-size: 18px; font-weight: 800; color: var(--text-dark); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+        .modal-content { background: white; width: 380px; padding: 20px; border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 90vh; overflow-y: auto; }
+        .modal-lg { width: 700px; }
         
         /* RECEIPT */
         .receipt-container { font-family: 'Space Mono', monospace; color: #1e293b; width: 100%; margin: 0 auto; background: white; }
-        .rec-header { text-align: center; margin-bottom: 15px; }
-        .rec-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; letter-spacing: 1px; }
-        .rec-sub { font-size: 11px; color: #64748b; }
-        .rec-meta { font-size: 11px; margin-bottom: 15px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px; }
-        .rec-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .rec-item { font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 6px; }
-        .rec-line { border-bottom: 1px dashed #cbd5e1; margin: 10px 0; }
-        .rec-total { font-weight: 700; font-size: 16px; display: flex; justify-content: space-between; margin: 10px 0; }
-        .rec-footer { text-align: center; margin-top: 15px; font-size: 11px; color: #64748b; }
-
-        /* --- 2. SMART HEIGHT DETECTOR (CRITICAL TABLET FIX) --- */
-        /* If screen is short (landscape tablet), auto-shrink everything to make room for buttons */
-        @media (max-height: 800px) {
-            .panel-head { padding: 8px 12px; font-size: 10px; }
-            .panel-body { padding: 10px; }
-            .menu-card { height: 95px; padding: 8px; }
-            .menu-card h4 { font-size: 12px; }
-            .btn { padding: 8px 12px; height: auto !important; font-size: 12px; }
-            input, select { padding: 8px; margin-bottom: 6px; font-size: 12px; }
-            .config-card { padding: 12px; }
-            
-            /* Cart specific compressions */
-            .cart-footer { padding: 12px !important; }
-            #cart-total { font-size: 18px !important; margin-bottom: 8px !important; }
-            
-            /* Shrink Cash Box margins */
-            #cash-box, #qris-box { padding: 10px; margin-top: 0px; }
-            #cash-in { font-size: 16px !important; margin-bottom: 2px !important; }
-
-            /* Shrink right config box margins */
-            .profit-badge { padding: 10px; margin-top: 10px; }
-            #m-margin-val { font-size: 20px !important; }
-        }
+        .rec-header { text-align: center; margin-bottom: 12px; }
+        .rec-title { font-weight: 700; font-size: 14px; margin-bottom: 2px; letter-spacing: 1px; }
+        .rec-sub { font-size: 10px; color: #64748b; }
+        .rec-meta { font-size: 10px; margin-bottom: 12px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; }
+        .rec-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+        .rec-item { font-size: 11px; display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .rec-line { border-bottom: 1px dashed #cbd5e1; margin: 8px 0; }
+        .rec-total { font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; margin: 8px 0; }
+        .rec-footer { text-align: center; margin-top: 12px; font-size: 10px; color: #64748b; }
     </style>
 </head>
 <body>
@@ -177,7 +164,7 @@
             <div id="panel-menu" class="panel">
                 <div class="panel-head">
                     MENU
-                    <input type="text" style="width:160px; padding:6px 10px; margin:0; font-size:12px;" placeholder="Search..." oninput="renderPOS(this.value)">
+                    <input type="text" style="width:140px; padding:6px 10px; margin:0; font-size:11px;" placeholder="Search..." oninput="renderPOS(this.value)">
                 </div>
                 <div class="panel-body"><div id="pos-grid" class="menu-grid"></div></div>
             </div>
@@ -185,7 +172,7 @@
             <div id="panel-order" class="panel">
                 <div class="panel-head">ORDER DETAILS</div>
                 <div class="panel-body">
-                    <div style="background:#f8fafc; padding:8px 10px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="background:#f8fafc; padding:8px 10px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-shrink: 0;">
                         <span style="font-size:10px; color:#64748b; font-weight:700;">TRX ID</span>
                         <span id="trx-id" style="font-weight:800; color:var(--primary); font-size:12px;">TX-000</span>
                     </div>
@@ -198,24 +185,24 @@
                     
                     <div id="cash-box" style="background:#f0fdf4; padding:12px; border-radius:10px; border:1px solid #bbf7d0;">
                         <label style="color:#15803d;">Cash Received</label>
-                        <input type="text" inputmode="decimal" id="cash-in" oninput="formatNum(this); calcExchange()" placeholder="0" style="font-size:18px; font-weight:800; color:#15803d; border-color:#86efac; margin-bottom:5px;">
-                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:13px; color:#166534; margin-top:5px; border-top:1px dashed #86efac; padding-top:8px;"><span>Change:</span><span id="exchange-val">Rp 0</span></div>
+                        <input type="text" inputmode="decimal" id="cash-in" oninput="formatNum(this); calcExchange()" placeholder="0" style="font-size:16px; font-weight:800; color:#15803d; border-color:#86efac; margin-bottom:0;">
+                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px; color:#166534; margin-top:8px; border-top:1px dashed #86efac; padding-top:8px;"><span>Change:</span><span id="exchange-val">Rp 0</span></div>
                     </div>
                     <div id="qris-box" style="display:none; background:#eff6ff; padding:12px; border-radius:10px; border:1px solid #bfdbfe;">
                         <label style="color:#1e40af;">Reference No.</label>
-                        <input type="text" id="qris-ref" placeholder="Ref ID" style="border-color:#93c5fd; font-weight:bold;">
+                        <input type="text" id="qris-ref" placeholder="Ref ID" style="border-color:#93c5fd; font-weight:bold; margin-bottom:0;">
                     </div>
                 </div>
             </div>
 
             <div id="panel-cart" class="panel">
                 <div class="panel-head">CART SUMMARY</div>
-                <div class="panel-body" style="padding:10px; flex:1; overflow-y:auto;" id="cart-items"></div>
+                <div class="panel-body" style="padding:10px;" id="cart-items"></div>
                 
-                <div class="cart-footer" style="padding:15px; border-top:1px solid var(--border); background:#f8fafc; flex-shrink:0;">
-                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#64748b; margin-bottom:5px;"><span>Subtotal</span><span id="cart-subtotal">Rp 0</span></div>
-                    <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:800; color:var(--text-dark); margin-bottom:15px;"><span>TOTAL</span><span id="cart-total">Rp 0</span></div>
-                    <button id="btn-checkout" class="btn btn-primary" style="width:100%; height:45px; font-size:14px; border-radius:10px; box-shadow:0 4px 10px rgba(15, 23, 42, 0.2);" onclick="checkout()" disabled>FINALIZE ORDER</button>
+                <div style="padding:12px 15px; border-top:1px solid var(--border); background:#f8fafc; flex-shrink:0;">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748b; margin-bottom:4px;"><span>Subtotal</span><span id="cart-subtotal">Rp 0</span></div>
+                    <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:800; color:var(--text-dark); margin-bottom:12px;"><span>TOTAL</span><span id="cart-total">Rp 0</span></div>
+                    <button id="btn-checkout" class="btn btn-primary" style="width:100%; height:40px; font-size:13px; border-radius:8px;" onclick="checkout()" disabled>FINALIZE ORDER</button>
                 </div>
             </div>
         </div>
@@ -223,18 +210,18 @@
 
     <div id="sales" class="section">
         <div style="flex-shrink:0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 style="margin:0; color:var(--text-dark); font-size:20px; font-weight:800;">Sales Analytics</h2>
-                <div style="display:flex; gap:10px; background:white; padding:8px; border-radius:10px; border:1px solid var(--border); align-items:center;">
-                    <input type="date" id="date-start" style="width:120px; margin:0; border:none; background:transparent;">
-                    <span style="font-size:11px; font-weight:bold; color:#cbd5e1;">TO</span>
-                    <input type="date" id="date-end" style="width:120px; margin:0; border:none; background:transparent;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="margin:0; color:var(--text-dark); font-size:18px; font-weight:800;">Sales Analytics</h2>
+                <div style="display:flex; gap:10px; background:white; padding:6px 10px; border-radius:8px; border:1px solid var(--border); align-items:center;">
+                    <input type="date" id="date-start" style="width:110px; margin:0; padding:6px; border:none; background:transparent;">
+                    <span style="font-size:10px; font-weight:bold; color:#cbd5e1;">TO</span>
+                    <input type="date" id="date-end" style="width:110px; margin:0; padding:6px; border:none; background:transparent;">
                     <button class="btn btn-primary btn-sm" onclick="filterSales()">Filter</button>
                 </div>
             </div>
             
-            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:15px; margin-bottom:20px;">
-                <div class="stat-card"><label>Transactions</label><div id="sum-count" class="stat-val" style="font-size:18px;">0</div></div>
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px; margin-bottom:15px;">
+                <div class="stat-card"><label>Transactions</label><div id="sum-count" class="stat-val">0</div></div>
                 <div class="stat-card"><label>Revenue</label><div id="sum-rev" class="stat-val" style="color:var(--success);">Rp 0</div></div>
                 <div class="stat-card"><label>COGS (HPP)</label><div id="sum-hpp" class="stat-val" style="color:var(--danger);">Rp 0</div></div>
                 <div class="stat-card"><label>Overhead</label><div id="sum-bop" class="stat-val" style="color:var(--warning);">Rp 0</div></div>
@@ -243,19 +230,19 @@
         </div>
 
         <div class="panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
-            <div style="padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; flex-shrink: 0; background: #fff;">
+            <div style="padding: 12px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; flex-shrink: 0; background: #fff;">
                 <button class="btn btn-accent btn-sm" onclick="openProductSummary()">Product Summary</button>
                 <button class="btn btn-success btn-sm" onclick="exportSales()">Export Sales (XLSX)</button>
             </div>
-            <div style="flex: 1; overflow-y: auto;">
+            <div style="flex: 1; overflow-y: auto; min-height: 0;">
                 <table><thead><tr><th>Date</th><th>ID</th><th>Customer</th><th>Menu Details</th><th>Total</th><th>Method</th><th>Gross Profit</th><th>Action</th></tr></thead><tbody id="sales-body"></tbody></table>
             </div>
         </div>
     </div>
 
     <div id="menu" class="section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="margin:0; color:var(--text-dark); font-size:20px; font-weight:800;">Menu Configuration</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-shrink: 0;">
+            <h2 style="margin:0; color:var(--text-dark); font-size:18px; font-weight:800;">Menu Configuration</h2>
             <div style="display:flex; gap:8px;">
                 <button class="btn btn-primary btn-sm" onclick="newMenu()">+ New</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteMenu()">Delete</button>
@@ -265,15 +252,15 @@
 
         <div class="menu-config-layout">
             <div class="config-card" style="overflow:hidden;">
-                <div style="margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:15px; display:flex; gap:15px; align-items:center;">
+                <div style="margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:15px; display:flex; gap:15px; align-items:center; flex-shrink:0;">
                     <div style="flex:1;"><label>Select Menu</label><select id="menu-select" onchange="loadMenu()" style="margin:0; font-weight:bold;"></select></div>
                 </div>
-                <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-shrink:0;">
                         <label style="margin:0;">Ingredients</label>
                         <button class="btn btn-sm btn-primary" onclick="addIngRow()">+ Add</button>
                     </div>
-                    <div style="flex:1; overflow-y:auto; border:1px solid var(--border); border-radius:10px;">
+                    <div style="flex:1; overflow-y:auto; border:1px solid var(--border); border-radius:8px; min-height:0;">
                         <table style="width:100%;">
                             <thead><tr><th style="width:35%;">Ingredient</th><th style="width:15%;">Unit</th><th style="width:15%;">Qty</th><th style="width:15%;">Waste %</th><th style="text-align:right;">Cost</th><th style="width:30px;"></th></tr></thead>
                             <tbody id="recipe-list"></tbody>
@@ -283,79 +270,79 @@
             </div>
 
             <div class="config-card">
-                <h3 style="margin-top:0; color:var(--text-dark); font-size:16px;">Pricing Strategy</h3>
+                <h3 style="margin-top:0; margin-bottom:10px; color:var(--text-dark); font-size:14px; flex-shrink:0;">Pricing Strategy</h3>
                 <label>Menu Name</label><input type="text" id="m-name" placeholder="Ex: Caffe Latte">
-                <label>Selling Price (Rp)</label><input type="text" inputmode="decimal" id="m-price" oninput="formatNum(this); calcLiveProfit()" placeholder="0" style="font-size:18px; font-weight:800; color:var(--text-dark);">
+                <label>Selling Price (Rp)</label><input type="text" inputmode="decimal" id="m-price" oninput="formatNum(this); calcLiveProfit()" placeholder="0" style="font-size:16px; font-weight:800; color:var(--text-dark);">
 
-                <div style="margin-top:15px; padding:15px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:#64748b; font-size:12px;">Total HPP</span><span id="m-hpp" style="font-weight:bold; color:var(--danger);">Rp 0</span></div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:0;"><span style="color:#64748b; font-size:12px;">Gross Profit</span><span id="m-profit-val" style="font-weight:bold; color:var(--success);">Rp 0</span></div>
+                <div style="margin-top:10px; padding:12px; background:#f8fafc; border-radius:10px; border:1px solid var(--border); flex-shrink:0;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="color:#64748b; font-size:11px;">Total HPP</span><span id="m-hpp" style="font-weight:bold; color:var(--danger);">Rp 0</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0;"><span style="color:#64748b; font-size:11px;">Gross Profit</span><span id="m-profit-val" style="font-weight:bold; color:var(--success);">Rp 0</span></div>
                 </div>
 
                 <div id="margin-badge" class="profit-badge">
-                    <div style="font-size:11px; opacity:0.8; font-weight:700;">PROFIT MARGIN</div>
-                    <div id="m-margin-val" style="font-size:28px; font-weight:800;">0%</div>
+                    <div style="font-size:10px; opacity:0.8; font-weight:700;">PROFIT MARGIN</div>
+                    <div id="m-margin-val" style="font-size:24px; font-weight:800;">0%</div>
                 </div>
-                <button class="btn btn-success" style="width:100%; margin-top:15px; height:45px;" onclick="saveMenu()">SAVE</button>
+                <button class="btn btn-success" style="width:100%; margin-top:12px; height:40px; flex-shrink:0;" onclick="saveMenu()">SAVE</button>
             </div>
         </div>
     </div>
 
     <div id="stock" class="section">
-        <h2 style="margin-top:0; color:var(--text-dark); font-size:20px; font-weight:800; margin-bottom:15px;">Inventory Management</h2>
+        <h2 style="margin-top:0; color:var(--text-dark); font-size:18px; font-weight:800; margin-bottom:15px; flex-shrink:0;">Inventory Management</h2>
         <div class="panel" style="margin-bottom:15px; flex-shrink:0;">
             <div class="panel-head">RECORD PURCHASE</div>
-            <div class="panel-body">
-                <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr auto; gap:15px; align-items:end;">
+            <div class="panel-body" style="padding:12px 15px;">
+                <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr auto; gap:12px; align-items:end;">
                     <div><label>Item</label><select id="s-name-select" onchange="handleStockDropdownChange()"></select><input type="text" id="s-name-new" placeholder="New item..." style="display:none; margin-top:5px; border-color:var(--accent);"></div>
                     <div><label>Unit</label><select id="s-type" onchange="updateStockHint()"><option value="weight">Kg -> Grams</option><option value="volume">Liters -> ml</option><option value="unit">Pcs -> Pcs</option></select></div>
                     <div><label>Qty</label><input type="text" inputmode="decimal" id="s-qty" placeholder="Ex: 5" oninput="formatNum(this)"></div>
                     <div><label>Price</label><input type="text" inputmode="decimal" id="s-price" placeholder="100,000" oninput="formatNum(this)"></div>
-                    <div style="display:flex; gap:8px; margin-bottom:10px;">
-                        <button class="btn btn-primary" style="height:38px; flex:1;" onclick="addStock()">Record</button>
-                        <button class="btn btn-danger" style="height:38px;" onclick="cancelStock()">Clear</button>
+                    <div style="display:flex; gap:6px; margin-bottom:10px;">
+                        <button class="btn btn-primary" style="height:36px; padding:0 15px;" onclick="addStock()">Record</button>
+                        <button class="btn btn-danger" style="height:36px; padding:0 15px;" onclick="cancelStock()">Clear</button>
                     </div>
                 </div>
             </div>
         </div>
         <div class="panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
-            <div style="padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; background: #fff;">
+            <div style="padding: 12px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; background: #fff;">
                 <button class="btn btn-success btn-sm" onclick="exportStock()">Export Inventory</button>
             </div>
-            <div style="flex: 1; overflow-y: auto;">
+            <div style="flex: 1; overflow-y: auto; min-height:0;">
                 <table><thead><tr><th>Item Name</th><th>Total Stock</th><th>Avg Cost/Unit</th><th>Asset Value</th><th>Action</th></tr></thead><tbody id="stock-body"></tbody></table>
             </div>
         </div>
     </div>
 
     <div id="bop" class="section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="margin:0; color:var(--text-dark); font-size:20px; font-weight:800;">Overhead & BOP</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-shrink:0;">
+            <h2 style="margin:0; color:var(--text-dark); font-size:18px; font-weight:800;">Overhead & BOP</h2>
             <button class="btn btn-warning btn-sm" onclick="exportBOP()">Export BOP & Assets</button>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; flex:1; min-height:0;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; flex:1; min-height:0; height:100%;">
             <div class="panel">
                 <div class="panel-head">ADD ASSET / BILL</div>
                 <div class="panel-body">
                     <input type="hidden" id="bop-edit-id"> 
                     
-                    <div id="asset-form-container" style="padding:10px; border:1px solid transparent; border-radius:10px; transition:0.2s;">
+                    <div id="asset-form-container" style="padding:10px; border:1px solid transparent; border-radius:8px; transition:0.2s;">
                         <label>Equipment Name</label><input type="text" id="bop-name">
                         <label>Purchase Price (Rp)</label><input type="text" inputmode="decimal" id="bop-price" oninput="formatNum(this)">
                         <label>Useful Life (Months)</label><input type="number" id="bop-life">
-                        <div style="display:flex; gap:10px; margin-top:5px;">
+                        <div style="display:flex; gap:8px; margin-top:5px;">
                             <button id="btn-add-asset" class="btn btn-primary btn-sm" style="flex:1;" onclick="addBOP('Asset')">Add Asset</button>
                             <button id="btn-cancel-asset" class="btn btn-danger btn-sm" style="display:none;" onclick="cancelEditBOP()">Cancel</button>
                         </div>
                     </div>
                     
-                    <hr style="margin:15px 0; border-top:1px dashed var(--border);">
+                    <hr style="margin:12px 0; border-top:1px dashed var(--border);">
                     
-                    <div id="bill-form-container" style="padding:10px; border:1px solid transparent; border-radius:10px; transition:0.2s;">
+                    <div id="bill-form-container" style="padding:10px; border:1px solid transparent; border-radius:8px; transition:0.2s;">
                         <label>Monthly Fixed Bill</label><input type="text" id="bill-name">
                         <label>Monthly Cost (Rp)</label><input type="text" inputmode="decimal" id="bill-cost" oninput="formatNum(this)">
-                        <div style="display:flex; gap:10px; margin-top:5px;">
+                        <div style="display:flex; gap:8px; margin-top:5px;">
                             <button id="btn-add-bill" class="btn btn-warning btn-sm" style="flex:1;" onclick="addBOP('Bill')">Add Bill</button>
                             <button id="btn-cancel-bill" class="btn btn-danger btn-sm" style="display:none;" onclick="cancelEditBOP()">Cancel</button>
                         </div>
@@ -364,23 +351,21 @@
             </div>
             <div class="panel">
                 <div class="panel-head">ACTIVE COSTS</div>
+                <div style="padding:12px 15px; background:#f0fdf4; border-bottom:1px solid #bbf7d0; font-size:12px; color:#15803d; display:flex; justify-content:space-between; flex-shrink:0;"><span>Total Daily Overhead:</span><span id="total-daily-bop" style="font-weight:800;">Rp 0</span></div>
                 <div class="panel-body" style="padding:0;">
-                    <div style="padding:15px; background:#f0fdf4; border-bottom:1px solid #bbf7d0; font-size:13px; color:#15803d; display:flex; justify-content:space-between;"><span>Total Daily Overhead:</span><span id="total-daily-bop" style="font-weight:800;">Rp 0</span></div>
-                    <div style="overflow-y:auto; height:calc(100% - 50px);">
-                        <table style="border-collapse: collapse;">
-                            <thead>
-                                <tr>
-                                    <th style="border-bottom:none;">Item</th>
-                                    <th style="border-bottom:none;">Type</th>
-                                    <th style="border-bottom:none;">Input Price</th>
-                                    <th style="border-bottom:none;">Life (Mos)</th>
-                                    <th style="border-bottom:none;">Daily Cost</th>
-                                    <th style="border-bottom:none; text-align:right;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bop-list"></tbody>
-                        </table>
-                    </div>
+                    <table style="border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="border-bottom:none;">Item</th>
+                                <th style="border-bottom:none;">Type</th>
+                                <th style="border-bottom:none;">Input Price</th>
+                                <th style="border-bottom:none;">Life (Mos)</th>
+                                <th style="border-bottom:none;">Daily Cost</th>
+                                <th style="border-bottom:none; text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bop-list"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -389,7 +374,7 @@
 </div>
 
 <div id="receipt-modal" class="modal">
-    <div class="modal-content" style="width:340px;">
+    <div class="modal-content">
         <div class="receipt-container">
             <div class="rec-header">
                 <div class="rec-title">TEPI RAJA KOPI</div>
@@ -414,31 +399,31 @@
             <div class="rec-footer">Thank you for your visit!</div>
         </div>
         <br>
-        <button class="btn btn-primary" style="width:100%; height:45px;" onclick="window.print()">PRINT RECEIPT</button>
-        <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="closeModal()">CLOSE</button>
+        <button class="btn btn-primary" style="width:100%; height:40px;" onclick="window.print()">PRINT RECEIPT</button>
+        <button class="btn btn-danger" style="width:100%; margin-top:8px;" onclick="closeModal()">CLOSE</button>
     </div>
 </div>
 
 <div id="stock-edit-modal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0; color:var(--text-dark);">Edit Stock Details</h3>
+        <h3 style="margin-top:0; color:var(--text-dark); font-size:16px;">Edit Stock Details</h3>
         <input type="hidden" id="edit-stock-name">
         <label>Item Name</label><input type="text" id="edit-stock-newname">
         <label>Current Quantity (Base Unit)</label><input type="number" id="edit-stock-qty">
         <label>Avg Cost / Unit (Rp)</label><input type="number" id="edit-stock-cost">
-        <div style="background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:15px; font-size:11px; color:#64748b; border:1px solid var(--border);">
+        <div style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:12px; font-size:10px; color:#64748b; border:1px solid var(--border);">
             Asset Value = Quantity × Avg Cost
         </div>
         <button class="btn btn-success" onclick="saveStockEdit()">Save Changes</button>
-        <button class="btn btn-danger" style="margin-top:10px;" onclick="document.getElementById('stock-edit-modal').style.display='none'">Cancel</button>
+        <button class="btn btn-danger" style="margin-top:8px;" onclick="document.getElementById('stock-edit-modal').style.display='none'">Cancel</button>
     </div>
 </div>
 
 <div id="product-modal" class="modal">
     <div class="modal-content modal-lg">
-        <h3 style="margin-top:0; color:var(--text-dark);">Product Sales Summary</h3>
-        <div style="overflow-y:auto; flex:1; margin-bottom:20px; border:1px solid var(--border); border-radius:12px;">
-            <table style="width:100%;"><thead><tr style="background:#f8fafc;"><th style="padding:12px;">Menu Name</th><th style="text-align:right;">Qty Sold</th><th style="text-align:right;">Total Revenue</th></tr></thead><tbody id="product-summary-body"></tbody></table>
+        <h3 style="margin-top:0; color:var(--text-dark); font-size:16px;">Product Sales Summary</h3>
+        <div style="overflow-y:auto; flex:1; margin-bottom:15px; border:1px solid var(--border); border-radius:10px;">
+            <table style="width:100%;"><thead><tr style="background:#f8fafc;"><th style="padding:10px;">Menu Name</th><th style="text-align:right; padding:10px;">Qty Sold</th><th style="text-align:right; padding:10px;">Total Revenue</th></tr></thead><tbody id="product-summary-body"></tbody></table>
         </div>
         <button class="btn btn-primary" onclick="document.getElementById('product-modal').style.display='none'">Close</button>
     </div>
@@ -571,7 +556,7 @@
     function addIngRow(data = {name: '', qty: 0, waste: 0}) {
         const agg = getAggregatedStock(); const tr = document.createElement('tr'); tr.className = 'ing-row';
         let opts = `<option value="">Select...</option>`; Object.keys(agg).forEach(k => { opts += `<option value="${k}" ${data.name===k?'selected':''}>${k}</option>`; });
-        tr.innerHTML = `<td><select class="i-name" onchange="updateRowUnit(this); calcLiveHPP()">${opts}</select></td><td class="i-unit" style="font-size:11px; font-weight:bold; color:#64748b;">${data.name && agg[data.name] ? agg[data.name].useUnit : '-'}</td><td><input type="text" class="i-qty" value="${data.qty?data.qty.toLocaleString('en-US'):''}" oninput="formatNum(this); calcLiveHPP()" placeholder="0"></td><td><input type="text" class="i-waste" value="${data.waste||''}" oninput="calcLiveHPP()" placeholder="0"></td><td class="i-cost" style="text-align:right; font-weight:bold;">0</td><td><button onclick="this.closest('tr').remove();calcLiveHPP()" style="color:var(--danger); border:none; background:none; font-weight:bold; cursor:pointer;">✕</button></td>`;
+        tr.innerHTML = `<td><select class="i-name" onchange="updateRowUnit(this); calcLiveHPP()">${opts}</select></td><td class="i-unit" style="font-size:10px; font-weight:bold; color:#64748b;">${data.name && agg[data.name] ? agg[data.name].useUnit : '-'}</td><td><input type="text" class="i-qty" value="${data.qty?data.qty.toLocaleString('en-US'):''}" oninput="formatNum(this); calcLiveHPP()" placeholder="0"></td><td><input type="text" class="i-waste" value="${data.waste||''}" oninput="calcLiveHPP()" placeholder="0"></td><td class="i-cost" style="text-align:right; font-weight:bold;">0</td><td><button onclick="this.closest('tr').remove();calcLiveHPP()" style="color:var(--danger); border:none; background:none; font-weight:bold; cursor:pointer;">✕</button></td>`;
         document.getElementById('recipe-list').appendChild(tr); if(data.name) calcLiveHPP();
     }
     function updateRowUnit(sel) { const agg = getAggregatedStock(); const name = sel.value; const row = sel.closest('tr'); row.querySelector('.i-unit').innerText = agg[name] ? agg[name].useUnit : '-'; }
@@ -600,7 +585,7 @@
     function addToCart(id) { const existing = cart.find(x => x.id === id); if(existing) existing.qty++; else { const m = menus[id]; cart.push({ ...m, id: id, qty: 1 }); } renderCart(); }
     function renderCart() {
         const c = document.getElementById('cart-items'); c.innerHTML = ''; let total = 0;
-        cart.forEach((it, i) => { const lineTotal = it.sellPrice * it.qty; c.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border); padding-bottom:8px;"><div style="flex:1;"><div style="font-weight:700; color:var(--primary);">${it.name}</div><div style="color:#64748b; font-size:11px;">@${it.sellPrice.toLocaleString('en-US')}</div></div><div style="display:flex; align-items:center; gap:8px;"><button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, -1)">-</button><span style="font-weight:bold; width:20px; text-align:center;">${it.qty}</span><button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, 1)">+</button></div><div style="font-weight:bold; min-width:70px; text-align:right;">${lineTotal.toLocaleString('en-US')}</div></div>`; total += lineTotal; });
+        cart.forEach((it, i) => { const lineTotal = it.sellPrice * it.qty; c.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border); padding-bottom:8px;"><div style="flex:1;"><div style="font-weight:700; color:var(--primary); font-size:12px;">${it.name}</div><div style="color:#64748b; font-size:10px;">@${it.sellPrice.toLocaleString('en-US')}</div></div><div style="display:flex; align-items:center; gap:6px;"><button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, -1)">-</button><span style="font-weight:bold; width:16px; text-align:center; font-size:12px;">${it.qty}</span><button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, 1)">+</button></div><div style="font-weight:bold; min-width:60px; text-align:right; font-size:12px;">${lineTotal.toLocaleString('en-US')}</div></div>`; total += lineTotal; });
         document.getElementById('cart-total').innerText = "Rp " + total.toLocaleString('en-US'); document.getElementById('cart-subtotal').innerText = "Rp " + total.toLocaleString('en-US'); calcExchange();
     }
     function updateCartQty(idx, change) { cart[idx].qty += change; if(cart[idx].qty <= 0) cart.splice(idx, 1); renderCart(); }
@@ -725,8 +710,8 @@
         document.getElementById('total-daily-bop').innerText = "Rp " + Math.round(totalDaily).toLocaleString('en-US'); return totalDaily; 
     }
 
-    function filterSales() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; filtered.slice().reverse().forEach(s => { rev += s.total; cost += s.cost; grossProfit += s.profit; let itemsStr = ""; if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } tbody.innerHTML += `<tr><td><b style="color:var(--text-dark)">${s.date}</b><br><small style="color:#64748b">${s.time}</small></td><td>${s.id}</td><td>${s.customer}</td><td style="font-size:11px; color:#64748b;">${itemsStr}</td><td>${s.total.toLocaleString('en-US')}</td><td>${s.method}</td><td style="color:var(--success); font-weight:800;">${s.profit.toLocaleString('en-US')}</td><td><button onclick="delSale('${s.id}')" class="btn-icon-sm btn-danger">🗑️</button></td></tr>`; }); const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; document.getElementById('sum-count').innerHTML = `${filtered.length} Txns`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); }
-    function openProductSummary() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let agg = {}; filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; Object.keys(agg).forEach(k => { tb.innerHTML += `<tr><td style="padding:12px; border-bottom:1px solid #f1f5f9;">${k}</td><td style="padding:12px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].qty}</td><td style="padding:12px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].rev.toLocaleString('en-US')}</td></tr>`; }); document.getElementById('product-modal').style.display = 'flex'; }
+    function filterSales() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; filtered.slice().reverse().forEach(s => { rev += s.total; cost += s.cost; grossProfit += s.profit; let itemsStr = ""; if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } tbody.innerHTML += `<tr><td><b style="color:var(--text-dark)">${s.date}</b><br><small style="color:#64748b">${s.time}</small></td><td>${s.id}</td><td>${s.customer}</td><td style="font-size:10px; color:#64748b;">${itemsStr}</td><td>${s.total.toLocaleString('en-US')}</td><td>${s.method}</td><td style="color:var(--success); font-weight:800;">${s.profit.toLocaleString('en-US')}</td><td><button onclick="delSale('${s.id}')" class="btn-icon-sm btn-danger">🗑️</button></td></tr>`; }); const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; document.getElementById('sum-count').innerHTML = `${filtered.length} Txns`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); }
+    function openProductSummary() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let agg = {}; filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; Object.keys(agg).forEach(k => { tb.innerHTML += `<tr><td style="padding:10px; border-bottom:1px solid #f1f5f9;">${k}</td><td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].qty}</td><td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].rev.toLocaleString('en-US')}</td></tr>`; }); document.getElementById('product-modal').style.display = 'flex'; }
     
     function delSale(id) { 
         if(confirm("Delete record and RESTORE stock?")) {
