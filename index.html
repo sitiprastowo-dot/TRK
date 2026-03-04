@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v33 (Inventory Export Fix)</title>
+    <title>Tepi Raja Kopi - POS v35 (Smart Layout Fix)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -22,7 +22,9 @@
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: var(--bg); color: var(--text); 
-            display: flex; height: 100vh; width: 100vw; overflow: hidden; 
+            display: flex; width: 100vw; overflow: hidden; 
+            /* DYNAMIC HEIGHT: Fixes bottom cut-off on tablets/mobile */
+            height: 100vh; height: 100dvh; 
         }
         
         /* SCROLLBARS */
@@ -30,68 +32,52 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* --- SIDEBAR --- */
+        /* --- COMPACT TABLET SIDEBAR --- */
         .sidebar { 
-            width: 260px; background: var(--primary); display: flex; flex-direction: column; 
-            padding: 25px; color: white; flex-shrink: 0; height: 100vh; z-index: 50; transition: width 0.3s ease;
+            width: 80px; background: var(--primary); display: flex; flex-direction: column; 
+            padding: 20px 10px; color: white; flex-shrink: 0; z-index: 50; 
+            /* Allow sidebar to scroll if screen is too short for backup buttons */
+            height: 100%; overflow-y: auto; overflow-x: hidden;
         }
-        .logo-area { font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.5px; margin-bottom: 30px; display: flex; align-items: center; gap: 12px; white-space: nowrap; overflow: hidden; }
+        .logo-area { font-size: 20px; font-weight: 800; color: white; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .logo-icon { width: 40px; height: 40px; min-width: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight:900; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
-        .side-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 15px; transition: all 0.2s; border-radius: 10px; font-size: 14px; font-weight: 600; text-align: left; margin-bottom: 6px; white-space: nowrap; overflow: hidden; }
+        .logo-area span { display: none; } 
+        
+        .side-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 0; transition: all 0.2s; border-radius: 10px; margin-bottom: 6px; flex-shrink: 0; }
+        .side-btn span.lbl { display: none; } 
         .side-btn:hover { color: white; background: rgba(255,255,255,0.08); }
         .side-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
-        .sidebar-sep { border-top: 1px dashed rgba(255,255,255,0.2); margin: 10px 0 15px 0; width: 100%; }
-
-        /* TABLET SIDEBAR */
-        @media (max-width: 1100px) {
-            .sidebar { width: 80px; padding: 20px 10px; }
-            .logo-area span { display: none; }
-            .side-btn span.lbl { display: none; }
-            .side-btn { justify-content: center; padding: 14px 0; }
-            .logo-area { justify-content: center; }
-        }
+        .side-btn .icon { font-size: 20px; }
+        .sidebar-sep { border-top: 1px dashed rgba(255,255,255,0.2); margin: 10px 0 15px 0; width: 100%; flex-shrink: 0; }
 
         /* --- MAIN CONTENT --- */
-        .main-content { flex: 1; padding: 20px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; position: relative; }
+        .main-content { flex: 1; padding: 15px; display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
         .section { display: none; flex: 1; flex-direction: column; min-height: 0; animation: fadeIn 0.3s ease-out; }
         .section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- POS GRID (OPTIMIZED) --- */
+        /* --- POS GRID (3:2 FLUID OPTIMIZATION) --- */
         .pos-container { 
-            display: grid; gap: 20px; flex: 1; min-height: 0; 
-            grid-template-columns: 1fr 340px 380px; 
+            display: grid; gap: 15px; flex: 1; min-height: 0; height: 100%;
+            grid-template-columns: 1fr minmax(260px, 1.2fr) minmax(300px, 1.3fr); 
             grid-template-areas: "menu order cart";
         }
         
-        .compact-row { display: block; }
-
-        /* TABLET LAYOUT FIX */
-        @media (max-width: 1200px) {
-            .pos-container {
-                grid-template-columns: 1.4fr 1fr; 
-                grid-template-rows: max-content 1fr; 
-                grid-template-areas: "menu order" "menu cart";
-            }
-            .compact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-            #panel-order .panel-body { padding: 15px; } 
-        }
-
         #panel-menu { grid-area: menu; }
         #panel-order { grid-area: order; }
         #panel-cart { grid-area: cart; }
 
-        .panel { background: var(--card); border-radius: 16px; display: flex; flex-direction: column; border: 1px solid var(--border); overflow: hidden; }
-        .panel-head { padding: 15px 20px; background: white; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b; letter-spacing: 0.5px; text-transform: uppercase; }
-        .panel-body { flex: 1; padding: 20px; overflow-y: auto; }
+        .panel { background: var(--card); border-radius: 16px; display: flex; flex-direction: column; border: 1px solid var(--border); overflow: hidden; flex: 1; min-height: 0; }
+        .panel-head { padding: 12px 15px; background: white; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b; text-transform: uppercase; flex-shrink: 0; }
+        .panel-body { flex: 1; padding: 15px; overflow-y: auto; min-height: 0; }
 
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-        .menu-card { display: flex; flex-direction: column; height: 130px; border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); justify-content: space-between; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+        .menu-card { display: flex; flex-direction: column; height: 120px; border: 1px solid var(--border); border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); justify-content: space-between; }
         .menu-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15); }
-        .menu-card h4 { margin: 0; font-size: 14px; color: var(--text-dark); font-weight: 800; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-        .menu-card p { margin: 0; font-size: 15px; color: var(--danger); font-weight: 800; } 
+        .menu-card h4 { margin: 0; font-size: 13px; color: var(--text-dark); font-weight: 800; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+        .menu-card p { margin: 0; font-size: 14px; color: var(--danger); font-weight: 800; } 
         
-        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary { background: var(--primary); color: white; } .btn-primary:hover { background: #1e293b; }
         .btn-accent { background: var(--accent); color: white; } .btn-accent:hover { background: #2563eb; }
@@ -103,25 +89,25 @@
         .btn-icon-sm.btn-warning { background: #fffbeb; color: #b45309; border-color: #fcd34d; }
         .btn-icon-sm.btn-danger { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
         
-        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; margin-bottom: 12px; transition: 0.2s; background: #fff; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-dark); font-weight: 500; }
+        input, select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 13px; margin-bottom: 10px; transition: 0.2s; background: #fff; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-dark); font-weight: 500; }
         input:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        label { font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; background: white; }
-        th { position: sticky; top: 0; z-index: 10; background: white; padding: 15px; text-align: left; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 800; border-bottom: 2px solid var(--border); }
-        td { padding: 15px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); vertical-align: middle; }
+        th { position: sticky; top: 0; z-index: 10; background: white; padding: 12px; text-align: left; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 800; border-bottom: 2px solid var(--border); }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
         
-        .menu-config-layout { display: grid; grid-template-columns: 1fr 350px; gap: 25px; height: 100%; overflow: hidden; }
-        .config-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; overflow: hidden; height: 100%; box-sizing: border-box; }
-        .profit-badge { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 20px; border-radius: 12px; text-align: center; margin-top: auto; }
+        .menu-config-layout { display: grid; grid-template-columns: 1fr minmax(280px, 350px); gap: 15px; height: 100%; overflow: hidden; }
+        .config-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; overflow-y: auto; height: 100%; box-sizing: border-box; }
+        .profit-badge { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 15px; border-radius: 12px; text-align: center; margin-top: auto; flex-shrink: 0; }
         .profit-badge.low { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
-        .stat-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .stat-val { font-size: 24px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; }
+        .stat-card { background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .stat-val { font-size: 20px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background: white; width: 450px; padding: 30px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; max-height: 90vh; }
-        .modal-lg { width: 850px; }
+        .modal-content { background: white; width: 400px; padding: 25px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-lg { width: 750px; }
         @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
         .editing-highlight { background-color: #fff7ed; border: 1px solid #fed7aa; }
@@ -137,6 +123,30 @@
         .rec-line { border-bottom: 1px dashed #cbd5e1; margin: 10px 0; }
         .rec-total { font-weight: 700; font-size: 16px; display: flex; justify-content: space-between; margin: 10px 0; }
         .rec-footer { text-align: center; margin-top: 15px; font-size: 11px; color: #64748b; }
+
+        /* --- 2. SMART HEIGHT DETECTOR (CRITICAL TABLET FIX) --- */
+        /* If screen is short (landscape tablet), auto-shrink everything to make room for buttons */
+        @media (max-height: 800px) {
+            .panel-head { padding: 8px 12px; font-size: 10px; }
+            .panel-body { padding: 10px; }
+            .menu-card { height: 95px; padding: 8px; }
+            .menu-card h4 { font-size: 12px; }
+            .btn { padding: 8px 12px; height: auto !important; font-size: 12px; }
+            input, select { padding: 8px; margin-bottom: 6px; font-size: 12px; }
+            .config-card { padding: 12px; }
+            
+            /* Cart specific compressions */
+            .cart-footer { padding: 12px !important; }
+            #cart-total { font-size: 18px !important; margin-bottom: 8px !important; }
+            
+            /* Shrink Cash Box margins */
+            #cash-box, #qris-box { padding: 10px; margin-top: 0px; }
+            #cash-in { font-size: 16px !important; margin-bottom: 2px !important; }
+
+            /* Shrink right config box margins */
+            .profit-badge { padding: 10px; margin-top: 10px; }
+            #m-margin-val { font-size: 20px !important; }
+        }
     </style>
 </head>
 <body>
@@ -144,19 +154,18 @@
 <div class="sidebar">
     <div class="logo-area">
         <div class="logo-icon">TRK</div>
-        <span>TEPI RAJA KOPI</span>
     </div>
     
-    <button class="side-btn active" onclick="nav('pos')"><span class="icon">🛒</span><span class="lbl">POS Terminal</span></button>
-    <button class="side-btn" onclick="nav('sales')"><span class="icon">📊</span><span class="lbl">Sales Analytics</span></button>
-    <button class="side-btn" onclick="nav('menu')"><span class="icon">☕</span><span class="lbl">Menu Config</span></button>
-    <button class="side-btn" onclick="nav('stock')"><span class="icon">📦</span><span class="lbl">Inventory</span></button>
-    <button class="side-btn" onclick="nav('bop')"><span class="icon">📉</span><span class="lbl">Overhead / BOP</span></button>
+    <button class="side-btn active" onclick="nav('pos')" title="POS Terminal"><span class="icon">🛒</span></button>
+    <button class="side-btn" onclick="nav('sales')" title="Sales Analytics"><span class="icon">📊</span></button>
+    <button class="side-btn" onclick="nav('menu')" title="Menu Config"><span class="icon">☕</span></button>
+    <button class="side-btn" onclick="nav('stock')" title="Inventory"><span class="icon">📦</span></button>
+    <button class="side-btn" onclick="nav('bop')" title="Overhead / BOP"><span class="icon">📉</span></button>
     
     <div style="margin-top: auto; width: 100%;">
         <div class="sidebar-sep"></div>
-        <button class="side-btn" onclick="exportData()"><span class="icon">💾</span><span class="lbl">Backup Data</span></button>
-        <button class="side-btn" onclick="document.getElementById('import-file').click()"><span class="icon">📂</span><span class="lbl">Restore Data</span></button>
+        <button class="side-btn" onclick="exportData()" title="Backup Data"><span class="icon">💾</span></button>
+        <button class="side-btn" onclick="document.getElementById('import-file').click()" title="Restore Data"><span class="icon">📂</span></button>
         <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(event)">
     </div>
 </div>
@@ -167,8 +176,8 @@
         <div class="pos-container">
             <div id="panel-menu" class="panel">
                 <div class="panel-head">
-                    MENU SELECTION
-                    <input type="text" style="width:220px; padding:10px; margin:0; font-size:13px;" placeholder="Search menu..." oninput="renderPOS(this.value)">
+                    MENU
+                    <input type="text" style="width:160px; padding:6px 10px; margin:0; font-size:12px;" placeholder="Search..." oninput="renderPOS(this.value)">
                 </div>
                 <div class="panel-body"><div id="pos-grid" class="menu-grid"></div></div>
             </div>
@@ -176,28 +185,23 @@
             <div id="panel-order" class="panel">
                 <div class="panel-head">ORDER DETAILS</div>
                 <div class="panel-body">
-                    <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:11px; color:#64748b; font-weight:700;">TRANSACTION ID</span>
-                        <span id="trx-id" style="font-weight:800; color:var(--primary); font-size:14px;">TX-000</span>
+                    <div style="background:#f8fafc; padding:8px 10px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:10px; color:#64748b; font-weight:700;">TRX ID</span>
+                        <span id="trx-id" style="font-weight:800; color:var(--primary); font-size:12px;">TX-000</span>
                     </div>
                     
-                    <div class="compact-row">
-                        <div>
-                            <label>Customer Name</label>
-                            <input type="text" id="cust-name" placeholder="Guest Name">
-                        </div>
-                        <div>
-                            <label>Payment Method</label>
-                            <select id="pay-method" onchange="togglePay()"><option value="Cash">Cash Payment</option><option value="QRIS">QRIS / Digital</option></select>
-                        </div>
-                    </div>
+                    <label>Customer Name</label>
+                    <input type="text" id="cust-name" placeholder="Guest Name">
                     
-                    <div id="cash-box" style="background:#f0fdf4; padding:15px; border-radius:12px; border:1px solid #bbf7d0; margin-top:5px;">
+                    <label>Payment Method</label>
+                    <select id="pay-method" onchange="togglePay()"><option value="Cash">Cash Payment</option><option value="QRIS">QRIS / Digital</option></select>
+                    
+                    <div id="cash-box" style="background:#f0fdf4; padding:12px; border-radius:10px; border:1px solid #bbf7d0;">
                         <label style="color:#15803d;">Cash Received</label>
-                        <input type="text" inputmode="decimal" id="cash-in" oninput="formatNum(this); calcExchange()" placeholder="0" style="font-size:20px; font-weight:800; color:#15803d; border-color:#86efac; margin-bottom:5px;">
-                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:14px; color:#166534; margin-top:10px; border-top:1px dashed #86efac; padding-top:10px;"><span>Change:</span><span id="exchange-val">Rp 0</span></div>
+                        <input type="text" inputmode="decimal" id="cash-in" oninput="formatNum(this); calcExchange()" placeholder="0" style="font-size:18px; font-weight:800; color:#15803d; border-color:#86efac; margin-bottom:5px;">
+                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:13px; color:#166534; margin-top:5px; border-top:1px dashed #86efac; padding-top:8px;"><span>Change:</span><span id="exchange-val">Rp 0</span></div>
                     </div>
-                    <div id="qris-box" style="display:none; background:#eff6ff; padding:15px; border-radius:12px; border:1px solid #bfdbfe; margin-top:5px;">
+                    <div id="qris-box" style="display:none; background:#eff6ff; padding:12px; border-radius:10px; border:1px solid #bfdbfe;">
                         <label style="color:#1e40af;">Reference No.</label>
                         <input type="text" id="qris-ref" placeholder="Ref ID" style="border-color:#93c5fd; font-weight:bold;">
                     </div>
@@ -207,10 +211,11 @@
             <div id="panel-cart" class="panel">
                 <div class="panel-head">CART SUMMARY</div>
                 <div class="panel-body" style="padding:10px; flex:1; overflow-y:auto;" id="cart-items"></div>
-                <div style="padding:25px; border-top:1px solid var(--border); background:#f8fafc; flex-shrink:0;">
-                    <div style="display:flex; justify-content:space-between; font-size:13px; color:#64748b; margin-bottom:8px;"><span>Subtotal</span><span id="cart-subtotal">Rp 0</span></div>
-                    <div style="display:flex; justify-content:space-between; font-size:26px; font-weight:800; color:var(--text-dark); margin-bottom:25px;"><span>TOTAL</span><span id="cart-total">Rp 0</span></div>
-                    <button id="btn-checkout" class="btn btn-primary" style="width:100%; height:55px; font-size:15px; border-radius:12px; box-shadow:0 4px 15px rgba(15, 23, 42, 0.2);" onclick="checkout()" disabled>FINALIZE ORDER</button>
+                
+                <div class="cart-footer" style="padding:15px; border-top:1px solid var(--border); background:#f8fafc; flex-shrink:0;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#64748b; margin-bottom:5px;"><span>Subtotal</span><span id="cart-subtotal">Rp 0</span></div>
+                    <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:800; color:var(--text-dark); margin-bottom:15px;"><span>TOTAL</span><span id="cart-total">Rp 0</span></div>
+                    <button id="btn-checkout" class="btn btn-primary" style="width:100%; height:45px; font-size:14px; border-radius:10px; box-shadow:0 4px 10px rgba(15, 23, 42, 0.2);" onclick="checkout()" disabled>FINALIZE ORDER</button>
                 </div>
             </div>
         </div>
@@ -218,18 +223,18 @@
 
     <div id="sales" class="section">
         <div style="flex-shrink:0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <h2 style="margin:0; color:var(--text-dark); font-size:24px; font-weight:800;">Sales Analytics</h2>
-                <div style="display:flex; gap:10px; background:white; padding:10px; border-radius:12px; border:1px solid var(--border); align-items:center;">
-                    <input type="date" id="date-start" style="width:130px; margin:0; border:none; background:transparent;">
-                    <span style="font-size:12px; font-weight:bold; color:#cbd5e1;">TO</span>
-                    <input type="date" id="date-end" style="width:130px; margin:0; border:none; background:transparent;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="margin:0; color:var(--text-dark); font-size:20px; font-weight:800;">Sales Analytics</h2>
+                <div style="display:flex; gap:10px; background:white; padding:8px; border-radius:10px; border:1px solid var(--border); align-items:center;">
+                    <input type="date" id="date-start" style="width:120px; margin:0; border:none; background:transparent;">
+                    <span style="font-size:11px; font-weight:bold; color:#cbd5e1;">TO</span>
+                    <input type="date" id="date-end" style="width:120px; margin:0; border:none; background:transparent;">
                     <button class="btn btn-primary btn-sm" onclick="filterSales()">Filter</button>
                 </div>
             </div>
             
-            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:20px; margin-bottom:25px;">
-                <div class="stat-card"><label>Transactions</label><div id="sum-count" class="stat-val" style="font-size:20px;">0</div></div>
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:15px; margin-bottom:20px;">
+                <div class="stat-card"><label>Transactions</label><div id="sum-count" class="stat-val" style="font-size:18px;">0</div></div>
                 <div class="stat-card"><label>Revenue</label><div id="sum-rev" class="stat-val" style="color:var(--success);">Rp 0</div></div>
                 <div class="stat-card"><label>COGS (HPP)</label><div id="sum-hpp" class="stat-val" style="color:var(--danger);">Rp 0</div></div>
                 <div class="stat-card"><label>Overhead</label><div id="sum-bop" class="stat-val" style="color:var(--warning);">Rp 0</div></div>
@@ -238,9 +243,9 @@
         </div>
 
         <div class="panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
-            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; flex-shrink: 0; background: #fff;">
-                <button class="btn btn-accent" onclick="openProductSummary()">View Product Summary</button>
-                <button class="btn btn-success" onclick="exportSales()">Export Sales (XLSX)</button>
+            <div style="padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; flex-shrink: 0; background: #fff;">
+                <button class="btn btn-accent btn-sm" onclick="openProductSummary()">Product Summary</button>
+                <button class="btn btn-success btn-sm" onclick="exportSales()">Export Sales (XLSX)</button>
             </div>
             <div style="flex: 1; overflow-y: auto;">
                 <table><thead><tr><th>Date</th><th>ID</th><th>Customer</th><th>Menu Details</th><th>Total</th><th>Method</th><th>Gross Profit</th><th>Action</th></tr></thead><tbody id="sales-body"></tbody></table>
@@ -249,26 +254,26 @@
     </div>
 
     <div id="menu" class="section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0; color:var(--text-dark); font-size:24px; font-weight:800;">Menu Configuration</h2>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-primary" onclick="newMenu()">+ New Menu</button>
-                <button class="btn btn-danger" onclick="deleteMenu()">Delete</button>
-                <button class="btn btn-warning" onclick="exportMenuHPP()">Export HPP Analysis</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="margin:0; color:var(--text-dark); font-size:20px; font-weight:800;">Menu Configuration</h2>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-primary btn-sm" onclick="newMenu()">+ New</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteMenu()">Delete</button>
+                <button class="btn btn-warning btn-sm" onclick="exportMenuHPP()">Export HPP</button>
             </div>
         </div>
 
         <div class="menu-config-layout">
             <div class="config-card" style="overflow:hidden;">
-                <div style="margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:20px; display:flex; gap:20px; align-items:center;">
-                    <div style="flex:1;"><label>Select Menu to Edit</label><select id="menu-select" onchange="loadMenu()" style="margin:0; font-weight:bold;"></select></div>
+                <div style="margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:15px; display:flex; gap:15px; align-items:center;">
+                    <div style="flex:1;"><label>Select Menu</label><select id="menu-select" onchange="loadMenu()" style="margin:0; font-weight:bold;"></select></div>
                 </div>
                 <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                        <label style="margin:0;">Recipe Ingredients</label>
-                        <button class="btn btn-sm btn-primary" onclick="addIngRow()">+ Add Ingredient</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <label style="margin:0;">Ingredients</label>
+                        <button class="btn btn-sm btn-primary" onclick="addIngRow()">+ Add</button>
                     </div>
-                    <div style="flex:1; overflow-y:auto; border:1px solid var(--border); border-radius:12px;">
+                    <div style="flex:1; overflow-y:auto; border:1px solid var(--border); border-radius:10px;">
                         <table style="width:100%;">
                             <thead><tr><th style="width:35%;">Ingredient</th><th style="width:15%;">Unit</th><th style="width:15%;">Qty</th><th style="width:15%;">Waste %</th><th style="text-align:right;">Cost</th><th style="width:30px;"></th></tr></thead>
                             <tbody id="recipe-list"></tbody>
@@ -278,82 +283,81 @@
             </div>
 
             <div class="config-card">
-                <h3 style="margin-top:0; color:var(--text-dark);">Pricing Strategy</h3>
+                <h3 style="margin-top:0; color:var(--text-dark); font-size:16px;">Pricing Strategy</h3>
                 <label>Menu Name</label><input type="text" id="m-name" placeholder="Ex: Caffe Latte">
-                <label>Selling Price (Rp)</label><input type="text" inputmode="decimal" id="m-price" oninput="formatNum(this); calcLiveProfit()" placeholder="0" style="font-size:20px; font-weight:800; color:var(--text-dark);">
+                <label>Selling Price (Rp)</label><input type="text" inputmode="decimal" id="m-price" oninput="formatNum(this); calcLiveProfit()" placeholder="0" style="font-size:18px; font-weight:800; color:var(--text-dark);">
 
-                <div style="margin-top:20px; padding:20px; background:#f8fafc; border-radius:16px; border:1px solid var(--border);">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;"><span style="color:#64748b; font-size:13px;">Total HPP (Cost)</span><span id="m-hpp" style="font-weight:bold; color:var(--danger);">Rp 0</span></div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:0;"><span style="color:#64748b; font-size:13px;">Gross Profit</span><span id="m-profit-val" style="font-weight:bold; color:var(--success);">Rp 0</span></div>
+                <div style="margin-top:15px; padding:15px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:#64748b; font-size:12px;">Total HPP</span><span id="m-hpp" style="font-weight:bold; color:var(--danger);">Rp 0</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0;"><span style="color:#64748b; font-size:12px;">Gross Profit</span><span id="m-profit-val" style="font-weight:bold; color:var(--success);">Rp 0</span></div>
                 </div>
 
                 <div id="margin-badge" class="profit-badge">
-                    <div style="font-size:12px; opacity:0.8; font-weight:700;">PROFIT MARGIN</div>
-                    <div id="m-margin-val" style="font-size:36px; font-weight:800;">0%</div>
+                    <div style="font-size:11px; opacity:0.8; font-weight:700;">PROFIT MARGIN</div>
+                    <div id="m-margin-val" style="font-size:28px; font-weight:800;">0%</div>
                 </div>
-                <button class="btn btn-success" style="width:100%; margin-top:20px; height:50px;" onclick="saveMenu()">SAVE CHANGES</button>
+                <button class="btn btn-success" style="width:100%; margin-top:15px; height:45px;" onclick="saveMenu()">SAVE</button>
             </div>
         </div>
     </div>
 
     <div id="stock" class="section">
-        <h2 style="margin-top:0; color:var(--text-dark); font-size:24px; font-weight:800;">Inventory Management</h2>
-        <div class="panel" style="margin-bottom:20px; flex-shrink:0;">
+        <h2 style="margin-top:0; color:var(--text-dark); font-size:20px; font-weight:800; margin-bottom:15px;">Inventory Management</h2>
+        <div class="panel" style="margin-bottom:15px; flex-shrink:0;">
             <div class="panel-head">RECORD PURCHASE</div>
             <div class="panel-body">
-                <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr auto; gap:20px; align-items:end;">
-                    <div><label>Select or Add Item</label><select id="s-name-select" onchange="handleStockDropdownChange()"></select><input type="text" id="s-name-new" placeholder="Type new item name..." style="display:none; margin-top:5px; border-color:var(--accent);"></div>
-                    <div><label>Buy Unit / Use Unit</label><select id="s-type" onchange="updateStockHint()"><option value="weight">Kilograms -> Grams</option><option value="volume">Liters -> Milliliters</option><option value="unit">Pieces -> Pieces</option></select></div>
-                    <div><label>Qty (Buy Unit)</label><input type="text" inputmode="decimal" id="s-qty" placeholder="Ex: 5" oninput="formatNum(this)"></div>
-                    <div><label>Total Price</label><input type="text" inputmode="decimal" id="s-price" placeholder="Ex: 100,000" oninput="formatNum(this)"></div>
-                    <div style="display:flex; gap:10px; margin-bottom:12px;">
-                        <button class="btn btn-primary" style="height:46px; flex:1;" onclick="addStock()">Record</button>
-                        <button class="btn btn-danger" style="height:46px;" onclick="cancelStock()">Cancel</button>
+                <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr auto; gap:15px; align-items:end;">
+                    <div><label>Item</label><select id="s-name-select" onchange="handleStockDropdownChange()"></select><input type="text" id="s-name-new" placeholder="New item..." style="display:none; margin-top:5px; border-color:var(--accent);"></div>
+                    <div><label>Unit</label><select id="s-type" onchange="updateStockHint()"><option value="weight">Kg -> Grams</option><option value="volume">Liters -> ml</option><option value="unit">Pcs -> Pcs</option></select></div>
+                    <div><label>Qty</label><input type="text" inputmode="decimal" id="s-qty" placeholder="Ex: 5" oninput="formatNum(this)"></div>
+                    <div><label>Price</label><input type="text" inputmode="decimal" id="s-price" placeholder="100,000" oninput="formatNum(this)"></div>
+                    <div style="display:flex; gap:8px; margin-bottom:10px;">
+                        <button class="btn btn-primary" style="height:38px; flex:1;" onclick="addStock()">Record</button>
+                        <button class="btn btn-danger" style="height:38px;" onclick="cancelStock()">Clear</button>
                     </div>
                 </div>
-                <div id="stock-hint" style="font-size:12px; color:#64748b; margin-top:5px; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid var(--border);">System will convert <b>Kilograms</b> to <b>Grams</b> (x1000) for recipes.</div>
             </div>
         </div>
         <div class="panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
-            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; background: #fff;">
-                <button class="btn btn-success" onclick="exportStock()">Export Inventory</button>
+            <div style="padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; background: #fff;">
+                <button class="btn btn-success btn-sm" onclick="exportStock()">Export Inventory</button>
             </div>
             <div style="flex: 1; overflow-y: auto;">
-                <table><thead><tr><th>Item Name</th><th>Total Stock (Use Unit)</th><th>Avg Cost (per Unit)</th><th>Asset Value</th><th>Action</th></tr></thead><tbody id="stock-body"></tbody></table>
+                <table><thead><tr><th>Item Name</th><th>Total Stock</th><th>Avg Cost/Unit</th><th>Asset Value</th><th>Action</th></tr></thead><tbody id="stock-body"></tbody></table>
             </div>
         </div>
     </div>
 
     <div id="bop" class="section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0; color:var(--text-dark); font-size:24px; font-weight:800;">Overhead & BOP</h2>
-            <button class="btn btn-warning" onclick="exportBOP()">Export BOP & Assets</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="margin:0; color:var(--text-dark); font-size:20px; font-weight:800;">Overhead & BOP</h2>
+            <button class="btn btn-warning btn-sm" onclick="exportBOP()">Export BOP & Assets</button>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px; flex:1; min-height:0;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; flex:1; min-height:0;">
             <div class="panel">
                 <div class="panel-head">ADD ASSET / BILL</div>
                 <div class="panel-body">
                     <input type="hidden" id="bop-edit-id"> 
                     
-                    <div id="asset-form-container" style="padding:15px; border:1px solid transparent; border-radius:12px; transition:0.2s;">
-                        <label>Equipment Name</label><input type="text" id="bop-name" placeholder="Ex: Espresso Machine">
-                        <label>Purchase Price</label><input type="text" inputmode="decimal" id="bop-price" oninput="formatNum(this)" placeholder="Rp">
-                        <label>Useful Life (Months)</label><input type="number" id="bop-life" placeholder="Ex: 36">
-                        <div style="display:flex; gap:10px; margin-top:10px;">
-                            <button id="btn-add-asset" class="btn btn-primary" style="flex:1;" onclick="addBOP('Asset')">Add Asset</button>
-                            <button id="btn-cancel-asset" class="btn btn-danger" style="display:none; width:auto;" onclick="cancelEditBOP()">Cancel</button>
+                    <div id="asset-form-container" style="padding:10px; border:1px solid transparent; border-radius:10px; transition:0.2s;">
+                        <label>Equipment Name</label><input type="text" id="bop-name">
+                        <label>Purchase Price (Rp)</label><input type="text" inputmode="decimal" id="bop-price" oninput="formatNum(this)">
+                        <label>Useful Life (Months)</label><input type="number" id="bop-life">
+                        <div style="display:flex; gap:10px; margin-top:5px;">
+                            <button id="btn-add-asset" class="btn btn-primary btn-sm" style="flex:1;" onclick="addBOP('Asset')">Add Asset</button>
+                            <button id="btn-cancel-asset" class="btn btn-danger btn-sm" style="display:none;" onclick="cancelEditBOP()">Cancel</button>
                         </div>
                     </div>
                     
-                    <hr style="margin:20px 0; border-top:1px dashed var(--border);">
+                    <hr style="margin:15px 0; border-top:1px dashed var(--border);">
                     
-                    <div id="bill-form-container" style="padding:15px; border:1px solid transparent; border-radius:12px; transition:0.2s;">
-                        <label>Monthly Fixed Bill</label><input type="text" id="bill-name" placeholder="Ex: Rent / Staff / WiFi">
-                        <label>Monthly Cost</label><input type="text" inputmode="decimal" id="bill-cost" oninput="formatNum(this)" placeholder="Rp">
-                        <div style="display:flex; gap:10px; margin-top:10px;">
-                            <button id="btn-add-bill" class="btn btn-warning" style="flex:1;" onclick="addBOP('Bill')">Add Fixed Bill</button>
-                            <button id="btn-cancel-bill" class="btn btn-danger" style="display:none; width:auto;" onclick="cancelEditBOP()">Cancel</button>
+                    <div id="bill-form-container" style="padding:10px; border:1px solid transparent; border-radius:10px; transition:0.2s;">
+                        <label>Monthly Fixed Bill</label><input type="text" id="bill-name">
+                        <label>Monthly Cost (Rp)</label><input type="text" inputmode="decimal" id="bill-cost" oninput="formatNum(this)">
+                        <div style="display:flex; gap:10px; margin-top:5px;">
+                            <button id="btn-add-bill" class="btn btn-warning btn-sm" style="flex:1;" onclick="addBOP('Bill')">Add Bill</button>
+                            <button id="btn-cancel-bill" class="btn btn-danger btn-sm" style="display:none;" onclick="cancelEditBOP()">Cancel</button>
                         </div>
                     </div>
                 </div>
@@ -361,17 +365,17 @@
             <div class="panel">
                 <div class="panel-head">ACTIVE COSTS</div>
                 <div class="panel-body" style="padding:0;">
-                    <div style="padding:20px; background:#f0fdf4; border-bottom:1px solid #bbf7d0; font-size:14px; color:#15803d; display:flex; justify-content:space-between;"><span>Total Daily Overhead:</span><span id="total-daily-bop" style="font-weight:800;">Rp 0</span></div>
-                    <div style="overflow-y:auto; height:calc(100% - 65px);">
+                    <div style="padding:15px; background:#f0fdf4; border-bottom:1px solid #bbf7d0; font-size:13px; color:#15803d; display:flex; justify-content:space-between;"><span>Total Daily Overhead:</span><span id="total-daily-bop" style="font-weight:800;">Rp 0</span></div>
+                    <div style="overflow-y:auto; height:calc(100% - 50px);">
                         <table style="border-collapse: collapse;">
                             <thead>
                                 <tr>
-                                    <th style="border-bottom:none; color:#94a3b8;">Item</th>
-                                    <th style="border-bottom:none; color:#94a3b8;">Type</th>
-                                    <th style="border-bottom:none; color:#94a3b8;">Input Price</th>
-                                    <th style="border-bottom:none; color:#94a3b8;">Life (Mos)</th>
-                                    <th style="border-bottom:none; color:#94a3b8;">Daily Cost</th>
-                                    <th style="border-bottom:none; text-align:right; color:#94a3b8;">Actions</th>
+                                    <th style="border-bottom:none;">Item</th>
+                                    <th style="border-bottom:none;">Type</th>
+                                    <th style="border-bottom:none;">Input Price</th>
+                                    <th style="border-bottom:none;">Life (Mos)</th>
+                                    <th style="border-bottom:none;">Daily Cost</th>
+                                    <th style="border-bottom:none; text-align:right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="bop-list"></tbody>
@@ -385,7 +389,7 @@
 </div>
 
 <div id="receipt-modal" class="modal">
-    <div class="modal-content" style="width:360px;">
+    <div class="modal-content" style="width:340px;">
         <div class="receipt-container">
             <div class="rec-header">
                 <div class="rec-title">TEPI RAJA KOPI</div>
@@ -410,7 +414,7 @@
             <div class="rec-footer">Thank you for your visit!</div>
         </div>
         <br>
-        <button class="btn btn-primary" style="width:100%; height:50px;" onclick="window.print()">PRINT RECEIPT</button>
+        <button class="btn btn-primary" style="width:100%; height:45px;" onclick="window.print()">PRINT RECEIPT</button>
         <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="closeModal()">CLOSE</button>
     </div>
 </div>
@@ -422,8 +426,7 @@
         <label>Item Name</label><input type="text" id="edit-stock-newname">
         <label>Current Quantity (Base Unit)</label><input type="number" id="edit-stock-qty">
         <label>Avg Cost / Unit (Rp)</label><input type="number" id="edit-stock-cost">
-        <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:20px; font-size:12px; color:#64748b; border:1px solid var(--border);">
-            Changing these values will update the <b>Asset Value</b> automatically.<br>
+        <div style="background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:15px; font-size:11px; color:#64748b; border:1px solid var(--border);">
             Asset Value = Quantity × Avg Cost
         </div>
         <button class="btn btn-success" onclick="saveStockEdit()">Save Changes</button>
@@ -434,8 +437,8 @@
 <div id="product-modal" class="modal">
     <div class="modal-content modal-lg">
         <h3 style="margin-top:0; color:var(--text-dark);">Product Sales Summary</h3>
-        <div style="overflow-y:auto; flex:1; margin-bottom:20px; border:1px solid var(--border); border-radius:16px;">
-            <table style="width:100%;"><thead><tr style="background:#f8fafc;"><th style="padding:15px;">Menu Name</th><th style="text-align:right;">Qty Sold</th><th style="text-align:right;">Total Revenue</th></tr></thead><tbody id="product-summary-body"></tbody></table>
+        <div style="overflow-y:auto; flex:1; margin-bottom:20px; border:1px solid var(--border); border-radius:12px;">
+            <table style="width:100%;"><thead><tr style="background:#f8fafc;"><th style="padding:12px;">Menu Name</th><th style="text-align:right;">Qty Sold</th><th style="text-align:right;">Total Revenue</th></tr></thead><tbody id="product-summary-body"></tbody></table>
         </div>
         <button class="btn btn-primary" onclick="document.getElementById('product-modal').style.display='none'">Close</button>
     </div>
@@ -447,8 +450,7 @@
     let menus = JSON.parse(localStorage.getItem('trk_menus_v16')) || {};
     let sales = JSON.parse(localStorage.getItem('trk_sales_v16')) || [];
     let bopLog = JSON.parse(localStorage.getItem('trk_bop_v16')) || [];
-    let cart = []; let activeMenuId = null;
-    let isEditingBop = false; 
+    let cart = []; let activeMenuId = null; let isEditingBop = false; 
 
     if(stockLog.length === 0 && localStorage.getItem('trk_stock_v14')) {
         stockLog = JSON.parse(localStorage.getItem('trk_stock_v14'));
@@ -483,17 +485,11 @@
     }
 
     // === STOCK LOGIC ===
-    function updateStockHint() { const type = document.getElementById('s-type').value; document.getElementById('stock-hint').innerHTML = type === 'weight' ? "System converts <b>Kg</b> to <b>Grams</b> (x1000)." : type === 'volume' ? "System converts <b>Liters</b> to <b>Milliliters</b> (x1000)." : "System keeps <b>Pieces</b> as <b>Pieces</b> (x1)."; }
+    function updateStockHint() { const type = document.getElementById('s-type').value; }
     function updateStockDropdown() { const sel = document.getElementById('s-name-select'); const agg = getAggregatedStock(); sel.innerHTML = '<option value="">-- Select Item --</option><option value="NEW" style="color:var(--accent); font-weight:bold;">+ ADD NEW ITEM</option>'; Object.keys(agg).forEach(k => sel.add(new Option(k, k))); handleStockDropdownChange(); }
     function handleStockDropdownChange() { const val = document.getElementById('s-name-select').value; const newInp = document.getElementById('s-name-new'); const typeSel = document.getElementById('s-type'); if (val === 'NEW') { newInp.style.display = 'block'; typeSel.disabled = false; } else { newInp.style.display = 'none'; const existing = stockLog.find(x => x.name === val); if (existing) { typeSel.value = existing.type; typeSel.disabled = true; } } }
     
-    function cancelStock() {
-        document.getElementById('s-name-select').value = "";
-        document.getElementById('s-name-new').value = "";
-        document.getElementById('s-qty').value = "";
-        document.getElementById('s-price').value = "";
-        handleStockDropdownChange();
-    }
+    function cancelStock() { document.getElementById('s-name-select').value = ""; document.getElementById('s-name-new').value = ""; document.getElementById('s-qty').value = ""; document.getElementById('s-price').value = ""; handleStockDropdownChange(); }
 
     function addStock() {
         const selVal = document.getElementById('s-name-select').value;
@@ -598,31 +594,6 @@
         saveAll(); alert("Menu Saved!"); initMenu(); document.getElementById('menu-select').value = activeMenuId;
     }
     
-    // === EXPORT MENU HPP FUNCTION ===
-    function exportMenuHPP() { 
-        const agg = getAggregatedStock();
-        const data = [["Menu Name", "Sell Price", "Ingredient", "Unit", "Qty Required", "Waste %", "Cost Contribution"]];
-        
-        Object.values(menus).forEach(m => {
-            if (m.ings && m.ings.length > 0) {
-                m.ings.forEach(ing => {
-                    let stockItem = agg[ing.name];
-                    let cost = 0;
-                    if(stockItem && stockItem.avgCost) {
-                        cost = (ing.qty * stockItem.avgCost) * (1 + (ing.waste/100));
-                    }
-                    data.push([m.name, m.sellPrice, ing.name, stockItem ? stockItem.useUnit : '-', ing.qty, ing.waste, cost]);
-                });
-            } else {
-                data.push([m.name, m.sellPrice, "NO INGREDIENTS", "-", 0, 0, 0]);
-            }
-        });
-
-        const wb = XLSX.utils.book_new(); 
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Recipe Breakdown"); 
-        XLSX.writeFile(wb, "Menu_HPP_Analysis.xlsx"); 
-    }
-
     // === POS LOGIC ===
     function initPOS() { document.getElementById('trx-id').innerText = "TX-" + Date.now().toString().slice(-6); renderPOS(); }
     function renderPOS(filter='') { const g = document.getElementById('pos-grid'); g.innerHTML = ''; Object.keys(menus).forEach(k => { const m = menus[k]; if(m.name.toLowerCase().includes(filter.toLowerCase())) { g.innerHTML += `<div class="menu-card" onclick="addToCart('${k}')"><h4>${m.name}</h4><p>Rp ${m.sellPrice.toLocaleString('en-US')}</p></div>`; } }); }
@@ -657,13 +628,7 @@
         document.getElementById('rec-cust').innerText = sale.customer;
         
         const recItems = document.getElementById('rec-items'); recItems.innerHTML = '';
-        cart.forEach(item => {
-            recItems.innerHTML += `
-            <div class="rec-item">
-                <span>${item.name} x${item.qty}</span>
-                <span>${(item.sellPrice * item.qty).toLocaleString('en-US')}</span>
-            </div>`;
-        });
+        cart.forEach(item => { recItems.innerHTML += `<div class="rec-item"><span>${item.name} x${item.qty}</span><span>${(item.sellPrice * item.qty).toLocaleString('en-US')}</span></div>`; });
         
         document.getElementById('rec-total-print').innerText = sale.total.toLocaleString('en-US');
         document.getElementById('rec-method').innerText = sale.method;
@@ -711,7 +676,7 @@
             document.getElementById('bop-life').value = item.life || 36;
             
             document.getElementById('asset-form-container').classList.add('editing-highlight');
-            document.getElementById('btn-add-asset').innerText = 'Update Asset';
+            document.getElementById('btn-add-asset').innerText = 'Update';
             document.getElementById('btn-cancel-asset').style.display = 'block';
             
             document.getElementById('bill-form-container').style.opacity = '0.5';
@@ -721,7 +686,7 @@
             document.getElementById('bill-cost').value = Math.round(item.originVal || (item.daily * 30)).toLocaleString('en-US'); 
             
             document.getElementById('bill-form-container').classList.add('editing-highlight');
-            document.getElementById('btn-add-bill').innerText = 'Update Bill';
+            document.getElementById('btn-add-bill').innerText = 'Update';
             document.getElementById('btn-cancel-bill').style.display = 'block';
             
             document.getElementById('asset-form-container').style.opacity = '0.5';
@@ -743,7 +708,7 @@
         document.getElementById('btn-add-asset').disabled = false;
         document.getElementById('btn-cancel-asset').style.display = 'none';
         
-        document.getElementById('btn-add-bill').innerText = 'Add Fixed Bill';
+        document.getElementById('btn-add-bill').innerText = 'Add Bill';
         document.getElementById('btn-add-bill').disabled = false;
         document.getElementById('btn-cancel-bill').style.display = 'none';
         
@@ -755,132 +720,76 @@
         bopLog.forEach((item, i) => { 
             totalDaily += item.daily; 
             let costDisplay = item.originVal ? item.originVal.toLocaleString('en-US') : Math.round(item.daily * (item.type==='Asset'? (item.life*30) : 30)).toLocaleString('en-US');
-            
-            tbody.innerHTML += `<tr>
-                <td style="font-weight:700; color:#334155;">${item.name}</td>
-                <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; background:${item.type==='Asset'?'#eff6ff':'#fffbeb'}; color:${item.type==='Asset'?'#1d4ed8':'#b45309'}; font-weight:700; border:1px solid ${item.type==='Asset'?'#bfdbfe':'#fde68a'};">${item.type}</span></td>
-                <td style="font-weight:600;">${costDisplay}</td>
-                <td style="color:#64748b;">${item.type==='Asset' ? item.life : '-'}</td>
-                <td style="font-weight:700; color:#0f172a;">Rp ${Math.round(item.daily).toLocaleString('en-US')}</td>
-                <td style="text-align:right;"><div style="display:flex; gap:6px; justify-content:flex-end;"><button onclick="editBOP(${item.id})" class="btn-icon-sm btn-warning">✏️</button><button onclick="bopLog.splice(${i},1);saveAll();renderBOP()" class="btn-icon-sm btn-danger">🗑️</button></div></td>
-            </tr>`; 
+            tbody.innerHTML += `<tr><td>${item.name}</td><td>${item.type}</td><td>${costDisplay}</td><td>${item.type==='Asset' ? item.life : '-'}</td><td>Rp ${Math.round(item.daily).toLocaleString('en-US')}</td><td style="text-align:right;"><button onclick="editBOP(${item.id})" class="btn-icon-sm btn-warning">✏️</button><button onclick="bopLog.splice(${i},1);saveAll();renderBOP()" class="btn-icon-sm btn-danger" style="margin-left:5px;">🗑️</button></td></tr>`; 
         }); 
         document.getElementById('total-daily-bop').innerText = "Rp " + Math.round(totalDaily).toLocaleString('en-US'); return totalDaily; 
     }
 
-    function filterSales() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; filtered.slice().reverse().forEach(s => { rev += s.total; cost += s.cost; grossProfit += s.profit; let itemsStr = ""; if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } tbody.innerHTML += `<tr><td><b style="color:var(--text-dark)">${s.date}</b><br><small style="color:#64748b">${s.time}</small></td><td>${s.id}</td><td>${s.customer}</td><td style="font-size:11px; color:#64748b;">${itemsStr}</td><td>${s.total.toLocaleString('en-US')}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; background:${s.method==='Cash'?'#dcfce7':'#dbeafe'}; color:${s.method==='Cash'?'#166534':'#1e40af'}">${s.method}</span></td><td style="color:var(--success); font-weight:800;">${s.profit.toLocaleString('en-US')}</td><td><button onclick="delSale('${s.id}')" class="btn-icon-sm btn-danger">🗑️</button></td></tr>`; }); const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; document.getElementById('sum-count').innerHTML = `${filtered.length} Txns <br><small style="color:#94a3b8; font-weight:normal;">${totalItems} Items Sold</small>`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); }
-    function openProductSummary() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let agg = {}; filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; Object.keys(agg).forEach(k => { tb.innerHTML += `<tr><td style="padding:15px; border-bottom:1px solid #f1f5f9;">${k}</td><td style="padding:15px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].qty}</td><td style="padding:15px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].rev.toLocaleString('en-US')}</td></tr>`; }); document.getElementById('product-modal').style.display = 'flex'; }
+    function filterSales() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; filtered.slice().reverse().forEach(s => { rev += s.total; cost += s.cost; grossProfit += s.profit; let itemsStr = ""; if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } tbody.innerHTML += `<tr><td><b style="color:var(--text-dark)">${s.date}</b><br><small style="color:#64748b">${s.time}</small></td><td>${s.id}</td><td>${s.customer}</td><td style="font-size:11px; color:#64748b;">${itemsStr}</td><td>${s.total.toLocaleString('en-US')}</td><td>${s.method}</td><td style="color:var(--success); font-weight:800;">${s.profit.toLocaleString('en-US')}</td><td><button onclick="delSale('${s.id}')" class="btn-icon-sm btn-danger">🗑️</button></td></tr>`; }); const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; document.getElementById('sum-count').innerHTML = `${filtered.length} Txns`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); }
+    function openProductSummary() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let agg = {}; filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; Object.keys(agg).forEach(k => { tb.innerHTML += `<tr><td style="padding:12px; border-bottom:1px solid #f1f5f9;">${k}</td><td style="padding:12px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].qty}</td><td style="padding:12px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].rev.toLocaleString('en-US')}</td></tr>`; }); document.getElementById('product-modal').style.display = 'flex'; }
     
-    // === UPDATED DELETE SALE LOGIC (REVERSE INVENTORY) ===
     function delSale(id) { 
         if(confirm("Delete record and RESTORE stock?")) {
             const saleToDel = sales.find(s => s.id === id);
             if(saleToDel) {
-                // Reverse Stock
                 const agg = getAggregatedStock();
                 saleToDel.items.forEach(saleItem => {
                     if(saleItem.ings) {
                         saleItem.ings.forEach(ing => {
                             if(agg[ing.name]) {
-                                // Add positive adjustment to reverse usage
                                 const totalRestore = ing.qty * saleItem.qty;
                                 const valRestore = totalRestore * agg[ing.name].avgCost;
-                                stockLog.push({ 
-                                    id: Date.now() + Math.random(), 
-                                    name: ing.name, 
-                                    type: 'sale_reversal', 
-                                    buyQty: 0, 
-                                    totalVal: valRestore, 
-                                    totalBaseUnits: totalRestore, 
-                                    useUnit: agg[ing.name].useUnit 
-                                });
+                                stockLog.push({ id: Date.now() + Math.random(), name: ing.name, type: 'sale_reversal', buyQty: 0, totalVal: valRestore, totalBaseUnits: totalRestore, useUnit: agg[ing.name].useUnit });
                             }
                         });
                     }
                 });
             }
-            sales = sales.filter(s => s.id !== id); 
-            saveAll(); 
-            filterSales(); 
+            sales = sales.filter(s => s.id !== id); saveAll(); filterSales(); 
         } 
     }
 
     function exportData() { const backup = { stock: stockLog, menu: menus, sales: sales, bop: bopLog }; const blob = new Blob([JSON.stringify(backup)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "TRK_Backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); }
     function importData(event) { const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if(data.stock && data.menu && data.sales) { if(confirm("Overwrite data?")) { localStorage.setItem('trk_stock_v16', JSON.stringify(data.stock)); localStorage.setItem('trk_menus_v16', JSON.stringify(data.menu)); localStorage.setItem('trk_sales_v16', JSON.stringify(data.sales)); if(data.bop) localStorage.setItem('trk_bop_v16', JSON.stringify(data.bop)); location.reload(); } } } catch(err) { alert("Error reading backup."); } }; reader.readAsText(file); }
     
-    // EXPORT SALES FUNCTION
+    // EXPORTS
     function exportSales() { 
         const dataDetailed = [["Date", "Time", "Transaction ID", "Customer", "Menu Item", "Qty", "Sell Price", "Total Sales", "Item Cost (HPP)", "Item Gross Profit"]];
-        
-        sales.forEach(s => {
-            s.items.forEach(i => {
-                let itemTotal = i.sellPrice * i.qty;
-                let itemHpp = (i.hpp || 0) * i.qty;
-                let itemProfit = itemTotal - itemHpp;
-                dataDetailed.push([s.date, s.time, s.id, s.customer, i.name, i.qty, i.sellPrice, itemTotal, itemHpp, itemProfit]);
-            });
-        });
-
-        const wb = XLSX.utils.book_new(); 
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dataDetailed), "Detailed Sales"); 
-        XLSX.writeFile(wb, "TRK_Sales_Report.xlsx"); 
+        sales.forEach(s => { s.items.forEach(i => { let itemTotal = i.sellPrice * i.qty; let itemHpp = (i.hpp || 0) * i.qty; dataDetailed.push([s.date, s.time, s.id, s.customer, i.name, i.qty, i.sellPrice, itemTotal, itemHpp, itemTotal - itemHpp]); }); });
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dataDetailed), "Detailed Sales"); XLSX.writeFile(wb, "TRK_Sales_Report.xlsx"); 
     }
 
-    // EXPORT BOP & ASSETS FUNCTION
     function exportBOP() { 
         if(bopLog.length === 0) return alert("No overhead or asset data to export.");
-
         const data = [["Item Name", "Type", "Input Cost / Price", "Useful Life (Months)", "Daily Cost Allocation"]];
-        
-        bopLog.forEach(item => {
-            let totalCost = item.originVal ? item.originVal : Math.round(item.daily * (item.type === 'Asset' ? (item.life * 30) : 30));
-            let lifeMos = item.type === 'Asset' ? item.life : "-";
-            
-            data.push([
-                item.name, 
-                item.type, 
-                totalCost, 
-                lifeMos, 
-                Math.round(item.daily)
-            ]);
-        });
-
-        const wb = XLSX.utils.book_new(); 
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BOP and Assets"); 
-        XLSX.writeFile(wb, "TRK_BOP_Assets_Report.xlsx"); 
+        bopLog.forEach(item => { let totalCost = item.originVal ? item.originVal : Math.round(item.daily * (item.type === 'Asset' ? (item.life * 30) : 30)); data.push([item.name, item.type, totalCost, item.type === 'Asset' ? item.life : "-", Math.round(item.daily)]); });
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BOP and Assets"); XLSX.writeFile(wb, "TRK_BOP_Assets_Report.xlsx"); 
     }
 
-    // === NEW: EXPORT INVENTORY FUNCTION ===
+    function exportMenuHPP() { 
+        const agg = getAggregatedStock();
+        const data = [["Menu Name", "Sell Price", "Ingredient", "Unit", "Qty Required", "Waste %", "Cost Contribution"]];
+        Object.values(menus).forEach(m => {
+            if (m.ings && m.ings.length > 0) {
+                m.ings.forEach(ing => { let stockItem = agg[ing.name]; let cost = stockItem && stockItem.avgCost ? (ing.qty * stockItem.avgCost) * (1 + (ing.waste/100)) : 0; data.push([m.name, m.sellPrice, ing.name, stockItem ? stockItem.useUnit : '-', ing.qty, ing.waste, cost]); });
+            } else { data.push([m.name, m.sellPrice, "NO INGREDIENTS", "-", 0, 0, 0]); }
+        });
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Recipe Breakdown"); XLSX.writeFile(wb, "Menu_HPP_Analysis.xlsx"); 
+    }
+
     function exportStock() {
         const agg = getAggregatedStock();
         if (Object.keys(agg).length === 0) return alert("No inventory data to export.");
-
         const data = [["Item Name", "Total Stock", "Unit", "Avg Cost/Unit (Rp)", "Total Asset Value (Rp)"]];
-
-        Object.keys(agg).forEach(name => {
-            const item = agg[name];
-            data.push([
-                name,
-                item.totalBase,
-                item.useUnit,
-                item.avgCost,
-                item.totalVal
-            ]);
-        });
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Inventory Status");
-        XLSX.writeFile(wb, "TRK_Inventory_Report.xlsx");
+        Object.keys(agg).forEach(name => { const item = agg[name]; data.push([name, item.totalBase, item.useUnit, item.avgCost.toFixed(2), item.totalVal]); });
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Inventory Status"); XLSX.writeFile(wb, "TRK_Inventory_Report.xlsx");
     }
 
     const today = new Date().toISOString().split('T')[0]; document.getElementById('date-start').value = today; document.getElementById('date-end').value = today; nav('pos');
 </script>
     <script>
-    // Register PWA Service Worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-            .then(() => console.log('Service Worker Registered'))
-            .catch((err) => console.log('SW Failed:', err));
+        navigator.serviceWorker.register('sw.js').then(() => console.log('SW Registered')).catch((err) => console.log('SW Failed:', err));
     }
 </script>
 </body>
