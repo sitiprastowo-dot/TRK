@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v36 (3:2 Strict Layout)</title>
+    <title>Tepi Raja Kopi - POS v37</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -22,7 +22,6 @@
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: var(--bg); color: var(--text); 
-            /* STRICT VIEWPORT LOCK - NO BODY SCROLLING EVER */
             display: flex; height: 100dvh; width: 100vw; overflow: hidden; 
         }
         
@@ -31,7 +30,7 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* --- SIDEBAR (NOW SCROLLABLE) --- */
+        /* --- SIDEBAR --- */
         .sidebar { 
             width: 80px; background: var(--primary); display: flex; flex-direction: column; 
             padding: 15px 10px; color: white; flex-shrink: 0; z-index: 50; 
@@ -51,21 +50,21 @@
         /* --- MAIN CONTENT CONTAINER --- */
         .main-content { 
             flex: 1; padding: 15px; display: flex; flex-direction: column; 
-            height: 100dvh; min-height: 0; /* CRITICAL FOR FLEX SCROLL */
+            height: 100dvh; min-height: 0; 
             overflow: hidden; position: relative; 
         }
         .section { 
             display: none; flex: 1; flex-direction: column; 
-            min-height: 0; /* CRITICAL */
+            min-height: 0; 
             height: 100%; animation: fadeIn 0.2s ease-out; 
         }
         .section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- POS 3-COLUMN GRID (3:2 SCALED) --- */
+        /* --- POS 3-COLUMN GRID --- */
         .pos-container { 
             display: grid; gap: 15px; flex: 1; min-height: 0; height: 100%;
-            grid-template-columns: 1fr 280px 300px; /* Scaled for 3:2 Tablet Width */
+            grid-template-columns: 1fr 280px 300px; 
             grid-template-areas: "menu order cart";
         }
         
@@ -73,14 +72,12 @@
         #panel-order { grid-area: order; }
         #panel-cart { grid-area: cart; }
 
-        /* PANELS: STRICT HEIGHT ENFORCEMENT */
         .panel { 
             background: var(--card); border-radius: 12px; display: flex; flex-direction: column; 
             border: 1px solid var(--border); overflow: hidden; flex: 1; min-height: 0; height: 100%;
         }
         .panel-head { padding: 12px 15px; background: white; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; text-transform: uppercase; flex-shrink: 0; }
         
-        /* The inner body is the ONLY part that scrolls */
         .panel-body { flex: 1; padding: 12px; overflow-y: auto; min-height: 0; }
 
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
@@ -110,7 +107,6 @@
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
         
-        /* MENU CONFIG LAYOUT: FIXED OVERFLOW */
         .menu-config-layout { display: grid; grid-template-columns: 1fr 320px; gap: 15px; flex: 1; min-height: 0; height: 100%; }
         .config-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 15px; display: flex; flex-direction: column; min-height: 0; height: 100%; box-sizing: border-box; overflow-y: auto; }
         
@@ -289,8 +285,12 @@
     </div>
 
     <div id="stock" class="section">
-        <h2 style="margin-top:0; color:var(--text-dark); font-size:18px; font-weight:800; margin-bottom:15px; flex-shrink:0;">Inventory Management</h2>
-        <div class="panel" style="margin-bottom:15px; flex-shrink:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-shrink:0;">
+            <h2 style="margin:0; color:var(--text-dark); font-size:18px; font-weight:800;">Inventory Management</h2>
+            <button class="btn btn-success btn-sm" onclick="exportStock()">Export Inventory</button>
+        </div>
+        
+        <div class="panel" style="margin-bottom:12px; flex-shrink:0;">
             <div class="panel-head">RECORD PURCHASE</div>
             <div class="panel-body" style="padding:12px 15px;">
                 <div style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr auto; gap:12px; align-items:end;">
@@ -305,10 +305,8 @@
                 </div>
             </div>
         </div>
+        
         <div class="panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
-            <div style="padding: 12px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; background: #fff;">
-                <button class="btn btn-success btn-sm" onclick="exportStock()">Export Inventory</button>
-            </div>
             <div style="flex: 1; overflow-y: auto; min-height:0;">
                 <table><thead><tr><th>Item Name</th><th>Total Stock</th><th>Avg Cost/Unit</th><th>Asset Value</th><th>Action</th></tr></thead><tbody id="stock-body"></tbody></table>
             </div>
@@ -494,7 +492,7 @@
     function renderStock() {
         const agg = getAggregatedStock(); const tbody = document.getElementById('stock-body'); tbody.innerHTML = '';
         Object.keys(agg).forEach(name => { const item = agg[name]; 
-            tbody.innerHTML += `<tr><td style="font-weight:600; color:var(--text-dark);">${name}</td><td>${item.totalBase.toLocaleString('en-US')} ${item.useUnit}</td><td>Rp ${item.avgCost.toFixed(2)}</td><td>Rp ${item.totalVal.toLocaleString('en-US')}</td><td><button onclick="openStockEdit('${name}')" class="btn-icon-sm btn-warning">✏️</button><button onclick="adjustStock('${name}')" class="btn-icon-sm btn-primary" style="margin-left:5px;">±</button></td></tr>`; 
+            tbody.innerHTML += `<tr><td style="font-weight:600; color:var(--text-dark);">${name}</td><td>${item.totalBase.toLocaleString('en-US')} ${item.useUnit}</td><td>Rp ${item.avgCost.toFixed(2)}</td><td>Rp ${item.totalVal.toLocaleString('en-US')}</td><td><div style="display:flex; gap:6px; align-items:center;"><button onclick="openStockEdit('${name}')" class="btn-icon-sm btn-warning">✏️</button><button onclick="adjustStock('${name}')" class="btn-icon-sm btn-primary">±</button></div></td></tr>`; 
         });
     }
     
@@ -700,12 +698,26 @@
         isEditingBop = false;
     }
     
+    // === UPDATED RENDER BOP: FORCED SIDE-BY-SIDE BUTTONS ===
     function renderBOP() { 
         const tbody = document.getElementById('bop-list'); tbody.innerHTML = ''; let totalDaily = 0; 
         bopLog.forEach((item, i) => { 
             totalDaily += item.daily; 
             let costDisplay = item.originVal ? item.originVal.toLocaleString('en-US') : Math.round(item.daily * (item.type==='Asset'? (item.life*30) : 30)).toLocaleString('en-US');
-            tbody.innerHTML += `<tr><td>${item.name}</td><td>${item.type}</td><td>${costDisplay}</td><td>${item.type==='Asset' ? item.life : '-'}</td><td>Rp ${Math.round(item.daily).toLocaleString('en-US')}</td><td style="text-align:right;"><button onclick="editBOP(${item.id})" class="btn-icon-sm btn-warning">✏️</button><button onclick="bopLog.splice(${i},1);saveAll();renderBOP()" class="btn-icon-sm btn-danger" style="margin-left:5px;">🗑️</button></td></tr>`; 
+            
+            tbody.innerHTML += `<tr>
+                <td>${item.name}</td>
+                <td>${item.type}</td>
+                <td>${costDisplay}</td>
+                <td>${item.type==='Asset' ? item.life : '-'}</td>
+                <td>Rp ${Math.round(item.daily).toLocaleString('en-US')}</td>
+                <td style="text-align:right;">
+                    <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+                        <button onclick="editBOP(${item.id})" class="btn-icon-sm btn-warning">✏️</button>
+                        <button onclick="bopLog.splice(${i},1);saveAll();renderBOP()" class="btn-icon-sm btn-danger">🗑️</button>
+                    </div>
+                </td>
+            </tr>`; 
         }); 
         document.getElementById('total-daily-bop').innerText = "Rp " + Math.round(totalDaily).toLocaleString('en-US'); return totalDaily; 
     }
