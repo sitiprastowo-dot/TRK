@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v37</title>
+    <title>Tepi Raja Kopi - POS v38</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -492,10 +492,22 @@
     function renderStock() {
         const agg = getAggregatedStock(); const tbody = document.getElementById('stock-body'); tbody.innerHTML = '';
         Object.keys(agg).forEach(name => { const item = agg[name]; 
-            tbody.innerHTML += `<tr><td style="font-weight:600; color:var(--text-dark);">${name}</td><td>${item.totalBase.toLocaleString('en-US')} ${item.useUnit}</td><td>Rp ${item.avgCost.toFixed(2)}</td><td>Rp ${item.totalVal.toLocaleString('en-US')}</td><td><div style="display:flex; gap:6px; align-items:center;"><button onclick="openStockEdit('${name}')" class="btn-icon-sm btn-warning">✏️</button><button onclick="adjustStock('${name}')" class="btn-icon-sm btn-primary">±</button></div></td></tr>`; 
+            tbody.innerHTML += `<tr><td style="font-weight:600; color:var(--text-dark);">${name}</td><td>${item.totalBase.toLocaleString('en-US')} ${item.useUnit}</td><td>Rp ${item.avgCost.toFixed(2)}</td><td>Rp ${item.totalVal.toLocaleString('en-US')}</td><td><div style="display:flex; gap:6px; align-items:center;"><button onclick="openStockEdit('${name}')" class="btn-icon-sm btn-warning">✏️</button><button onclick="adjustStock('${name}')" class="btn-icon-sm btn-primary">±</button><button onclick="deleteStock('${name}')" class="btn-icon-sm btn-danger">🗑️</button></div></td></tr>`; 
         });
     }
     
+    // NEW: DELETE ITEM ENTIRELY
+    function deleteStock(name) {
+        if(confirm(`WARNING: Are you sure you want to completely delete "${name}"?\n\nThis will remove all purchase history and usage logs for this item. Menu items using this ingredient will no longer calculate its cost.`)) {
+            // Filter out any log entry with this name
+            stockLog = stockLog.filter(log => log.name !== name);
+            saveAll();
+            renderStock();
+            updateStockDropdown();
+            initMenu(); // Refresh menu dropdowns to remove it
+        }
+    }
+
     function adjustStock(name) {
         const agg = getAggregatedStock(); const item = agg[name];
         const adj = prompt(`Adjust ${name} Qty (+/-):\nCurrent: ${item.totalBase} ${item.useUnit}`);
@@ -698,7 +710,6 @@
         isEditingBop = false;
     }
     
-    // === UPDATED RENDER BOP: FORCED SIDE-BY-SIDE BUTTONS ===
     function renderBOP() { 
         const tbody = document.getElementById('bop-list'); tbody.innerHTML = ''; let totalDaily = 0; 
         bopLog.forEach((item, i) => { 
@@ -711,10 +722,10 @@
                 <td>${costDisplay}</td>
                 <td>${item.type==='Asset' ? item.life : '-'}</td>
                 <td>Rp ${Math.round(item.daily).toLocaleString('en-US')}</td>
-                <td style="text-align:right;">
-                    <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
-                        <button onclick="editBOP(${item.id})" class="btn-icon-sm btn-warning">✏️</button>
-                        <button onclick="bopLog.splice(${i},1);saveAll();renderBOP()" class="btn-icon-sm btn-danger">🗑️</button>
+                <td style=\"text-align:right;\">
+                    <div style=\"display:flex; gap:6px; justify-content:flex-end; align-items:center;\">
+                        <button onclick=\"editBOP(${item.id})\" class=\"btn-icon-sm btn-warning\">✏️</button>
+                        <button onclick=\"bopLog.splice(${i},1);saveAll();renderBOP()\" class=\"btn-icon-sm btn-danger\">🗑️</button>
                     </div>
                 </td>
             </tr>`; 
@@ -722,8 +733,8 @@
         document.getElementById('total-daily-bop').innerText = "Rp " + Math.round(totalDaily).toLocaleString('en-US'); return totalDaily; 
     }
 
-    function filterSales() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; filtered.slice().reverse().forEach(s => { rev += s.total; cost += s.cost; grossProfit += s.profit; let itemsStr = ""; if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } tbody.innerHTML += `<tr><td><b style="color:var(--text-dark)">${s.date}</b><br><small style="color:#64748b">${s.time}</small></td><td>${s.id}</td><td>${s.customer}</td><td style="font-size:10px; color:#64748b;">${itemsStr}</td><td>${s.total.toLocaleString('en-US')}</td><td>${s.method}</td><td style="color:var(--success); font-weight:800;">${s.profit.toLocaleString('en-US')}</td><td><button onclick="delSale('${s.id}')" class="btn-icon-sm btn-danger">🗑️</button></td></tr>`; }); const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; document.getElementById('sum-count').innerHTML = `${filtered.length} Txns`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); }
-    function openProductSummary() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let agg = {}; filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; Object.keys(agg).forEach(k => { tb.innerHTML += `<tr><td style="padding:10px; border-bottom:1px solid #f1f5f9;">${k}</td><td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].qty}</td><td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].rev.toLocaleString('en-US')}</td></tr>`; }); document.getElementById('product-modal').style.display = 'flex'; }
+    function filterSales() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; filtered.slice().reverse().forEach(s => { rev += s.total; cost += s.cost; grossProfit += s.profit; let itemsStr = ""; if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } tbody.innerHTML += `<tr><td><b style=\"color:var(--text-dark)\">${s.date}</b><br><small style=\"color:#64748b\">${s.time}</small></td><td>${s.id}</td><td>${s.customer}</td><td style=\"font-size:10px; color:#64748b;\">${itemsStr}</td><td>${s.total.toLocaleString('en-US')}</td><td>${s.method}</td><td style=\"color:var(--success); font-weight:800;\">${s.profit.toLocaleString('en-US')}</td><td><button onclick=\"delSale('${s.id}')\" class=\"btn-icon-sm btn-danger\">🗑️</button></td></tr>`; }); const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; document.getElementById('sum-count').innerHTML = `${filtered.length} Txns`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); }
+    function openProductSummary() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let agg = {}; filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; Object.keys(agg).forEach(k => { tb.innerHTML += `<tr><td style=\"padding:10px; border-bottom:1px solid #f1f5f9;\">${k}</td><td style=\"padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;\">${agg[k].qty}</td><td style=\"padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;\">${agg[k].rev.toLocaleString('en-US')}</td></tr>`; }); document.getElementById('product-modal').style.display = 'flex'; }
     
     function delSale(id) { 
         if(confirm("Delete record and RESTORE stock?")) {
