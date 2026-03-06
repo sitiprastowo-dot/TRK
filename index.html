@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v38 (Inventory Delete Fix)</title>
+    <title>Tepi Raja Kopi - POS v39</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <link rel="manifest" href="manifest.json">
 
     <style>
-        /* --- 1. GLOBAL RESET & VIEWPORT LOCK --- */
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         :root { 
@@ -25,12 +24,10 @@
             display: flex; height: 100dvh; width: 100vw; overflow: hidden; 
         }
         
-        /* SCROLLBARS */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* --- SIDEBAR --- */
         .sidebar { 
             width: 80px; background: var(--primary); display: flex; flex-direction: column; 
             padding: 15px 10px; color: white; flex-shrink: 0; z-index: 50; 
@@ -47,7 +44,6 @@
         .side-btn .icon { font-size: 20px; }
         .sidebar-sep { border-top: 1px dashed rgba(255,255,255,0.2); margin: 15px 0; width: 100%; flex-shrink: 0; }
 
-        /* --- MAIN CONTENT CONTAINER --- */
         .main-content { 
             flex: 1; padding: 15px; display: flex; flex-direction: column; 
             height: 100dvh; min-height: 0; 
@@ -61,7 +57,6 @@
         .section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- POS 3-COLUMN GRID --- */
         .pos-container { 
             display: grid; gap: 15px; flex: 1; min-height: 0; height: 100%;
             grid-template-columns: 1fr 280px 300px; 
@@ -119,7 +114,6 @@
         .modal-content { background: white; width: 380px; padding: 20px; border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 90vh; overflow-y: auto; }
         .modal-lg { width: 700px; }
         
-        /* RECEIPT */
         .receipt-container { font-family: 'Space Mono', monospace; color: #1e293b; width: 100%; margin: 0 auto; background: white; }
         .rec-header { text-align: center; margin-bottom: 12px; }
         .rec-title { font-weight: 700; font-size: 14px; margin-bottom: 2px; letter-spacing: 1px; }
@@ -467,7 +461,6 @@
         document.getElementById('receipt-modal').style.display = 'none'; 
     }
 
-    // === STOCK LOGIC ===
     function updateStockHint() { const type = document.getElementById('s-type').value; }
     function updateStockDropdown() { const sel = document.getElementById('s-name-select'); const agg = getAggregatedStock(); sel.innerHTML = '<option value="">-- Select Item --</option><option value="NEW" style="color:var(--accent); font-weight:bold;">+ ADD NEW ITEM</option>'; Object.keys(agg).forEach(k => sel.add(new Option(k, k))); handleStockDropdownChange(); }
     function handleStockDropdownChange() { const val = document.getElementById('s-name-select').value; const newInp = document.getElementById('s-name-new'); const typeSel = document.getElementById('s-type'); if (val === 'NEW') { newInp.style.display = 'block'; typeSel.disabled = false; } else { newInp.style.display = 'none'; const existing = stockLog.find(x => x.name === val); if (existing) { typeSel.value = existing.type; typeSel.disabled = true; } } }
@@ -489,22 +482,36 @@
         let agg = {}; stockLog.forEach(log => { if(!agg[log.name]) agg[log.name] = { totalBase: 0, totalVal: 0, useUnit: log.useUnit }; agg[log.name].totalBase += log.totalBaseUnits; agg[log.name].totalVal += log.totalVal; });
         Object.keys(agg).forEach(key => agg[key].avgCost = agg[key].totalBase !== 0 ? agg[key].totalVal / agg[key].totalBase : 0); return agg;
     }
+    
     function renderStock() {
         const agg = getAggregatedStock(); const tbody = document.getElementById('stock-body'); tbody.innerHTML = '';
-        Object.keys(agg).forEach(name => { const item = agg[name]; 
-            tbody.innerHTML += `<tr><td style="font-weight:600; color:var(--text-dark);">${name}</td><td>${item.totalBase.toLocaleString('en-US')} ${item.useUnit}</td><td>Rp ${item.avgCost.toFixed(2)}</td><td>Rp ${item.totalVal.toLocaleString('en-US')}</td><td><div style="display:flex; gap:6px; align-items:center;"><button onclick="openStockEdit('${name}')" class="btn-icon-sm btn-warning">✏️</button><button onclick="adjustStock('${name}')" class="btn-icon-sm btn-primary">±</button><button onclick="deleteStock('${name}')" class="btn-icon-sm btn-danger">🗑️</button></div></td></tr>`; 
+        Object.keys(agg).forEach(name => { 
+            const item = agg[name]; 
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:600; color:var(--text-dark);">${name}</td>
+                <td>${item.totalBase.toLocaleString('en-US')} ${item.useUnit}</td>
+                <td>Rp ${item.avgCost.toFixed(2)}</td>
+                <td>Rp ${item.totalVal.toLocaleString('en-US')}</td>
+                <td>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button onclick="openStockEdit('${name}')" class="btn-icon-sm btn-warning">✏️</button>
+                        <button onclick="adjustStock('${name}')" class="btn-icon-sm btn-primary">±</button>
+                        <button onclick="deleteStock('${name}')" class="btn-icon-sm btn-danger">🗑️</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
         });
     }
     
-    // NEW: DELETE ITEM ENTIRELY
     function deleteStock(name) {
         if(confirm(`WARNING: Are you sure you want to completely delete "${name}"?\n\nThis will remove all purchase history and usage logs for this item. Menu items using this ingredient will no longer calculate its cost.`)) {
-            // Filter out any log entry with this name
             stockLog = stockLog.filter(log => log.name !== name);
             saveAll();
             renderStock();
             updateStockDropdown();
-            initMenu(); // Refresh menu dropdowns to remove it
+            initMenu();
         }
     }
 
@@ -526,6 +533,7 @@
         document.getElementById('edit-stock-cost').value = item.avgCost.toFixed(2);
         document.getElementById('stock-edit-modal').style.display = 'flex';
     }
+    
     function saveStockEdit() {
         const oldName = document.getElementById('edit-stock-name').value;
         const newName = document.getElementById('edit-stock-newname').value;
@@ -563,12 +571,21 @@
     }
     function newMenu() { document.getElementById('menu-select').value = 'new'; loadMenu(); }
     function deleteMenu() { if(!activeMenuId || activeMenuId.startsWith('new')) return; if(confirm("Delete menu?")) { delete menus[activeMenuId]; saveAll(); initMenu(); newMenu(); } }
+    
     function addIngRow(data = {name: '', qty: 0, waste: 0}) {
         const agg = getAggregatedStock(); const tr = document.createElement('tr'); tr.className = 'ing-row';
         let opts = `<option value="">Select...</option>`; Object.keys(agg).forEach(k => { opts += `<option value="${k}" ${data.name===k?'selected':''}>${k}</option>`; });
-        tr.innerHTML = `<td><select class="i-name" onchange="updateRowUnit(this); calcLiveHPP()">${opts}</select></td><td class="i-unit" style="font-size:10px; font-weight:bold; color:#64748b;">${data.name && agg[data.name] ? agg[data.name].useUnit : '-'}</td><td><input type="text" class="i-qty" value="${data.qty?data.qty.toLocaleString('en-US'):''}" oninput="formatNum(this); calcLiveHPP()" placeholder="0"></td><td><input type="text" class="i-waste" value="${data.waste||''}" oninput="calcLiveHPP()" placeholder="0"></td><td class="i-cost" style="text-align:right; font-weight:bold;">0</td><td><button onclick="this.closest('tr').remove();calcLiveHPP()" style="color:var(--danger); border:none; background:none; font-weight:bold; cursor:pointer;">✕</button></td>`;
+        tr.innerHTML = `
+            <td><select class="i-name" onchange="updateRowUnit(this); calcLiveHPP()">${opts}</select></td>
+            <td class="i-unit" style="font-size:10px; font-weight:bold; color:#64748b;">${data.name && agg[data.name] ? agg[data.name].useUnit : '-'}</td>
+            <td><input type="text" class="i-qty" value="${data.qty?data.qty.toLocaleString('en-US'):''}" oninput="formatNum(this); calcLiveHPP()" placeholder="0"></td>
+            <td><input type="text" class="i-waste" value="${data.waste||''}" oninput="calcLiveHPP()" placeholder="0"></td>
+            <td class="i-cost" style="text-align:right; font-weight:bold;">0</td>
+            <td><button onclick="this.closest('tr').remove();calcLiveHPP()" style="color:var(--danger); border:none; background:none; font-weight:bold; cursor:pointer;">✕</button></td>
+        `;
         document.getElementById('recipe-list').appendChild(tr); if(data.name) calcLiveHPP();
     }
+    
     function updateRowUnit(sel) { const agg = getAggregatedStock(); const name = sel.value; const row = sel.closest('tr'); row.querySelector('.i-unit').innerText = agg[name] ? agg[name].useUnit : '-'; }
     function calcLiveHPP() {
         const agg = getAggregatedStock(); let totalHPP = 0;
@@ -591,13 +608,47 @@
     
     // === POS LOGIC ===
     function initPOS() { document.getElementById('trx-id').innerText = "TX-" + Date.now().toString().slice(-6); renderPOS(); }
-    function renderPOS(filter='') { const g = document.getElementById('pos-grid'); g.innerHTML = ''; Object.keys(menus).forEach(k => { const m = menus[k]; if(m.name.toLowerCase().includes(filter.toLowerCase())) { g.innerHTML += `<div class="menu-card" onclick="addToCart('${k}')"><h4>${m.name}</h4><p>Rp ${m.sellPrice.toLocaleString('en-US')}</p></div>`; } }); }
+    
+    function renderPOS(filter='') { 
+        const g = document.getElementById('pos-grid'); g.innerHTML = ''; 
+        Object.keys(menus).forEach(k => { 
+            const m = menus[k]; 
+            if(m.name.toLowerCase().includes(filter.toLowerCase())) { 
+                const card = document.createElement('div');
+                card.className = 'menu-card';
+                card.onclick = () => addToCart(k);
+                card.innerHTML = `<h4>${m.name}</h4><p>Rp ${m.sellPrice.toLocaleString('en-US')}</p>`;
+                g.appendChild(card);
+            } 
+        }); 
+    }
+    
     function addToCart(id) { const existing = cart.find(x => x.id === id); if(existing) existing.qty++; else { const m = menus[id]; cart.push({ ...m, id: id, qty: 1 }); } renderCart(); }
+    
     function renderCart() {
         const c = document.getElementById('cart-items'); c.innerHTML = ''; let total = 0;
-        cart.forEach((it, i) => { const lineTotal = it.sellPrice * it.qty; c.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border); padding-bottom:8px;"><div style="flex:1;"><div style="font-weight:700; color:var(--primary); font-size:12px;">${it.name}</div><div style="color:#64748b; font-size:10px;">@${it.sellPrice.toLocaleString('en-US')}</div></div><div style="display:flex; align-items:center; gap:6px;"><button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, -1)">-</button><span style="font-weight:bold; width:16px; text-align:center; font-size:12px;">${it.qty}</span><button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, 1)">+</button></div><div style="font-weight:bold; min-width:60px; text-align:right; font-size:12px;">${lineTotal.toLocaleString('en-US')}</div></div>`; total += lineTotal; });
+        cart.forEach((it, i) => { 
+            const lineTotal = it.sellPrice * it.qty; 
+            const row = document.createElement('div');
+            row.style.cssText = "display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border); padding-bottom:8px;";
+            row.innerHTML = `
+                <div style="flex:1;">
+                    <div style="font-weight:700; color:var(--primary); font-size:12px;">${it.name}</div>
+                    <div style="color:#64748b; font-size:10px;">@${it.sellPrice.toLocaleString('en-US')}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, -1)">-</button>
+                    <span style="font-weight:bold; width:16px; text-align:center; font-size:12px;">${it.qty}</span>
+                    <button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, 1)">+</button>
+                </div>
+                <div style="font-weight:bold; min-width:60px; text-align:right; font-size:12px;">${lineTotal.toLocaleString('en-US')}</div>
+            `;
+            c.appendChild(row);
+            total += lineTotal; 
+        });
         document.getElementById('cart-total').innerText = "Rp " + total.toLocaleString('en-US'); document.getElementById('cart-subtotal').innerText = "Rp " + total.toLocaleString('en-US'); calcExchange();
     }
+    
     function updateCartQty(idx, change) { cart[idx].qty += change; if(cart[idx].qty <= 0) cart.splice(idx, 1); renderCart(); }
     function togglePay() { const m = document.getElementById('pay-method').value; document.getElementById('cash-box').style.display = m === 'Cash' ? 'block' : 'none'; document.getElementById('qris-box').style.display = m === 'QRIS' ? 'block' : 'none'; calcExchange(); }
     function calcExchange() { const total = getNum(document.getElementById('cart-total').innerText); const cash = getNum(document.getElementById('cash-in').value); const method = document.getElementById('pay-method').value; let valid = true; if(method === 'Cash') { const ex = cash - total; document.getElementById('exchange-val').innerText = "Rp " + (ex >= 0 ? ex.toLocaleString('en-US') : "0"); if(cash < total) valid = false; } document.getElementById('btn-checkout').disabled = (total === 0 || !valid); }
@@ -623,7 +674,12 @@
         document.getElementById('rec-cust').innerText = sale.customer;
         
         const recItems = document.getElementById('rec-items'); recItems.innerHTML = '';
-        cart.forEach(item => { recItems.innerHTML += `<div class="rec-item"><span>${item.name} x${item.qty}</span><span>${(item.sellPrice * item.qty).toLocaleString('en-US')}</span></div>`; });
+        cart.forEach(item => { 
+            const row = document.createElement('div');
+            row.className = 'rec-item';
+            row.innerHTML = `<span>${item.name} x${item.qty}</span><span>${(item.sellPrice * item.qty).toLocaleString('en-US')}</span>`;
+            recItems.appendChild(row);
+        });
         
         document.getElementById('rec-total-print').innerText = sale.total.toLocaleString('en-US');
         document.getElementById('rec-method').innerText = sale.method;
@@ -716,25 +772,72 @@
             totalDaily += item.daily; 
             let costDisplay = item.originVal ? item.originVal.toLocaleString('en-US') : Math.round(item.daily * (item.type==='Asset'? (item.life*30) : 30)).toLocaleString('en-US');
             
-            tbody.innerHTML += `<tr>
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
                 <td>${item.name}</td>
                 <td>${item.type}</td>
                 <td>${costDisplay}</td>
                 <td>${item.type==='Asset' ? item.life : '-'}</td>
                 <td>Rp ${Math.round(item.daily).toLocaleString('en-US')}</td>
-                <td style=\"text-align:right;\">
-                    <div style=\"display:flex; gap:6px; justify-content:flex-end; align-items:center;\">
-                        <button onclick=\"editBOP(${item.id})\" class=\"btn-icon-sm btn-warning\">✏️</button>
-                        <button onclick=\"bopLog.splice(${i},1);saveAll();renderBOP()\" class=\"btn-icon-sm btn-danger\">🗑️</button>
+                <td style="text-align:right;">
+                    <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+                        <button onclick="editBOP(${item.id})" class="btn-icon-sm btn-warning">✏️</button>
+                        <button onclick="bopLog.splice(${i},1);saveAll();renderBOP()" class="btn-icon-sm btn-danger">🗑️</button>
                     </div>
                 </td>
-            </tr>`; 
+            `;
+            tbody.appendChild(tr);
         }); 
         document.getElementById('total-daily-bop').innerText = "Rp " + Math.round(totalDaily).toLocaleString('en-US'); return totalDaily; 
     }
 
-    function filterSales() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; filtered.slice().reverse().forEach(s => { rev += s.total; cost += s.cost; grossProfit += s.profit; let itemsStr = ""; if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } tbody.innerHTML += `<tr><td><b style=\"color:var(--text-dark)\">${s.date}</b><br><small style=\"color:#64748b\">${s.time}</small></td><td>${s.id}</td><td>${s.customer}</td><td style=\"font-size:10px; color:#64748b;\">${itemsStr}</td><td>${s.total.toLocaleString('en-US')}</td><td>${s.method}</td><td style=\"color:var(--success); font-weight:800;\">${s.profit.toLocaleString('en-US')}</td><td><button onclick=\"delSale('${s.id}')\" class=\"btn-icon-sm btn-danger\">🗑️</button></td></tr>`; }); const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; document.getElementById('sum-count').innerHTML = `${filtered.length} Txns`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); }
-    function openProductSummary() { const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); let agg = {}; filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; Object.keys(agg).forEach(k => { tb.innerHTML += `<tr><td style=\"padding:10px; border-bottom:1px solid #f1f5f9;\">${k}</td><td style=\"padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;\">${agg[k].qty}</td><td style=\"padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;\">${agg[k].rev.toLocaleString('en-US')}</td></tr>`; }); document.getElementById('product-modal').style.display = 'flex'; }
+    function filterSales() { 
+        const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; 
+        let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); 
+        let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; 
+        
+        const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; 
+        filtered.slice().reverse().forEach(s => { 
+            rev += s.total; cost += s.cost; grossProfit += s.profit; 
+            let itemsStr = ""; 
+            if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } 
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b style="color:var(--text-dark)">${s.date}</b><br><small style="color:#64748b">${s.time}</small></td>
+                <td>${s.id}</td>
+                <td>${s.customer}</td>
+                <td style="font-size:10px; color:#64748b;">${itemsStr}</td>
+                <td>${s.total.toLocaleString('en-US')}</td>
+                <td>${s.method}</td>
+                <td style="color:var(--success); font-weight:800;">${s.profit.toLocaleString('en-US')}</td>
+                <td><button onclick="delSale('${s.id}')" class="btn-icon-sm btn-danger">🗑️</button></td>
+            `;
+            tbody.appendChild(tr);
+        }); 
+        
+        const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; 
+        document.getElementById('sum-count').innerHTML = `${filtered.length} Txns`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); 
+    }
+    
+    function openProductSummary() { 
+        const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; 
+        let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); 
+        let agg = {}; 
+        filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); 
+        
+        const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; 
+        Object.keys(agg).forEach(k => { 
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding:10px; border-bottom:1px solid #f1f5f9;">${k}</td>
+                <td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].qty}</td>
+                <td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].rev.toLocaleString('en-US')}</td>
+            `;
+            tb.appendChild(tr);
+        }); 
+        document.getElementById('product-modal').style.display = 'flex'; 
+    }
     
     function delSale(id) { 
         if(confirm("Delete record and RESTORE stock?")) {
@@ -760,7 +863,6 @@
     function exportData() { const backup = { stock: stockLog, menu: menus, sales: sales, bop: bopLog }; const blob = new Blob([JSON.stringify(backup)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "TRK_Backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); }
     function importData(event) { const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if(data.stock && data.menu && data.sales) { if(confirm("Overwrite data?")) { localStorage.setItem('trk_stock_v16', JSON.stringify(data.stock)); localStorage.setItem('trk_menus_v16', JSON.stringify(data.menu)); localStorage.setItem('trk_sales_v16', JSON.stringify(data.sales)); if(data.bop) localStorage.setItem('trk_bop_v16', JSON.stringify(data.bop)); location.reload(); } } } catch(err) { alert("Error reading backup."); } }; reader.readAsText(file); }
     
-    // EXPORTS
     function exportSales() { 
         const dataDetailed = [["Date", "Time", "Transaction ID", "Customer", "Menu Item", "Qty", "Sell Price", "Total Sales", "Item Cost (HPP)", "Item Gross Profit"]];
         sales.forEach(s => { s.items.forEach(i => { let itemTotal = i.sellPrice * i.qty; let itemHpp = (i.hpp || 0) * i.qty; dataDetailed.push([s.date, s.time, s.id, s.customer, i.name, i.qty, i.sellPrice, itemTotal, itemHpp, itemTotal - itemHpp]); }); });
