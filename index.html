@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v41</title>
+    <title>Tepi Raja Kopi - POS v42</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -76,7 +76,10 @@
         .panel-body { flex: 1; padding: 12px; overflow-y: auto; min-height: 0; }
 
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-        .menu-card { display: flex; flex-direction: column; height: 110px; border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.1s; background: white; justify-content: space-between; }
+        
+        /* TOUCH FIXES ADDED HERE */
+        .menu-card { display: flex; flex-direction: column; height: 110px; border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.1s; background: white; justify-content: space-between; user-select: none; -webkit-user-select: none; }
+        .menu-card > * { pointer-events: none; } 
         .menu-card:active { transform: scale(0.97); border-color: var(--accent); }
         .menu-card h4 { margin: 0; font-size: 12px; color: var(--text-dark); font-weight: 800; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
         .menu-card p { margin: 0; font-size: 13px; color: var(--danger); font-weight: 800; } 
@@ -575,28 +578,29 @@
 
     function renderPurchases() {
         const tbody = document.getElementById('purchase-list');
-        tbody.innerHTML = '';
+        let html = '';
         let total = 0;
         
         let sorted = [...purchaseLog].sort((a,b) => b.date.localeCompare(a.date));
         
         sorted.forEach((p) => {
             total += p.cost;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><b style="color:var(--text-dark)">${p.date}</b></td>
-                <td>${p.name}</td>
-                <td><span style="font-size:10px; background:#e2e8f0; color:#475569; padding:3px 6px; border-radius:4px; font-weight:700;">${p.category}</span></td>
-                <td style="font-weight:bold; color:var(--danger);">Rp ${p.cost.toLocaleString('en-US')}</td>
-                <td style="text-align:right;">
-                    <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
-                        <button onclick="editPurchase(${p.id})" class="btn-icon-sm btn-warning">✏️</button>
-                        <button onclick="deletePurchase(${p.id})" class="btn-icon-sm btn-danger">🗑️</button>
-                    </div>
-                </td>
+            html += `
+                <tr>
+                    <td><b style="color:var(--text-dark)">${p.date}</b></td>
+                    <td>${p.name}</td>
+                    <td><span style="font-size:10px; background:#e2e8f0; color:#475569; padding:3px 6px; border-radius:4px; font-weight:700;">${p.category}</span></td>
+                    <td style="font-weight:bold; color:var(--danger);">Rp ${p.cost.toLocaleString('en-US')}</td>
+                    <td style="text-align:right;">
+                        <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+                            <button onclick="editPurchase(${p.id})" class="btn-icon-sm btn-warning">✏️</button>
+                            <button onclick="deletePurchase(${p.id})" class="btn-icon-sm btn-danger">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
             `;
-            tbody.appendChild(tr);
         });
+        tbody.innerHTML = html;
         document.getElementById('total-purchase-val').innerText = "Rp " + total.toLocaleString('en-US');
     }
 
@@ -632,25 +636,27 @@
     }
     
     function renderStock() {
-        const agg = getAggregatedStock(); const tbody = document.getElementById('stock-body'); tbody.innerHTML = '';
+        const agg = getAggregatedStock(); const tbody = document.getElementById('stock-body'); 
+        let html = '';
         Object.keys(agg).forEach(name => { 
             const item = agg[name]; 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="font-weight:600; color:var(--text-dark);">${name}</td>
-                <td>${item.totalBase.toLocaleString('en-US')} ${item.useUnit}</td>
-                <td>Rp ${item.avgCost.toFixed(2)}</td>
-                <td>Rp ${item.totalVal.toLocaleString('en-US')}</td>
-                <td>
-                    <div style="display:flex; gap:6px; align-items:center;">
-                        <button onclick="openStockEdit('${name}')" class="btn-icon-sm btn-warning">✏️</button>
-                        <button onclick="adjustStock('${name}')" class="btn-icon-sm btn-primary">±</button>
-                        <button onclick="deleteStock('${name}')" class="btn-icon-sm btn-danger">🗑️</button>
-                    </div>
-                </td>
+            html += `
+                <tr>
+                    <td style="font-weight:600; color:var(--text-dark);">${name}</td>
+                    <td>${item.totalBase.toLocaleString('en-US')} ${item.useUnit}</td>
+                    <td>Rp ${item.avgCost.toFixed(2)}</td>
+                    <td>Rp ${item.totalVal.toLocaleString('en-US')}</td>
+                    <td>
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <button onclick="openStockEdit('${name}')" class="btn-icon-sm btn-warning">✏️</button>
+                            <button onclick="adjustStock('${name}')" class="btn-icon-sm btn-primary">±</button>
+                            <button onclick="deleteStock('${name}')" class="btn-icon-sm btn-danger">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
             `;
-            tbody.appendChild(tr);
         });
+        tbody.innerHTML = html;
     }
     
     function deleteStock(name) {
@@ -755,42 +761,42 @@
     function initPOS() { document.getElementById('trx-id').innerText = "TX-" + Date.now().toString().slice(-6); renderPOS(); }
     
     function renderPOS(filter='') { 
-        const g = document.getElementById('pos-grid'); g.innerHTML = ''; 
+        const g = document.getElementById('pos-grid'); 
+        let html = ''; 
         Object.keys(menus).forEach(k => { 
             const m = menus[k]; 
             if(m.name.toLowerCase().includes(filter.toLowerCase())) { 
-                const card = document.createElement('div');
-                card.className = 'menu-card';
-                card.onclick = () => addToCart(k);
-                card.innerHTML = `<h4>${m.name}</h4><p>Rp ${m.sellPrice.toLocaleString('en-US')}</p>`;
-                g.appendChild(card);
+                html += `<div class="menu-card" onclick="addToCart('${k}')"><h4>${m.name}</h4><p>Rp ${m.sellPrice.toLocaleString('en-US')}</p></div>`;
             } 
         }); 
+        g.innerHTML = html;
     }
     
     function addToCart(id) { const existing = cart.find(x => x.id === id); if(existing) existing.qty++; else { const m = menus[id]; cart.push({ ...m, id: id, qty: 1 }); } renderCart(); }
     
     function renderCart() {
-        const c = document.getElementById('cart-items'); c.innerHTML = ''; let total = 0;
+        const c = document.getElementById('cart-items'); 
+        let html = ''; 
+        let total = 0;
         cart.forEach((it, i) => { 
             const lineTotal = it.sellPrice * it.qty; 
-            const row = document.createElement('div');
-            row.style.cssText = "display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border); padding-bottom:8px;";
-            row.innerHTML = `
-                <div style="flex:1;">
-                    <div style="font-weight:700; color:var(--primary); font-size:12px;">${it.name}</div>
-                    <div style="color:#64748b; font-size:10px;">@${it.sellPrice.toLocaleString('en-US')}</div>
+            html += `
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border); padding-bottom:8px;">
+                    <div style="flex:1;">
+                        <div style="font-weight:700; color:var(--primary); font-size:12px;">${it.name}</div>
+                        <div style="color:#64748b; font-size:10px;">@${it.sellPrice.toLocaleString('en-US')}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, -1)">-</button>
+                        <span style="font-weight:bold; width:16px; text-align:center; font-size:12px;">${it.qty}</span>
+                        <button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, 1)">+</button>
+                    </div>
+                    <div style="font-weight:bold; min-width:60px; text-align:right; font-size:12px;">${lineTotal.toLocaleString('en-US')}</div>
                 </div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, -1)">-</button>
-                    <span style="font-weight:bold; width:16px; text-align:center; font-size:12px;">${it.qty}</span>
-                    <button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, 1)">+</button>
-                </div>
-                <div style="font-weight:bold; min-width:60px; text-align:right; font-size:12px;">${lineTotal.toLocaleString('en-US')}</div>
             `;
-            c.appendChild(row);
             total += lineTotal; 
         });
+        c.innerHTML = html;
         document.getElementById('cart-total').innerText = "Rp " + total.toLocaleString('en-US'); document.getElementById('cart-subtotal').innerText = "Rp " + total.toLocaleString('en-US'); calcExchange();
     }
     
@@ -818,13 +824,12 @@
         document.getElementById('rec-id').innerText = sale.id;
         document.getElementById('rec-cust').innerText = sale.customer;
         
-        const recItems = document.getElementById('rec-items'); recItems.innerHTML = '';
+        const recItems = document.getElementById('rec-items'); 
+        let recHtml = '';
         cart.forEach(item => { 
-            const row = document.createElement('div');
-            row.className = 'rec-item';
-            row.innerHTML = `<span>${item.name} x${item.qty}</span><span>${(item.sellPrice * item.qty).toLocaleString('en-US')}</span>`;
-            recItems.appendChild(row);
+            recHtml += `<div class="rec-item"><span>${item.name} x${item.qty}</span><span>${(item.sellPrice * item.qty).toLocaleString('en-US')}</span></div>`;
         });
+        recItems.innerHTML = recHtml;
         
         document.getElementById('rec-total-print').innerText = sale.total.toLocaleString('en-US');
         document.getElementById('rec-method').innerText = sale.method;
@@ -912,27 +917,30 @@
     }
     
     function renderBOP() { 
-        const tbody = document.getElementById('bop-list'); tbody.innerHTML = ''; let totalDaily = 0; 
+        const tbody = document.getElementById('bop-list'); 
+        let html = ''; 
+        let totalDaily = 0; 
         bopLog.forEach((item, i) => { 
             totalDaily += item.daily; 
             let costDisplay = item.originVal ? item.originVal.toLocaleString('en-US') : Math.round(item.daily * (item.type==='Asset'? (item.life*30) : 30)).toLocaleString('en-US');
             
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.name}</td>
-                <td>${item.type}</td>
-                <td>${costDisplay}</td>
-                <td>${item.type==='Asset' ? item.life : '-'}</td>
-                <td>Rp ${Math.round(item.daily).toLocaleString('en-US')}</td>
-                <td style="text-align:right;">
-                    <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
-                        <button onclick="editBOP(${item.id})" class="btn-icon-sm btn-warning">✏️</button>
-                        <button onclick="bopLog.splice(${i},1);saveAll();renderBOP()" class="btn-icon-sm btn-danger">🗑️</button>
-                    </div>
-                </td>
+            html += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.type}</td>
+                    <td>${costDisplay}</td>
+                    <td>${item.type==='Asset' ? item.life : '-'}</td>
+                    <td>Rp ${Math.round(item.daily).toLocaleString('en-US')}</td>
+                    <td style="text-align:right;">
+                        <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+                            <button onclick="editBOP(${item.id})" class="btn-icon-sm btn-warning">✏️</button>
+                            <button onclick="bopLog.splice(${i},1);saveAll();renderBOP()" class="btn-icon-sm btn-danger">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
             `;
-            tbody.appendChild(tr);
         }); 
+        tbody.innerHTML = html;
         document.getElementById('total-daily-bop').innerText = "Rp " + Math.round(totalDaily).toLocaleString('en-US'); return totalDaily; 
     }
 
@@ -941,25 +949,27 @@
         let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); 
         let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; 
         
-        const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; 
+        const tbody = document.getElementById('sales-body'); 
+        let html = ''; 
         filtered.slice().reverse().forEach(s => { 
             rev += s.total; cost += s.cost; grossProfit += s.profit; 
             let itemsStr = ""; 
             if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } 
             
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><b style="color:var(--text-dark)">${s.date}</b><br><small style="color:#64748b">${s.time}</small></td>
-                <td>${s.id}</td>
-                <td>${s.customer}</td>
-                <td style="font-size:10px; color:#64748b;">${itemsStr}</td>
-                <td>${s.total.toLocaleString('en-US')}</td>
-                <td>${s.method}</td>
-                <td style="color:var(--success); font-weight:800;">${s.profit.toLocaleString('en-US')}</td>
-                <td><button onclick="delSale('${s.id}')" class="btn-icon-sm btn-danger">🗑️</button></td>
+            html += `
+                <tr>
+                    <td><b style="color:var(--text-dark)">${s.date}</b><br><small style="color:#64748b">${s.time}</small></td>
+                    <td>${s.id}</td>
+                    <td>${s.customer}</td>
+                    <td style="font-size:10px; color:#64748b;">${itemsStr}</td>
+                    <td>${s.total.toLocaleString('en-US')}</td>
+                    <td>${s.method}</td>
+                    <td style="color:var(--success); font-weight:800;">${s.profit.toLocaleString('en-US')}</td>
+                    <td><button onclick="delSale('${s.id}')" class="btn-icon-sm btn-danger">🗑️</button></td>
+                </tr>
             `;
-            tbody.appendChild(tr);
         }); 
+        tbody.innerHTML = html;
         
         const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; 
         document.getElementById('sum-count').innerHTML = `${filtered.length} Txns`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); 
@@ -971,16 +981,18 @@
         let agg = {}; 
         filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); 
         
-        const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; 
+        const tb = document.getElementById('product-summary-body'); 
+        let html = ''; 
         Object.keys(agg).forEach(k => { 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="padding:10px; border-bottom:1px solid #f1f5f9;">${k}</td>
-                <td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].qty}</td>
-                <td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].rev.toLocaleString('en-US')}</td>
+            html += `
+                <tr>
+                    <td style="padding:10px; border-bottom:1px solid #f1f5f9;">${k}</td>
+                    <td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].qty}</td>
+                    <td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].rev.toLocaleString('en-US')}</td>
+                </tr>
             `;
-            tb.appendChild(tr);
         }); 
+        tb.innerHTML = html;
         document.getElementById('product-modal').style.display = 'flex'; 
     }
     
