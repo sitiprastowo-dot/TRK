@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v39</title>
+    <title>Tepi Raja Kopi - POS v40</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -137,6 +137,7 @@
     <button class="side-btn" onclick="nav('sales')" title="Sales Analytics"><span class="icon">📊</span></button>
     <button class="side-btn" onclick="nav('menu')" title="Menu Config"><span class="icon">☕</span></button>
     <button class="side-btn" onclick="nav('stock')" title="Inventory"><span class="icon">📦</span></button>
+    <button class="side-btn" onclick="nav('purchases')" title="Purchase History"><span class="icon">🧾</span></button>
     <button class="side-btn" onclick="nav('bop')" title="Overhead / BOP"><span class="icon">📉</span></button>
     
     <div style="margin-top: auto; width: 100%;">
@@ -307,6 +308,58 @@
         </div>
     </div>
 
+    <div id="purchases" class="section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-shrink: 0;">
+            <h2 style="margin:0; color:var(--text-dark); font-size:18px; font-weight:800;">Purchase History & Expenses</h2>
+            <button class="btn btn-success btn-sm" onclick="exportPurchases()">Export Purchase Log</button>
+        </div>
+
+        <div class="menu-config-layout">
+            <div class="config-card" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
+                <div style="padding:12px 15px; background:#f0fdf4; border-bottom:1px solid #bbf7d0; font-size:12px; color:#15803d; display:flex; justify-content:space-between; flex-shrink:0;">
+                    <span>Total Purchase History:</span><span id="total-purchase-val" style="font-weight:800;">Rp 0</span>
+                </div>
+                <div style="flex:1; overflow-y:auto; min-height:0;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Item / Description</th>
+                                <th>Category</th>
+                                <th>Amount (Rp)</th>
+                                <th style="text-align:right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="purchase-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="config-card">
+                <h3 style="margin-top:0; margin-bottom:15px; color:var(--text-dark); font-size:14px; flex-shrink:0;">Record New Purchase</h3>
+                <label>Date</label>
+                <input type="date" id="p-date" style="margin-bottom:15px;">
+                
+                <label>Item Description</label>
+                <input type="text" id="p-name" placeholder="E.g., Plastic Cups, Syrup, Broom" style="margin-bottom:15px;">
+                
+                <label>Category</label>
+                <select id="p-category" style="margin-bottom:15px;">
+                    <option value="Raw Material">Raw Material (Beans, Milk)</option>
+                    <option value="Packaging">Packaging (Cups, Lids)</option>
+                    <option value="Operational">Operational (Cleaning, Office)</option>
+                    <option value="Equipment">Equipment (Tools, Machines)</option>
+                    <option value="Other">Other Expenses</option>
+                </select>
+                
+                <label>Total Cost (Rp)</label>
+                <input type="text" inputmode="decimal" id="p-cost" oninput="formatNum(this)" placeholder="0" style="font-size:16px; font-weight:800; color:var(--text-dark); margin-bottom:20px;">
+                
+                <button class="btn btn-primary" style="width:100%; height:40px; margin-top:auto; flex-shrink:0;" onclick="addPurchase()">RECORD PURCHASE</button>
+            </div>
+        </div>
+    </div>
+
     <div id="bop" class="section">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-shrink:0;">
             <h2 style="margin:0; color:var(--text-dark); font-size:18px; font-weight:800;">Overhead & BOP</h2>
@@ -427,6 +480,7 @@
     let menus = JSON.parse(localStorage.getItem('trk_menus_v16')) || {};
     let sales = JSON.parse(localStorage.getItem('trk_sales_v16')) || [];
     let bopLog = JSON.parse(localStorage.getItem('trk_bop_v16')) || [];
+    let purchaseLog = JSON.parse(localStorage.getItem('trk_purchases_v16')) || []; // NEW: Purchases Store
     let cart = []; let activeMenuId = null; let isEditingBop = false; 
 
     if(stockLog.length === 0 && localStorage.getItem('trk_stock_v14')) {
@@ -442,6 +496,7 @@
         localStorage.setItem('trk_menus_v16', JSON.stringify(menus));
         localStorage.setItem('trk_sales_v16', JSON.stringify(sales));
         localStorage.setItem('trk_bop_v16', JSON.stringify(bopLog));
+        localStorage.setItem('trk_purchases_v16', JSON.stringify(purchaseLog));
     }
 
     function formatNum(el) { if (!el.value) return; let val = el.value.replace(/[^0-9.]/g, ''); let parts = val.split('.'); if (parts[0]) parts[0] = parseInt(parts[0], 10).toLocaleString('en-US'); el.value = parts.slice(0, 2).join('.'); }
@@ -451,16 +506,69 @@
         document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.side-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        const idx = ['pos','sales','menu','stock','bop'].indexOf(id);
+        const idx = ['pos','sales','menu','stock','purchases','bop'].indexOf(id);
         if(idx >= 0) document.querySelectorAll('.side-btn')[idx].classList.add('active');
         if(id === 'pos') initPOS();
         if(id === 'stock') { updateStockDropdown(); renderStock(); }
         if(id === 'menu') initMenu();
         if(id === 'sales') filterSales();
         if(id === 'bop') renderBOP();
+        if(id === 'purchases') renderPurchases();
         document.getElementById('receipt-modal').style.display = 'none'; 
     }
 
+    // === PURCHASES LOGIC (NEW) ===
+    function addPurchase() {
+        const date = document.getElementById('p-date').value;
+        const name = document.getElementById('p-name').value.trim();
+        const cat = document.getElementById('p-category').value;
+        const cost = getNum(document.getElementById('p-cost').value);
+        
+        if(!date || !name || !cost) return alert("Please fill the date, description, and cost.");
+        
+        purchaseLog.push({ id: Date.now(), date: date, name: name, category: cat, cost: cost });
+        saveAll(); renderPurchases();
+        
+        document.getElementById('p-name').value = '';
+        document.getElementById('p-cost').value = '';
+    }
+
+    function renderPurchases() {
+        const tbody = document.getElementById('purchase-list');
+        tbody.innerHTML = '';
+        let total = 0;
+        
+        // Sort newest first
+        let sorted = [...purchaseLog].sort((a,b) => b.date.localeCompare(a.date));
+        
+        sorted.forEach((p) => {
+            total += p.cost;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b style="color:var(--text-dark)">${p.date}</b></td>
+                <td>${p.name}</td>
+                <td><span style="font-size:10px; background:#e2e8f0; color:#475569; padding:3px 6px; border-radius:4px; font-weight:700;">${p.category}</span></td>
+                <td style="font-weight:bold; color:var(--danger);">Rp ${p.cost.toLocaleString('en-US')}</td>
+                <td style="text-align:right;">
+                    <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+                        <button onclick="deletePurchase(${p.id})" class="btn-icon-sm btn-danger">🗑️</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        document.getElementById('total-purchase-val').innerText = "Rp " + total.toLocaleString('en-US');
+    }
+
+    function deletePurchase(id) {
+        if(confirm("Are you sure you want to delete this purchase record?")) {
+            purchaseLog = purchaseLog.filter(p => p.id !== id);
+            saveAll(); renderPurchases();
+        }
+    }
+
+
+    // === STOCK LOGIC ===
     function updateStockHint() { const type = document.getElementById('s-type').value; }
     function updateStockDropdown() { const sel = document.getElementById('s-name-select'); const agg = getAggregatedStock(); sel.innerHTML = '<option value="">-- Select Item --</option><option value="NEW" style="color:var(--accent); font-weight:bold;">+ ADD NEW ITEM</option>'; Object.keys(agg).forEach(k => sel.add(new Option(k, k))); handleStockDropdownChange(); }
     function handleStockDropdownChange() { const val = document.getElementById('s-name-select').value; const newInp = document.getElementById('s-name-new'); const typeSel = document.getElementById('s-type'); if (val === 'NEW') { newInp.style.display = 'block'; typeSel.disabled = false; } else { newInp.style.display = 'none'; const existing = stockLog.find(x => x.name === val); if (existing) { typeSel.value = existing.type; typeSel.disabled = true; } } }
@@ -506,12 +614,9 @@
     }
     
     function deleteStock(name) {
-        if(confirm(`WARNING: Are you sure you want to completely delete "${name}"?\n\nThis will remove all purchase history and usage logs for this item. Menu items using this ingredient will no longer calculate its cost.`)) {
+        if(confirm(`WARNING: Are you sure you want to completely delete "${name}"?\n\nThis will remove all purchase history and usage logs for this item.`)) {
             stockLog = stockLog.filter(log => log.name !== name);
-            saveAll();
-            renderStock();
-            updateStockDropdown();
-            initMenu();
+            saveAll(); renderStock(); updateStockDropdown(); initMenu();
         }
     }
 
@@ -860,8 +965,8 @@
         } 
     }
 
-    function exportData() { const backup = { stock: stockLog, menu: menus, sales: sales, bop: bopLog }; const blob = new Blob([JSON.stringify(backup)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "TRK_Backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); }
-    function importData(event) { const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if(data.stock && data.menu && data.sales) { if(confirm("Overwrite data?")) { localStorage.setItem('trk_stock_v16', JSON.stringify(data.stock)); localStorage.setItem('trk_menus_v16', JSON.stringify(data.menu)); localStorage.setItem('trk_sales_v16', JSON.stringify(data.sales)); if(data.bop) localStorage.setItem('trk_bop_v16', JSON.stringify(data.bop)); location.reload(); } } } catch(err) { alert("Error reading backup."); } }; reader.readAsText(file); }
+    function exportData() { const backup = { stock: stockLog, menu: menus, sales: sales, bop: bopLog, purchases: purchaseLog }; const blob = new Blob([JSON.stringify(backup)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "TRK_Backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); }
+    function importData(event) { const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if(data.stock && data.menu && data.sales) { if(confirm("Overwrite data?")) { localStorage.setItem('trk_stock_v16', JSON.stringify(data.stock)); localStorage.setItem('trk_menus_v16', JSON.stringify(data.menu)); localStorage.setItem('trk_sales_v16', JSON.stringify(data.sales)); if(data.bop) localStorage.setItem('trk_bop_v16', JSON.stringify(data.bop)); if(data.purchases) localStorage.setItem('trk_purchases_v16', JSON.stringify(data.purchases)); location.reload(); } } } catch(err) { alert("Error reading backup."); } }; reader.readAsText(file); }
     
     function exportSales() { 
         const dataDetailed = [["Date", "Time", "Transaction ID", "Customer", "Menu Item", "Qty", "Sell Price", "Total Sales", "Item Cost (HPP)", "Item Gross Profit"]];
@@ -874,6 +979,14 @@
         const data = [["Item Name", "Type", "Input Cost / Price", "Useful Life (Months)", "Daily Cost Allocation"]];
         bopLog.forEach(item => { let totalCost = item.originVal ? item.originVal : Math.round(item.daily * (item.type === 'Asset' ? (item.life * 30) : 30)); data.push([item.name, item.type, totalCost, item.type === 'Asset' ? item.life : "-", Math.round(item.daily)]); });
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BOP and Assets"); XLSX.writeFile(wb, "TRK_BOP_Assets_Report.xlsx"); 
+    }
+
+    function exportPurchases() {
+        if(purchaseLog.length === 0) return alert("No purchase records to export.");
+        const data = [["Date", "Item Description", "Category", "Cost Amount (Rp)"]];
+        let sorted = [...purchaseLog].sort((a,b) => b.date.localeCompare(a.date));
+        sorted.forEach(p => { data.push([p.date, p.name, p.category, p.cost]); });
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Purchase History"); XLSX.writeFile(wb, "TRK_Purchase_Log.xlsx");
     }
 
     function exportMenuHPP() { 
@@ -895,7 +1008,11 @@
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Inventory Status"); XLSX.writeFile(wb, "TRK_Inventory_Report.xlsx");
     }
 
-    const today = new Date().toISOString().split('T')[0]; document.getElementById('date-start').value = today; document.getElementById('date-end').value = today; nav('pos');
+    const today = new Date().toISOString().split('T')[0]; 
+    document.getElementById('date-start').value = today; 
+    document.getElementById('date-end').value = today; 
+    document.getElementById('p-date').value = today;
+    nav('pos');
 </script>
     <script>
     if ('serviceWorker' in navigator) {
@@ -904,4 +1021,3 @@
 </script>
 </body>
 </html>
-
