@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Raja Kopi - POS v40</title>
+    <title>Tepi Raja Kopi - POS v41</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -337,6 +337,7 @@
 
             <div class="config-card">
                 <h3 style="margin-top:0; margin-bottom:15px; color:var(--text-dark); font-size:14px; flex-shrink:0;">Record New Purchase</h3>
+                <input type="hidden" id="p-edit-id">
                 <label>Date</label>
                 <input type="date" id="p-date" style="margin-bottom:15px;">
                 
@@ -355,7 +356,10 @@
                 <label>Total Cost (Rp)</label>
                 <input type="text" inputmode="decimal" id="p-cost" oninput="formatNum(this)" placeholder="0" style="font-size:16px; font-weight:800; color:var(--text-dark); margin-bottom:20px;">
                 
-                <button class="btn btn-primary" style="width:100%; height:40px; margin-top:auto; flex-shrink:0;" onclick="addPurchase()">RECORD PURCHASE</button>
+                <div style="display:flex; gap:8px; margin-top:auto; flex-shrink:0;">
+                    <button id="btn-add-purchase" class="btn btn-primary" style="flex:1; height:40px;" onclick="addPurchase()">RECORD PURCHASE</button>
+                    <button id="btn-cancel-purchase" class="btn btn-danger" style="display:none; height:40px; padding: 0 15px;" onclick="cancelEditPurchase()">CANCEL</button>
+                </div>
             </div>
         </div>
     </div>
@@ -480,8 +484,8 @@
     let menus = JSON.parse(localStorage.getItem('trk_menus_v16')) || {};
     let sales = JSON.parse(localStorage.getItem('trk_sales_v16')) || [];
     let bopLog = JSON.parse(localStorage.getItem('trk_bop_v16')) || [];
-    let purchaseLog = JSON.parse(localStorage.getItem('trk_purchases_v16')) || []; // NEW: Purchases Store
-    let cart = []; let activeMenuId = null; let isEditingBop = false; 
+    let purchaseLog = JSON.parse(localStorage.getItem('trk_purchases_v16')) || []; 
+    let cart = []; let activeMenuId = null; let isEditingBop = false; let isEditingPurchase = false;
 
     if(stockLog.length === 0 && localStorage.getItem('trk_stock_v14')) {
         stockLog = JSON.parse(localStorage.getItem('trk_stock_v14'));
@@ -517,7 +521,7 @@
         document.getElementById('receipt-modal').style.display = 'none'; 
     }
 
-    // === PURCHASES LOGIC (NEW) ===
+    // === PURCHASES LOGIC ===
     function addPurchase() {
         const date = document.getElementById('p-date').value;
         const name = document.getElementById('p-name').value.trim();
@@ -526,11 +530,47 @@
         
         if(!date || !name || !cost) return alert("Please fill the date, description, and cost.");
         
-        purchaseLog.push({ id: Date.now(), date: date, name: name, category: cat, cost: cost });
-        saveAll(); renderPurchases();
+        if (isEditingPurchase) {
+            const editId = parseInt(document.getElementById('p-edit-id').value);
+            const idx = purchaseLog.findIndex(p => p.id === editId);
+            if (idx !== -1) {
+                purchaseLog[idx] = { id: editId, date: date, name: name, category: cat, cost: cost };
+            }
+            cancelEditPurchase();
+        } else {
+            purchaseLog.push({ id: Date.now(), date: date, name: name, category: cat, cost: cost });
+            document.getElementById('p-name').value = '';
+            document.getElementById('p-cost').value = '';
+        }
         
+        saveAll(); renderPurchases();
+    }
+
+    function editPurchase(id) {
+        const p = purchaseLog.find(x => x.id === id);
+        if(!p) return;
+        isEditingPurchase = true;
+        document.getElementById('p-edit-id').value = id;
+        document.getElementById('p-date').value = p.date;
+        document.getElementById('p-name').value = p.name;
+        document.getElementById('p-category').value = p.category;
+        document.getElementById('p-cost').value = p.cost.toLocaleString('en-US');
+
+        document.getElementById('btn-add-purchase').innerText = 'UPDATE PURCHASE';
+        document.getElementById('btn-add-purchase').classList.replace('btn-primary', 'btn-warning');
+        document.getElementById('btn-cancel-purchase').style.display = 'block';
+    }
+
+    function cancelEditPurchase() {
+        isEditingPurchase = false;
+        document.getElementById('p-edit-id').value = '';
         document.getElementById('p-name').value = '';
         document.getElementById('p-cost').value = '';
+        document.getElementById('p-date').value = new Date().toISOString().split('T')[0];
+
+        document.getElementById('btn-add-purchase').innerText = 'RECORD PURCHASE';
+        document.getElementById('btn-add-purchase').classList.replace('btn-warning', 'btn-primary');
+        document.getElementById('btn-cancel-purchase').style.display = 'none';
     }
 
     function renderPurchases() {
@@ -538,7 +578,6 @@
         tbody.innerHTML = '';
         let total = 0;
         
-        // Sort newest first
         let sorted = [...purchaseLog].sort((a,b) => b.date.localeCompare(a.date));
         
         sorted.forEach((p) => {
@@ -551,6 +590,7 @@
                 <td style="font-weight:bold; color:var(--danger);">Rp ${p.cost.toLocaleString('en-US')}</td>
                 <td style="text-align:right;">
                     <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+                        <button onclick="editPurchase(${p.id})" class="btn-icon-sm btn-warning">✏️</button>
                         <button onclick="deletePurchase(${p.id})" class="btn-icon-sm btn-danger">🗑️</button>
                     </div>
                 </td>
@@ -707,317 +747,4 @@
     }
     function saveMenu() {
         if(!activeMenuId) return; const ings = []; document.querySelectorAll('.ing-row').forEach(row => { ings.push({ name: row.querySelector('.i-name').value, qty: getNum(row.querySelector('.i-qty').value), waste: getNum(row.querySelector('.i-waste').value) }); });
-        menus[activeMenuId].name = document.getElementById('m-name').value; menus[activeMenuId].sellPrice = getNum(document.getElementById('m-price').value); menus[activeMenuId].ings = ings; menus[activeMenuId].hpp = getNum(document.getElementById('m-hpp').innerText);
-        saveAll(); alert("Menu Saved!"); initMenu(); document.getElementById('menu-select').value = activeMenuId;
-    }
-    
-    // === POS LOGIC ===
-    function initPOS() { document.getElementById('trx-id').innerText = "TX-" + Date.now().toString().slice(-6); renderPOS(); }
-    
-    function renderPOS(filter='') { 
-        const g = document.getElementById('pos-grid'); g.innerHTML = ''; 
-        Object.keys(menus).forEach(k => { 
-            const m = menus[k]; 
-            if(m.name.toLowerCase().includes(filter.toLowerCase())) { 
-                const card = document.createElement('div');
-                card.className = 'menu-card';
-                card.onclick = () => addToCart(k);
-                card.innerHTML = `<h4>${m.name}</h4><p>Rp ${m.sellPrice.toLocaleString('en-US')}</p>`;
-                g.appendChild(card);
-            } 
-        }); 
-    }
-    
-    function addToCart(id) { const existing = cart.find(x => x.id === id); if(existing) existing.qty++; else { const m = menus[id]; cart.push({ ...m, id: id, qty: 1 }); } renderCart(); }
-    
-    function renderCart() {
-        const c = document.getElementById('cart-items'); c.innerHTML = ''; let total = 0;
-        cart.forEach((it, i) => { 
-            const lineTotal = it.sellPrice * it.qty; 
-            const row = document.createElement('div');
-            row.style.cssText = "display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px dashed var(--border); padding-bottom:8px;";
-            row.innerHTML = `
-                <div style="flex:1;">
-                    <div style="font-weight:700; color:var(--primary); font-size:12px;">${it.name}</div>
-                    <div style="color:#64748b; font-size:10px;">@${it.sellPrice.toLocaleString('en-US')}</div>
-                </div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, -1)">-</button>
-                    <span style="font-weight:bold; width:16px; text-align:center; font-size:12px;">${it.qty}</span>
-                    <button class="btn btn-accent btn-sm" onclick="updateCartQty(${i}, 1)">+</button>
-                </div>
-                <div style="font-weight:bold; min-width:60px; text-align:right; font-size:12px;">${lineTotal.toLocaleString('en-US')}</div>
-            `;
-            c.appendChild(row);
-            total += lineTotal; 
-        });
-        document.getElementById('cart-total').innerText = "Rp " + total.toLocaleString('en-US'); document.getElementById('cart-subtotal').innerText = "Rp " + total.toLocaleString('en-US'); calcExchange();
-    }
-    
-    function updateCartQty(idx, change) { cart[idx].qty += change; if(cart[idx].qty <= 0) cart.splice(idx, 1); renderCart(); }
-    function togglePay() { const m = document.getElementById('pay-method').value; document.getElementById('cash-box').style.display = m === 'Cash' ? 'block' : 'none'; document.getElementById('qris-box').style.display = m === 'QRIS' ? 'block' : 'none'; calcExchange(); }
-    function calcExchange() { const total = getNum(document.getElementById('cart-total').innerText); const cash = getNum(document.getElementById('cash-in').value); const method = document.getElementById('pay-method').value; let valid = true; if(method === 'Cash') { const ex = cash - total; document.getElementById('exchange-val').innerText = "Rp " + (ex >= 0 ? ex.toLocaleString('en-US') : "0"); if(cash < total) valid = false; } document.getElementById('btn-checkout').disabled = (total === 0 || !valid); }
-    
-    function checkout() {
-        const total = getNum(document.getElementById('cart-total').innerText); 
-        const method = document.getElementById('pay-method').value; 
-        const cash = getNum(document.getElementById('cash-in').value); 
-        let totalCost = 0; 
-        
-        const agg = getAggregatedStock(); 
-        cart.forEach(item => { totalCost += ((item.hpp || 0) * item.qty); if(item.ings) { item.ings.forEach(ing => { if(agg[ing.name]) { const totalReduce = ing.qty * item.qty; const valueReduce = totalReduce * agg[ing.name].avgCost; stockLog.push({ id: Date.now() + Math.random(), name: ing.name, type: 'sale_usage', buyQty: 0, totalVal: -valueReduce, totalBaseUnits: -totalReduce, useUnit: agg[ing.name].useUnit }); } }); } });
-        
-        const now = new Date();
-        const dateStr = now.toISOString().split('T')[0];
-        const timeStr = now.toLocaleTimeString();
-
-        const sale = { id: document.getElementById('trx-id').innerText, date: dateStr, time: timeStr, customer: document.getElementById('cust-name').value || 'Guest', items: [...cart], total: total, cost: totalCost, profit: total - totalCost, method: method, cash: cash, change: method==='Cash' ? (cash - total) : 0 };
-        sales.push(sale); saveAll();
-        
-        document.getElementById('rec-date').innerText = dateStr + " " + timeStr;
-        document.getElementById('rec-id').innerText = sale.id;
-        document.getElementById('rec-cust').innerText = sale.customer;
-        
-        const recItems = document.getElementById('rec-items'); recItems.innerHTML = '';
-        cart.forEach(item => { 
-            const row = document.createElement('div');
-            row.className = 'rec-item';
-            row.innerHTML = `<span>${item.name} x${item.qty}</span><span>${(item.sellPrice * item.qty).toLocaleString('en-US')}</span>`;
-            recItems.appendChild(row);
-        });
-        
-        document.getElementById('rec-total-print').innerText = sale.total.toLocaleString('en-US');
-        document.getElementById('rec-method').innerText = sale.method;
-        document.getElementById('rec-cash').innerText = method === 'Cash' ? sale.cash.toLocaleString('en-US') : document.getElementById('qris-ref').value;
-        document.getElementById('rec-change').innerText = sale.change.toLocaleString('en-US');
-        
-        document.getElementById('receipt-modal').style.display = 'flex'; 
-        
-        document.getElementById('cust-name').value = ''; document.getElementById('qris-ref').value = ''; document.getElementById('cash-in').value = ''; cart = []; renderCart(); initPOS();
-    }
-    
-    function closeModal() { document.getElementById('receipt-modal').style.display = 'none'; }
-    
-    function addBOP(type) { 
-        let id = Date.now();
-        if(isEditingBop) {
-            id = parseInt(document.getElementById('bop-edit-id').value);
-            const idx = bopLog.findIndex(b => b.id == id);
-            if(idx !== -1) bopLog.splice(idx, 1);
-        }
-        
-        let name, dailyCost = 0, originVal = 0, life = 0; 
-        if (type === 'Asset') { 
-            name = document.getElementById('bop-name').value; const price = getNum(document.getElementById('bop-price').value); life = parseFloat(document.getElementById('bop-life').value); 
-            if(!name || !price || !life) return alert("Fill Asset fields"); 
-            dailyCost = price / (life * 30); originVal = price;
-        } else { 
-            name = document.getElementById('bill-name').value; const monthly = getNum(document.getElementById('bill-cost').value); 
-            if(!name || !monthly) return alert("Fill Bill fields"); 
-            dailyCost = monthly / 30; originVal = monthly;
-        } 
-        
-        bopLog.push({ id: id, name: name, type: type, daily: dailyCost, originVal: originVal, life: life }); 
-        saveAll(); clearBopInputs(); renderBOP(); 
-    }
-
-    function editBOP(id) { 
-        const item = bopLog.find(b => b.id == id); if(!item) return;
-        isEditingBop = true;
-        document.getElementById('bop-edit-id').value = id;
-        
-        if(item.type === 'Asset') { 
-            document.getElementById('bop-name').value = item.name; 
-            document.getElementById('bop-price').value = Math.round(item.originVal || (item.daily * item.life * 30)).toLocaleString('en-US');
-            document.getElementById('bop-life').value = item.life || 36;
-            
-            document.getElementById('asset-form-container').classList.add('editing-highlight');
-            document.getElementById('btn-add-asset').innerText = 'Update';
-            document.getElementById('btn-cancel-asset').style.display = 'block';
-            
-            document.getElementById('bill-form-container').style.opacity = '0.5';
-            document.getElementById('btn-add-bill').disabled = true;
-        } else { 
-            document.getElementById('bill-name').value = item.name; 
-            document.getElementById('bill-cost').value = Math.round(item.originVal || (item.daily * 30)).toLocaleString('en-US'); 
-            
-            document.getElementById('bill-form-container').classList.add('editing-highlight');
-            document.getElementById('btn-add-bill').innerText = 'Update';
-            document.getElementById('btn-cancel-bill').style.display = 'block';
-            
-            document.getElementById('asset-form-container').style.opacity = '0.5';
-            document.getElementById('btn-add-asset').disabled = true;
-        } 
-    }
-
-    function cancelEditBOP() { clearBopInputs(); }
-
-    function clearBopInputs() { 
-        document.getElementById('bop-name').value = ''; document.getElementById('bop-price').value = ''; document.getElementById('bop-life').value = ''; document.getElementById('bill-name').value = ''; document.getElementById('bill-cost').value = ''; 
-        
-        document.getElementById('asset-form-container').classList.remove('editing-highlight');
-        document.getElementById('bill-form-container').classList.remove('editing-highlight');
-        document.getElementById('asset-form-container').style.opacity = '1';
-        document.getElementById('bill-form-container').style.opacity = '1';
-
-        document.getElementById('btn-add-asset').innerText = 'Add Asset';
-        document.getElementById('btn-add-asset').disabled = false;
-        document.getElementById('btn-cancel-asset').style.display = 'none';
-        
-        document.getElementById('btn-add-bill').innerText = 'Add Bill';
-        document.getElementById('btn-add-bill').disabled = false;
-        document.getElementById('btn-cancel-bill').style.display = 'none';
-        
-        isEditingBop = false;
-    }
-    
-    function renderBOP() { 
-        const tbody = document.getElementById('bop-list'); tbody.innerHTML = ''; let totalDaily = 0; 
-        bopLog.forEach((item, i) => { 
-            totalDaily += item.daily; 
-            let costDisplay = item.originVal ? item.originVal.toLocaleString('en-US') : Math.round(item.daily * (item.type==='Asset'? (item.life*30) : 30)).toLocaleString('en-US');
-            
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.name}</td>
-                <td>${item.type}</td>
-                <td>${costDisplay}</td>
-                <td>${item.type==='Asset' ? item.life : '-'}</td>
-                <td>Rp ${Math.round(item.daily).toLocaleString('en-US')}</td>
-                <td style="text-align:right;">
-                    <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
-                        <button onclick="editBOP(${item.id})" class="btn-icon-sm btn-warning">✏️</button>
-                        <button onclick="bopLog.splice(${i},1);saveAll();renderBOP()" class="btn-icon-sm btn-danger">🗑️</button>
-                    </div>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        }); 
-        document.getElementById('total-daily-bop').innerText = "Rp " + Math.round(totalDaily).toLocaleString('en-US'); return totalDaily; 
-    }
-
-    function filterSales() { 
-        const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; 
-        let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); 
-        let rev = 0, cost = 0, grossProfit = 0, totalItems = 0; 
-        
-        const tbody = document.getElementById('sales-body'); tbody.innerHTML = ''; 
-        filtered.slice().reverse().forEach(s => { 
-            rev += s.total; cost += s.cost; grossProfit += s.profit; 
-            let itemsStr = ""; 
-            if(s.items) { s.items.forEach(i => { totalItems += i.qty; itemsStr += `${i.name} <b>x${i.qty}</b><br>`; }); } 
-            
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><b style="color:var(--text-dark)">${s.date}</b><br><small style="color:#64748b">${s.time}</small></td>
-                <td>${s.id}</td>
-                <td>${s.customer}</td>
-                <td style="font-size:10px; color:#64748b;">${itemsStr}</td>
-                <td>${s.total.toLocaleString('en-US')}</td>
-                <td>${s.method}</td>
-                <td style="color:var(--success); font-weight:800;">${s.profit.toLocaleString('en-US')}</td>
-                <td><button onclick="delSale('${s.id}')" class="btn-icon-sm btn-danger">🗑️</button></td>
-            `;
-            tbody.appendChild(tr);
-        }); 
-        
-        const days = new Set(filtered.map(s => s.date)).size || 1; const dailyBopCost = renderBOP(); const totalBop = dailyBopCost * days; const netProfit = grossProfit - totalBop; 
-        document.getElementById('sum-count').innerHTML = `${filtered.length} Txns`; document.getElementById('sum-rev').innerText = "Rp " + rev.toLocaleString('en-US'); document.getElementById('sum-hpp').innerText = "Rp " + cost.toLocaleString('en-US'); document.getElementById('sum-bop').innerText = "Rp " + Math.round(totalBop).toLocaleString('en-US'); document.getElementById('sum-profit').innerText = "Rp " + Math.round(netProfit).toLocaleString('en-US'); 
-    }
-    
-    function openProductSummary() { 
-        const start = document.getElementById('date-start').value; const end = document.getElementById('date-end').value; 
-        let filtered = sales; if(start && end) filtered = sales.filter(s => s.date >= start && s.date <= end); 
-        let agg = {}; 
-        filtered.forEach(s => { s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { qty: 0, rev: 0 }; agg[i.name].qty += i.qty; agg[i.name].rev += (i.qty * i.sellPrice); }); }); 
-        
-        const tb = document.getElementById('product-summary-body'); tb.innerHTML = ''; 
-        Object.keys(agg).forEach(k => { 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="padding:10px; border-bottom:1px solid #f1f5f9;">${k}</td>
-                <td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].qty}</td>
-                <td style="padding:10px; border-bottom:1px solid #f1f5f9; text-align:right;">${agg[k].rev.toLocaleString('en-US')}</td>
-            `;
-            tb.appendChild(tr);
-        }); 
-        document.getElementById('product-modal').style.display = 'flex'; 
-    }
-    
-    function delSale(id) { 
-        if(confirm("Delete record and RESTORE stock?")) {
-            const saleToDel = sales.find(s => s.id === id);
-            if(saleToDel) {
-                const agg = getAggregatedStock();
-                saleToDel.items.forEach(saleItem => {
-                    if(saleItem.ings) {
-                        saleItem.ings.forEach(ing => {
-                            if(agg[ing.name]) {
-                                const totalRestore = ing.qty * saleItem.qty;
-                                const valRestore = totalRestore * agg[ing.name].avgCost;
-                                stockLog.push({ id: Date.now() + Math.random(), name: ing.name, type: 'sale_reversal', buyQty: 0, totalVal: valRestore, totalBaseUnits: totalRestore, useUnit: agg[ing.name].useUnit });
-                            }
-                        });
-                    }
-                });
-            }
-            sales = sales.filter(s => s.id !== id); saveAll(); filterSales(); 
-        } 
-    }
-
-    function exportData() { const backup = { stock: stockLog, menu: menus, sales: sales, bop: bopLog, purchases: purchaseLog }; const blob = new Blob([JSON.stringify(backup)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "TRK_Backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); }
-    function importData(event) { const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if(data.stock && data.menu && data.sales) { if(confirm("Overwrite data?")) { localStorage.setItem('trk_stock_v16', JSON.stringify(data.stock)); localStorage.setItem('trk_menus_v16', JSON.stringify(data.menu)); localStorage.setItem('trk_sales_v16', JSON.stringify(data.sales)); if(data.bop) localStorage.setItem('trk_bop_v16', JSON.stringify(data.bop)); if(data.purchases) localStorage.setItem('trk_purchases_v16', JSON.stringify(data.purchases)); location.reload(); } } } catch(err) { alert("Error reading backup."); } }; reader.readAsText(file); }
-    
-    function exportSales() { 
-        const dataDetailed = [["Date", "Time", "Transaction ID", "Customer", "Menu Item", "Qty", "Sell Price", "Total Sales", "Item Cost (HPP)", "Item Gross Profit"]];
-        sales.forEach(s => { s.items.forEach(i => { let itemTotal = i.sellPrice * i.qty; let itemHpp = (i.hpp || 0) * i.qty; dataDetailed.push([s.date, s.time, s.id, s.customer, i.name, i.qty, i.sellPrice, itemTotal, itemHpp, itemTotal - itemHpp]); }); });
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dataDetailed), "Detailed Sales"); XLSX.writeFile(wb, "TRK_Sales_Report.xlsx"); 
-    }
-
-    function exportBOP() { 
-        if(bopLog.length === 0) return alert("No overhead or asset data to export.");
-        const data = [["Item Name", "Type", "Input Cost / Price", "Useful Life (Months)", "Daily Cost Allocation"]];
-        bopLog.forEach(item => { let totalCost = item.originVal ? item.originVal : Math.round(item.daily * (item.type === 'Asset' ? (item.life * 30) : 30)); data.push([item.name, item.type, totalCost, item.type === 'Asset' ? item.life : "-", Math.round(item.daily)]); });
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BOP and Assets"); XLSX.writeFile(wb, "TRK_BOP_Assets_Report.xlsx"); 
-    }
-
-    function exportPurchases() {
-        if(purchaseLog.length === 0) return alert("No purchase records to export.");
-        const data = [["Date", "Item Description", "Category", "Cost Amount (Rp)"]];
-        let sorted = [...purchaseLog].sort((a,b) => b.date.localeCompare(a.date));
-        sorted.forEach(p => { data.push([p.date, p.name, p.category, p.cost]); });
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Purchase History"); XLSX.writeFile(wb, "TRK_Purchase_Log.xlsx");
-    }
-
-    function exportMenuHPP() { 
-        const agg = getAggregatedStock();
-        const data = [["Menu Name", "Sell Price", "Ingredient", "Unit", "Qty Required", "Waste %", "Cost Contribution"]];
-        Object.values(menus).forEach(m => {
-            if (m.ings && m.ings.length > 0) {
-                m.ings.forEach(ing => { let stockItem = agg[ing.name]; let cost = stockItem && stockItem.avgCost ? (ing.qty * stockItem.avgCost) * (1 + (ing.waste/100)) : 0; data.push([m.name, m.sellPrice, ing.name, stockItem ? stockItem.useUnit : '-', ing.qty, ing.waste, cost]); });
-            } else { data.push([m.name, m.sellPrice, "NO INGREDIENTS", "-", 0, 0, 0]); }
-        });
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Recipe Breakdown"); XLSX.writeFile(wb, "Menu_HPP_Analysis.xlsx"); 
-    }
-
-    function exportStock() {
-        const agg = getAggregatedStock();
-        if (Object.keys(agg).length === 0) return alert("No inventory data to export.");
-        const data = [["Item Name", "Total Stock", "Unit", "Avg Cost/Unit (Rp)", "Total Asset Value (Rp)"]];
-        Object.keys(agg).forEach(name => { const item = agg[name]; data.push([name, item.totalBase, item.useUnit, item.avgCost.toFixed(2), item.totalVal]); });
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Inventory Status"); XLSX.writeFile(wb, "TRK_Inventory_Report.xlsx");
-    }
-
-    const today = new Date().toISOString().split('T')[0]; 
-    document.getElementById('date-start').value = today; 
-    document.getElementById('date-end').value = today; 
-    document.getElementById('p-date').value = today;
-    nav('pos');
-</script>
-    <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(() => console.log('SW Registered')).catch((err) => console.log('SW Failed:', err));
-    }
-</script>
-</body>
-</html>
+        menus[activeMenuId].name = document.getElementById('m-name').value; menus[activeMenuId].sellPrice = getNum(document.getElementById('m-price').
