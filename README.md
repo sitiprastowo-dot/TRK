@@ -1,4 +1,4 @@
-# Tepi Raja Kopi POS ☕
+# Tepi Kopi POS ☕
 
 A modern, offline-first Point of Sale (POS) system built for coffee shops. This application runs entirely in the browser using LocalStorage, making it fast, secure, and internet-independent.
 
@@ -36,4 +36,4 @@ No server installation required!
 -   **Persistence:** All data is saved automatically to your browser's Local Storage.
 
 ## 📄 License
-Private Property of Tepi Raja Kopi.
+Private Property of Tepi Kopi.
