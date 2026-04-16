@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tepi Kopi - POS v42</title>
+    <title>v43</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -77,7 +77,6 @@
 
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
         
-        /* TOUCH FIXES ADDED HERE */
         .menu-card { display: flex; flex-direction: column; height: 110px; border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.1s; background: white; justify-content: space-between; user-select: none; -webkit-user-select: none; }
         .menu-card > * { pointer-events: none; } 
         .menu-card:active { transform: scale(0.97); border-color: var(--accent); }
@@ -133,7 +132,7 @@
 
 <div class="sidebar">
     <div class="logo-area">
-        <div class="logo-icon">TRK</div>
+        <div class="logo-icon">TK</div>
     </div>
     
     <button class="side-btn active" onclick="nav('pos')" title="POS Terminal"><span class="icon">🛒</span></button>
@@ -483,6 +482,7 @@
 
 <script>
     // === DATA STORE ===
+    // Left original variable names to protect user data from being wiped during the rebrand
     let stockLog = JSON.parse(localStorage.getItem('trk_stock_v16')) || [];
     let menus = JSON.parse(localStorage.getItem('trk_menus_v16')) || {};
     let sales = JSON.parse(localStorage.getItem('trk_sales_v16')) || [];
@@ -1017,20 +1017,20 @@
         } 
     }
 
-    function exportData() { const backup = { stock: stockLog, menu: menus, sales: sales, bop: bopLog, purchases: purchaseLog }; const blob = new Blob([JSON.stringify(backup)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "TRK_Backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); }
+    function exportData() { const backup = { stock: stockLog, menu: menus, sales: sales, bop: bopLog, purchases: purchaseLog }; const blob = new Blob([JSON.stringify(backup)], {type: "application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "TK_Backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); }
     function importData(event) { const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if(data.stock && data.menu && data.sales) { if(confirm("Overwrite data?")) { localStorage.setItem('trk_stock_v16', JSON.stringify(data.stock)); localStorage.setItem('trk_menus_v16', JSON.stringify(data.menu)); localStorage.setItem('trk_sales_v16', JSON.stringify(data.sales)); if(data.bop) localStorage.setItem('trk_bop_v16', JSON.stringify(data.bop)); if(data.purchases) localStorage.setItem('trk_purchases_v16', JSON.stringify(data.purchases)); location.reload(); } } } catch(err) { alert("Error reading backup."); } }; reader.readAsText(file); }
     
     function exportSales() { 
         const dataDetailed = [["Date", "Time", "Transaction ID", "Customer", "Menu Item", "Qty", "Sell Price", "Total Sales", "Item Cost (HPP)", "Item Gross Profit"]];
         sales.forEach(s => { s.items.forEach(i => { let itemTotal = i.sellPrice * i.qty; let itemHpp = (i.hpp || 0) * i.qty; dataDetailed.push([s.date, s.time, s.id, s.customer, i.name, i.qty, i.sellPrice, itemTotal, itemHpp, itemTotal - itemHpp]); }); });
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dataDetailed), "Detailed Sales"); XLSX.writeFile(wb, "TRK_Sales_Report.xlsx"); 
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dataDetailed), "Detailed Sales"); XLSX.writeFile(wb, "TK_Sales_Report.xlsx"); 
     }
 
     function exportBOP() { 
         if(bopLog.length === 0) return alert("No overhead or asset data to export.");
         const data = [["Item Name", "Type", "Input Cost / Price", "Useful Life (Months)", "Daily Cost Allocation"]];
         bopLog.forEach(item => { let totalCost = item.originVal ? item.originVal : Math.round(item.daily * (item.type === 'Asset' ? (item.life * 30) : 30)); data.push([item.name, item.type, totalCost, item.type === 'Asset' ? item.life : "-", Math.round(item.daily)]); });
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BOP and Assets"); XLSX.writeFile(wb, "TRK_BOP_Assets_Report.xlsx"); 
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "BOP and Assets"); XLSX.writeFile(wb, "TK_BOP_Assets_Report.xlsx"); 
     }
 
     function exportPurchases() {
@@ -1038,7 +1038,7 @@
         const data = [["Date", "Item Description", "Category", "Cost Amount (Rp)"]];
         let sorted = [...purchaseLog].sort((a,b) => b.date.localeCompare(a.date));
         sorted.forEach(p => { data.push([p.date, p.name, p.category, p.cost]); });
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Purchase History"); XLSX.writeFile(wb, "TRK_Purchase_Log.xlsx");
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Purchase History"); XLSX.writeFile(wb, "TK_Purchase_Log.xlsx");
     }
 
     function exportMenuHPP() { 
@@ -1057,7 +1057,7 @@
         if (Object.keys(agg).length === 0) return alert("No inventory data to export.");
         const data = [["Item Name", "Total Stock", "Unit", "Avg Cost/Unit (Rp)", "Total Asset Value (Rp)"]];
         Object.keys(agg).forEach(name => { const item = agg[name]; data.push([name, item.totalBase, item.useUnit, item.avgCost.toFixed(2), item.totalVal]); });
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Inventory Status"); XLSX.writeFile(wb, "TRK_Inventory_Report.xlsx");
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), "Inventory Status"); XLSX.writeFile(wb, "TK_Inventory_Report.xlsx");
     }
 
     const today = new Date().toISOString().split('T')[0]; 
