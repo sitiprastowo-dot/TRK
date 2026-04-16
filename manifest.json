@@ -1,6 +1,6 @@
 {
-  "name": "Tepi Raja Kopi POS",
-  "short_name": "TRK POS",
+  "name": "TEPI KOPI POS",
+  "short_name": "TK POS",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
