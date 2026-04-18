@@ -1,7 +1,7 @@
 {
   "name": "TEPI KOPI POS",
   "short_name": "TK POS",
-  "start_url": "./",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
   "theme_color": "#0f172a",
