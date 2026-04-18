@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tk-pos-v48'; 
+const CACHE_NAME = 'tk-pos-v49'; 
 const ASSETS = [
   './index.html',
   './manifest.json',
