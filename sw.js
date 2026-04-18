@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tk-pos-v43'; 
+const CACHE_NAME = 'tk-pos-v44'; 
 const ASSETS = [
   './',
   './index.html',
