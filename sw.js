@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tk-pos-v47'; 
+const CACHE_NAME = 'tk-pos-v48'; 
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -6,13 +6,11 @@ const ASSETS = [
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap'
 ];
 
-// Force the new service worker to activate immediately 
 self.addEventListener('install', (e) => { 
     self.skipWaiting(); 
     e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))); 
 });
 
-// Take control of the tablet immediately without requiring a hard refresh
 self.addEventListener('activate', (e) => { 
     e.waitUntil(caches.keys().then((keys) => { 
         return Promise.all(keys.map((key) => { 
@@ -21,15 +19,11 @@ self.addEventListener('activate', (e) => {
     }).then(() => self.clients.claim())); 
 });
 
-// Smart fetch: If Android asks for a weird root URL, force it to index.html
 self.addEventListener('fetch', (e) => { 
     e.respondWith(
         caches.match(e.request).then((response) => {
             if (response) return response;
-            // Fallback for navigation requests (opening the app)
-            if (e.request.mode === 'navigate') {
-                return caches.match('./index.html');
-            }
+            if (e.request.mode === 'navigate') return caches.match('./index.html');
             return fetch(e.request);
         })
     ); 
