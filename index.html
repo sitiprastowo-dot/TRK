@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TK POS - Clean Architecture (v46)</title>
+    <title>TK POS - Clean Architecture (v47)</title>
     
     <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924514.png">
@@ -89,7 +89,7 @@
         .btn-danger { background: var(--danger); color: white; }
         .btn-warning { background: var(--warning); color: white; }
         .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 6px; }
-        .btn-icon { width: 28px; height: 28px; padding: 0; font-size: 12px; border-radius: 6px; border: 1px solid transparent; }
+        .btn-icon { width: 28px; height: 28px; padding: 0; font-size: 12px; border-radius: 6px; border: 1px solid transparent; cursor: pointer;}
 
         /* Tables */
         table { width: 100%; border-collapse: collapse; font-size: 12px; background: white; text-align: left; }
@@ -123,12 +123,12 @@
 
 <nav class="sidebar">
     <div class="logo-icon">TK</div>
-    <button class="side-btn active" onclick="App.navigate('pos')" title="POS"><span class="icon">🛒</span></button>
-    <button class="side-btn" onclick="App.navigate('sales')" title="Sales"><span class="icon">📊</span></button>
-    <button class="side-btn" onclick="App.navigate('menu')" title="Menu Config"><span class="icon">☕</span></button>
-    <button class="side-btn" onclick="App.navigate('stock')" title="Inventory"><span class="icon">📦</span></button>
-    <button class="side-btn" onclick="App.navigate('purchases')" title="Purchases"><span class="icon">🧾</span></button>
-    <button class="side-btn" onclick="App.navigate('bop')" title="Overhead"><span class="icon">📉</span></button>
+    <button class="side-btn active" onclick="UI.nav('pos')" title="POS"><span class="icon">🛒</span></button>
+    <button class="side-btn" onclick="UI.nav('sales')" title="Sales"><span class="icon">📊</span></button>
+    <button class="side-btn" onclick="UI.nav('menu')" title="Menu Config"><span class="icon">☕</span></button>
+    <button class="side-btn" onclick="UI.nav('stock')" title="Inventory"><span class="icon">📦</span></button>
+    <button class="side-btn" onclick="UI.nav('purchases')" title="Purchases"><span class="icon">🧾</span></button>
+    <button class="side-btn" onclick="UI.nav('bop')" title="Overhead"><span class="icon">📉</span></button>
     
     <div class="mt-auto w-100">
         <div class="border-dashed mb-15"></div>
