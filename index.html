@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TK POS v48</title>
+    <title>TK POS - Version 49</title>
     
     <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924514.png">
@@ -107,7 +107,7 @@
             color: var(--muted); 
             text-transform: uppercase; 
             font-weight: 800; 
-            box-shadow: inset 0 -2px 0 0 var(--border); /* Prevents border scrolling bug */
+            box-shadow: inset 0 -2px 0 0 var(--border);
             border-bottom: none; 
         }
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); vertical-align: middle; }
@@ -256,10 +256,10 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th style="width:35%;">Ingredient</th>
-                                    <th style="width:15%;" class="text-center">Unit</th>
-                                    <th style="width:15%;">Qty</th>
-                                    <th style="width:15%;">Waste %</th>
+                                    <th style="width:50%;">Ingredient</th>
+                                    <th style="width:10%;" class="text-center">Unit</th>
+                                    <th style="width:10%;" class="text-center">Qty</th>
+                                    <th style="width:10%;" class="text-center">Waste %</th>
                                     <th class="text-right">Cost</th>
                                     <th style="width:40px;"></th>
                                 </tr>
@@ -298,7 +298,7 @@
         <div class="panel mb-15 shrink-0">
             <div class="panel-head">Record Purchase (Inbound)</div>
             <div class="panel-body p-15">
-                <div class="grid gap-15 align-end" style="grid-template-columns: 2fr 1.5fr 1fr 1fr auto;">
+                <div class="grid gap-15 align-end" style="grid-template-columns: 6fr 1.2fr 1fr 1.5fr auto;">
                     <div><label>Item</label><select id="s-sel" onchange="Stock.handleSelect()"></select><input type="text" id="s-new" class="hidden mt-10" placeholder="New item name..."></div>
                     <div><label>Unit Format</label><select id="s-type"><option value="weight">Kg -> Grams</option><option value="volume">Liters -> ml</option><option value="unit">Pcs -> Pcs</option></select></div>
                     <div><label>Qty Bought</label><input type="text" inputmode="decimal" id="s-qty" oninput="Utils.formatInput(this)"></div>
@@ -381,7 +381,10 @@
             
             <div class="panel flex-col">
                 <div class="info-bar shrink-0"><span>Total Daily Overhead Allocation:</span><span id="b-total-val" class="text-md text-heavy">Rp 0</span></div>
-                <div class="panel-body p-0 scroll-y"><table id="table-bop"></table></div>
+                <div class="panel-body p-0 scroll-y">
+                    <table id="table-bop">
+                        </table>
+                </div>
             </div>
         </div>
     </section>
@@ -583,12 +586,12 @@ const Menu = {
         let agg = Stock.getAgg(), tr = document.createElement('tr'); tr.className = 'ing-row';
         let opts = `<option value="">Select...</option>` + Object.keys(agg).map(k => `<option value="${k}" ${data.name===k?'selected':''}>${k}</option>`).join('');
         
-        // FIXED INGREDIENT ROW HTML
+        /* MENU CONFIG INPUTS: Made Qty and Waste inputs strictly centered, visually smaller padding */
         tr.innerHTML = `
             <td class="p-5"><select class="i-name mb-0 w-100" onchange="Menu.updateUnit(this); Menu.calcHPP()">${opts}</select></td>
-            <td class="p-5 text-xs text-bold text-muted i-unit text-center">${data.name && agg[data.name] ? agg[data.name].useUnit : '-'}</td>
-            <td class="p-5"><input type="text" inputmode="decimal" class="i-qty mb-0 w-100" placeholder="0" value="${data.qty || ''}" oninput="Utils.formatInput(this); Menu.calcHPP()"></td>
-            <td class="p-5"><input type="text" inputmode="decimal" class="i-waste mb-0 w-100" placeholder="0" value="${data.waste || ''}" oninput="Utils.formatInput(this); Menu.calcHPP()"></td>
+            <td class="p-5 text-sm text-bold text-muted i-unit text-center">${data.name && agg[data.name] ? agg[data.name].useUnit : '-'}</td>
+            <td class="p-5"><input type="text" inputmode="decimal" class="i-qty mb-0 w-100 text-center" style="padding: 10px 5px;" placeholder="0" value="${data.qty || ''}" oninput="Utils.formatInput(this); Menu.calcHPP()"></td>
+            <td class="p-5"><input type="text" inputmode="decimal" class="i-waste mb-0 w-100 text-center" style="padding: 10px 5px;" placeholder="0" value="${data.waste || ''}" oninput="Utils.formatInput(this); Menu.calcHPP()"></td>
             <td class="p-5 text-right text-bold i-cost">0</td>
             <td class="p-5 text-center"><button class="btn-icon text-danger bg-transparent" onclick="this.closest('tr').remove(); Menu.calcHPP()">✕</button></td>
         `;
@@ -709,10 +712,15 @@ const Purchases = {
 /** * MODULE 8: BOP LOGIC */
 const BOP = {
     render: () => {
-        let html = `<thead><tr><th>Item</th><th>Type</th><th>Input Cost</th><th>Life (Mo)</th><th>Daily Cost</th><th class="text-right">Actions</th></tr></thead><tbody>`, total = 0;
+        /* BOP FORMATTING FIX: Enforced identical 22% widths and strictly added 'Rp' to both Input and Daily Cost */
+        let html = `<thead><tr><th>Item</th><th>Type</th><th style="width: 22%;">Input Cost</th><th>Life (Mo)</th><th style="width: 22%;">Daily Cost</th><th class="text-right">Actions</th></tr></thead><tbody>`, total = 0;
         Store.state.bop.forEach((b, i) => {
-            total += b.daily; let costStr = b.originVal ? b.originVal : Math.round(b.daily * (b.type==='Asset' ? b.life*30 : 30));
-            html += `<tr><td>${b.name}</td><td>${b.type}</td><td>${Utils.fmt(costStr)}</td><td>${b.type==='Asset'?b.life:'-'}</td><td class="text-bold">Rp ${Utils.fmt(b.daily)}</td>
+            total += b.daily; 
+            let costStr = b.originVal ? b.originVal : Math.round(b.daily * (b.type==='Asset' ? b.life*30 : 30));
+            html += `<tr><td>${b.name}</td><td>${b.type}</td>
+                <td>Rp ${Utils.fmt(costStr)}</td>
+                <td>${b.type==='Asset'?b.life:'-'}</td>
+                <td class="text-bold">Rp ${Utils.fmt(b.daily)}</td>
                 <td class="text-right"><div class="flex gap-5" style="justify-content:flex-end"><button class="btn-icon btn-warning" onclick="BOP.edit(${b.id})">✏️</button><button class="btn-icon btn-danger" onclick="BOP.del(${i})">🗑️</button></div></td></tr>`;
         });
         UI.html('table-bop', html + '</tbody>'); UI.text('b-total-val', `Rp ${Utils.fmt(total)}`); return total;
