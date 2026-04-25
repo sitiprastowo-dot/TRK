@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TK POS - Version 49</title>
+    <title>TK POS - Version 50</title>
     
     <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924514.png">
@@ -13,9 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        /* =========================================
-           1. CSS VARIABLES & BASE SETUP
-        ========================================= */
         :root { 
             --primary: #0f172a; --accent: #3b82f6; --bg: #f1f5f9; 
             --card: #ffffff; --text: #334155; --text-dark: #020617; 
@@ -29,47 +26,26 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* =========================================
-           2. UTILITY CLASSES
-        ========================================= */
-        .flex { display: flex; }
-        .flex-col { display: flex; flex-direction: column; }
+        .flex { display: flex; } .flex-col { display: flex; flex-direction: column; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
         .flex-center { display: flex; justify-content: center; align-items: center; }
-        .grid { display: grid; }
-        
-        .gap-5 { gap: 5px; } .gap-10 { gap: 10px; } .gap-15 { gap: 15px; }
+        .grid { display: grid; } .gap-5 { gap: 5px; } .gap-10 { gap: 10px; } .gap-15 { gap: 15px; }
         .mb-0 { margin-bottom: 0 !important; } .mb-5 { margin-bottom: 5px; } .mb-10 { margin-bottom: 10px; } .mb-15 { margin-bottom: 15px; } 
         .mt-10 { margin-top: 10px; } .mt-auto { margin-top: auto; }
         .p-0 { padding: 0 !important; } .p-5 { padding: 5px; } .p-10 { padding: 10px; } .p-15 { padding: 15px; }
-        .pb-10 { padding-bottom: 10px; } .pt-10 { padding-top: 10px; } .ml-10 { margin-left: 10px; }
         
         .text-bold { font-weight: 700; } .text-heavy { font-weight: 800; }
         .text-xs { font-size: 10px; } .text-sm { font-size: 11px; } .text-md { font-size: 13px; } .text-lg { font-size: 16px; } .text-xl { font-size: 18px; }
-        .text-primary { color: var(--primary); } .text-accent { color: var(--accent); }
-        .text-success { color: var(--success); } .text-danger { color: var(--danger); } 
-        .text-warning { color: var(--warning); } .text-muted { color: var(--muted); }
-        .text-right { text-align: right; } .text-center { text-align: center; }
+        .text-primary { color: var(--primary); } .text-accent { color: var(--accent); } .text-success { color: var(--success); } .text-danger { color: var(--danger); } 
+        .text-right { text-align: right; } .text-center { text-align: center; } .hidden { display: none !important; }
+        .w-100 { width: 100%; } .w-auto { width: auto; } .h-100 { height: 100%; } .shrink-0 { flex-shrink: 0; } .flex-1 { flex: 1; min-height: 0; overflow: hidden; }
+        .scroll-y { overflow-y: auto; overflow-x: hidden; position: relative; } .border-bottom { border-bottom: 1px solid var(--border); } .border-dashed { border-bottom: 1px dashed var(--border); } .border-radius-8 { border-radius: 8px; }
 
-        .hidden { display: none !important; }
-        .w-100 { width: 100%; } .w-auto { width: auto; } .h-100 { height: 100%; }
-        .shrink-0 { flex-shrink: 0; } .flex-1 { flex: 1; min-height: 0; overflow: hidden; }
-        .scroll-y { overflow-y: auto; overflow-x: hidden; position: relative; }
-        .border-bottom { border-bottom: 1px solid var(--border); }
-        .border-dashed { border-bottom: 1px dashed var(--border); }
-        .border-radius-8 { border-radius: 8px; }
-
-        /* =========================================
-           3. UI COMPONENTS
-        ========================================= */
-        /* Sidebar */
-        .sidebar { width: 80px; background: var(--primary); padding: 15px 10px; color: white; flex-shrink: 0; z-index: 50; height: 100dvh; display: flex; flex-direction: column; overflow-y: auto; }
+        .sidebar { width: 80px; background: var(--primary); padding: 15px 10px; color: white; flex-shrink: 0; z-index: 50; height: 100dvh; display: flex; flex-direction: column; }
         .logo-icon { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; box-shadow: 0 0 15px rgba(59,130,246,0.4); margin: 0 auto 25px; }
         .side-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; padding: 12px 0; border-radius: 10px; margin-bottom: 8px; transition: 0.2s; font-size: 20px; }
-        .side-btn:hover { color: white; background: rgba(255,255,255,0.08); }
         .side-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
 
-        /* Main Sections */
         .main-content { flex: 1; padding: 15px; display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
         .section { display: none; flex: 1; flex-direction: column; height: 100%; animation: fadeIn 0.2s ease-out; }
         .section.active { display: flex; }
@@ -79,61 +55,32 @@
         .panel-head { padding: 12px 15px; background: white; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); text-transform: uppercase; flex-shrink: 0; }
         .panel-body { flex: 1; padding: 12px; overflow-y: auto; }
 
-        /* Form Inputs */
         input, select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; width: 100%; font-size: 13px; font-family: inherit; color: var(--text-dark); font-weight: 500; transition: 0.2s; background: white; }
         input:focus, select:focus { border-color: var(--accent); outline: none; }
         label { font-size: 10px; font-weight: 700; color: var(--muted); margin-bottom: 4px; display: block; text-transform: uppercase; }
         
         .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-accent { background: var(--accent); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 6px; }
+        .btn-primary { background: var(--primary); color: white; } .btn-accent { background: var(--accent); color: white; } .btn-success { background: var(--success); color: white; } .btn-danger { background: var(--danger); color: white; } .btn-warning { background: var(--warning); color: white; } .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 6px; }
         .btn-icon { width: 28px; height: 28px; padding: 0; font-size: 12px; border-radius: 6px; border: 1px solid transparent; cursor: pointer;}
-        .bg-transparent { background: transparent; }
 
-        /* Tables (STICKY HEADER FIX) */
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; background: white; text-align: left; }
-        th { 
-            position: sticky; 
-            top: 0; 
-            z-index: 20; 
-            background: #ffffff; 
-            padding: 12px; 
-            font-size: 10px; 
-            color: var(--muted); 
-            text-transform: uppercase; 
-            font-weight: 800; 
-            box-shadow: inset 0 -2px 0 0 var(--border);
-            border-bottom: none; 
-        }
+        th { position: sticky; top: 0; z-index: 20; background: #ffffff; padding: 12px; font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 800; box-shadow: inset 0 -2px 0 0 var(--border); border-bottom: none; }
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); vertical-align: middle; }
 
-        /* POS Grid & Menu Cards */
         .pos-grid { display: grid; grid-template-columns: 1fr 280px 300px; gap: 15px; height: 100%; }
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
         .menu-card { display: flex; flex-direction: column; justify-content: space-between; height: 110px; border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; background: white; user-select: none; }
-        .menu-card > * { pointer-events: none; }
-        .menu-card:active { transform: scale(0.97); border-color: var(--accent); }
-        .menu-card h4 { font-size: 12px; font-weight: 800; color: var(--text-dark); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin:0; }
+        .menu-card h4 { font-size: 12px; font-weight: 800; color: var(--text-dark); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin:0; pointer-events: none; }
+        .menu-card p { pointer-events: none; }
 
-        /* Stats & Badges */
         .stat-card { background: white; padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
         .highlight-box { background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
         .info-bar { background: #f0fdf4; border-bottom: 1px solid #bbf7d0; padding: 12px 15px; font-size: 12px; color: #15803d; font-weight: 800; display: flex; justify-content: space-between; align-items: center;}
         .badge { font-size: 10px; background: #e2e8f0; color: #475569; padding: 3px 6px; border-radius: 4px; font-weight: 700; }
 
-        /* Modals */
         .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
         .modal-content { background: white; width: 380px; padding: 20px; border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3); max-height: 90vh; display: flex; flex-direction: column; }
         .modal-lg { width: 700px; }
-        
-        /* Receipt Print */
-        .receipt { font-family: 'Space Mono', monospace; color: #1e293b; font-size: 11px; }
-        .letter-spacing-1 { letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -146,7 +93,6 @@
     <button class="side-btn" onclick="UI.nav('stock')" title="Inventory"><span class="icon">📦</span></button>
     <button class="side-btn" onclick="UI.nav('purchases')" title="Purchases"><span class="icon">🧾</span></button>
     <button class="side-btn" onclick="UI.nav('bop')" title="Overhead"><span class="icon">📉</span></button>
-    
     <div class="mt-auto w-100">
         <div class="border-dashed mb-15"></div>
         <button class="side-btn" onclick="DataBackup.export()" title="Backup"><span class="icon">💾</span></button>
@@ -156,51 +102,34 @@
 </nav>
 
 <main class="main-content">
-    
     <section id="pos" class="section active">
         <div class="pos-grid">
             <div class="panel">
-                <div class="panel-head">
-                    <span>Menu Catalog</span>
-                    <input type="text" class="w-100 p-10 mb-0 w-auto" style="width:140px;" placeholder="Search..." oninput="POS.renderMenu(this.value)">
-                </div>
+                <div class="panel-head"><span>Catalog</span><input type="text" class="mb-0 w-auto" style="width:140px;" placeholder="Search..." oninput="POS.renderMenu(this.value)"></div>
                 <div class="panel-body"><div id="pos-menu-grid" class="menu-grid"></div></div>
             </div>
-
             <div class="panel">
                 <div class="panel-head">Order Details</div>
                 <div class="panel-body flex-col gap-10">
-                    <div class="flex-between highlight-box shrink-0">
-                        <span class="text-xs text-bold text-muted">TRX ID</span>
-                        <span id="pos-trx-id" class="text-sm text-heavy text-primary"></span>
-                    </div>
+                    <div class="flex-between highlight-box shrink-0"><span class="text-xs text-bold text-muted">TRX ID</span><span id="pos-trx-id" class="text-sm text-heavy text-primary"></span></div>
                     <div><label>Customer</label><input type="text" id="pos-cust" class="mb-0" placeholder="Guest Name"></div>
-                    <div>
-                        <label>Payment</label>
-                        <select id="pos-method" class="mb-0" onchange="POS.togglePayment()"><option value="Cash">Cash</option><option value="QRIS">QRIS</option></select>
-                    </div>
-                    
+                    <div><label>Payment</label><select id="pos-method" class="mb-0" onchange="POS.togglePayment()"><option value="Cash">Cash</option><option value="QRIS">QRIS</option></select></div>
                     <div id="box-cash" class="highlight-box" style="background:#f0fdf4; border-color:#bbf7d0;">
-                        <label class="text-success">Cash Received (Rp)</label>
-                        <input type="text" inputmode="decimal" id="pos-cash" class="text-lg text-heavy text-success mb-0" oninput="Utils.formatInput(this); POS.calc()">
-                        <div class="flex-between mt-10 pt-10 border-dashed text-sm text-heavy text-success">
-                            <span>Change:</span><span id="pos-change">Rp 0</span>
-                        </div>
+                        <label class="text-success">Cash Received</label><input type="text" inputmode="decimal" id="pos-cash" class="text-lg text-heavy text-success mb-0" oninput="Utils.formatInput(this); POS.calc()">
+                        <div class="flex-between mt-10 pt-10 border-dashed text-sm text-heavy text-success"><span>Change:</span><span id="pos-change">Rp 0</span></div>
                     </div>
                     <div id="box-qris" class="highlight-box hidden" style="background:#eff6ff; border-color:#bfdbfe;">
-                        <label class="text-accent">Reference ID</label>
-                        <input type="text" id="pos-qris-ref" class="text-heavy mb-0">
+                        <label class="text-accent">Reference ID</label><input type="text" id="pos-qris-ref" class="text-heavy mb-0">
                     </div>
                 </div>
             </div>
-
             <div class="panel">
                 <div class="panel-head">Cart Summary</div>
                 <div class="panel-body p-10" id="pos-cart-list"></div>
                 <div class="p-15 highlight-box shrink-0" style="border-radius:0; border-top:1px solid var(--border);">
                     <div class="flex-between text-sm text-muted mb-10"><span>Subtotal</span><span id="pos-subtotal">Rp 0</span></div>
                     <div class="flex-between text-xl text-heavy mb-15"><span>TOTAL</span><span id="pos-total">Rp 0</span></div>
-                    <button id="btn-checkout" class="btn btn-primary w-100 text-md" style="height:45px;" onclick="POS.checkout()" disabled>FINALIZE ORDER</button>
+                    <button id="btn-checkout" class="btn btn-primary w-100 text-md" style="height:45px;" onclick="POS.checkout()" disabled>FINALIZE</button>
                 </div>
             </div>
         </div>
@@ -208,27 +137,26 @@
 
     <section id="sales" class="section">
         <div class="flex-between mb-15 shrink-0">
-            <h2 class="text-xl text-heavy">Sales Analytics</h2>
+            <h2 class="text-xl text-heavy">Sales History</h2>
             <div class="flex-center gap-10 bg-white p-10 border-radius-8" style="border:1px solid var(--border);">
                 <input type="date" id="filter-start" class="mb-0 border-none bg-transparent w-auto">
                 <span class="text-xs text-bold text-muted">TO</span>
                 <input type="date" id="filter-end" class="mb-0 border-none bg-transparent w-auto">
                 <button class="btn btn-primary btn-sm" onclick="Sales.render()">Filter</button>
+                <button class="btn btn-accent btn-sm" onclick="Sales.clearFilter()">Show All</button>
             </div>
         </div>
-        
         <div class="grid shrink-0 gap-15 mb-15" style="grid-template-columns: repeat(5, 1fr);">
             <div class="stat-card"><label>Transactions</label><div id="stat-tx" class="text-lg text-heavy">0</div></div>
             <div class="stat-card"><label>Revenue</label><div id="stat-rev" class="text-lg text-heavy text-success">Rp 0</div></div>
-            <div class="stat-card"><label>COGS (HPP)</label><div id="stat-hpp" class="text-lg text-heavy text-danger">Rp 0</div></div>
+            <div class="stat-card"><label>COGS</label><div id="stat-hpp" class="text-lg text-heavy text-danger">Rp 0</div></div>
             <div class="stat-card"><label>Overhead</label><div id="stat-bop" class="text-lg text-heavy text-warning">Rp 0</div></div>
             <div class="stat-card" style="background:#f0fdf4; border-color:#bbf7d0;"><label>Net Profit</label><div id="stat-profit" class="text-lg text-heavy text-success">Rp 0</div></div>
         </div>
-
         <div class="panel">
             <div class="flex-between p-15 border-bottom bg-white shrink-0">
-                <button class="btn btn-accent btn-sm" onclick="UI.showModal('modal-products')">Product Summary</button>
-                <button class="btn btn-success btn-sm" onclick="Sales.export()">Export (XLSX)</button>
+                <button class="btn btn-accent btn-sm" onclick="UI.showModal('modal-products')">Product Mix</button>
+                <button class="btn btn-success btn-sm" onclick="Sales.export()">Export Excel</button>
             </div>
             <div class="panel-body p-0 scroll-y"><table id="table-sales"></table></div>
         </div>
@@ -243,216 +171,81 @@
                 <button class="btn btn-warning btn-sm" onclick="Menu.export()">Export HPP</button>
             </div>
         </div>
-
         <div class="grid gap-15 flex-1" style="grid-template-columns: 1fr 320px;">
             <div class="panel">
-                <div class="p-15 border-bottom flex gap-15 shrink-0">
-                    <div class="flex-1"><label>Select Menu</label><select id="menu-select" class="mb-0 text-bold" onchange="Menu.load()"></select></div>
-                </div>
+                <div class="p-15 border-bottom flex gap-15 shrink-0"><div class="flex-1"><label>Select Menu</label><select id="menu-select" class="mb-0 text-bold" onchange="Menu.load()"></select></div></div>
                 <div class="p-15 flex-col flex-1 shrink-0">
                     <div class="flex-between mb-10 shrink-0"><label class="mb-0">Ingredients Recipe</label><button class="btn btn-sm btn-primary" onclick="Menu.addIngredient()">+ Add</button></div>
-                    
                     <div class="flex-1 scroll-y bg-white border-radius-8" style="border:1px solid var(--border);">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="width:50%;">Ingredient</th>
-                                    <th style="width:10%;" class="text-center">Unit</th>
-                                    <th style="width:10%;" class="text-center">Qty</th>
-                                    <th style="width:10%;" class="text-center">Waste %</th>
-                                    <th class="text-right">Cost</th>
-                                    <th style="width:40px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="recipe-list"></tbody>
-                        </table>
+                        <table><thead><tr><th style="width:50%;">Ingredient</th><th style="width:10%;" class="text-center">Unit</th><th style="width:10%;" class="text-center">Qty</th><th style="width:10%;" class="text-center">Waste %</th><th class="text-right">Cost</th><th style="width:40px;"></th></tr></thead><tbody id="recipe-list"></tbody></table>
                     </div>
                 </div>
             </div>
-
             <div class="panel p-15 flex-col">
-                <h3 class="text-md text-heavy mb-10">Pricing Strategy</h3>
+                <h3 class="text-md text-heavy mb-10">Pricing & Order</h3>
                 <label>Menu Name</label><input type="text" id="m-name" placeholder="Ex: Latte">
-                <label>Selling Price (Rp)</label><input type="text" inputmode="decimal" id="m-price" class="text-lg text-heavy" oninput="Utils.formatInput(this); Menu.calcHPP()">
-
+                <label>Selling Price (Rp)</label><input type="text" inputmode="decimal" id="m-price" class="text-lg text-heavy mb-10" oninput="Utils.formatInput(this); Menu.calcHPP()">
+                
+                <label>POS Sort Order (Lower = First)</label><input type="number" id="m-order" value="0" class="mb-10">
+                
                 <div class="highlight-box mt-10">
                     <div class="flex-between mb-5"><span class="text-xs text-muted">Total HPP</span><span id="m-hpp" class="text-bold text-danger">Rp 0</span></div>
                     <div class="flex-between"><span class="text-xs text-muted">Gross Profit</span><span id="m-profit" class="text-bold text-success">Rp 0</span></div>
                 </div>
-
                 <div id="m-badge" class="mt-auto p-15 text-center border-radius-8" style="background:#f0fdf4; border:1px solid #bbf7d0;">
                     <div class="text-xs text-bold text-success">PROFIT MARGIN</div>
                     <div id="m-margin" class="text-xl text-heavy text-success">0%</div>
                 </div>
-                <button class="btn btn-success w-100 mt-10" style="height:45px;" onclick="Menu.save()">SAVE MENU</button>
+                <button class="btn btn-success w-100 mt-10" style="height:45px;" onclick="Menu.save()">SAVE CHANGES</button>
             </div>
         </div>
     </section>
 
     <section id="stock" class="section">
-        <div class="flex-between mb-15 shrink-0">
-            <h2 class="text-xl text-heavy">Inventory Management</h2>
-            <button class="btn btn-success btn-sm" onclick="Stock.export()">Export Inventory</button>
-        </div>
-        
-        <div class="panel mb-15 shrink-0">
-            <div class="panel-head">Record Purchase (Inbound)</div>
-            <div class="panel-body p-15">
-                <div class="grid gap-15 align-end" style="grid-template-columns: 6fr 1.2fr 1fr 1.5fr auto;">
-                    <div><label>Item</label><select id="s-sel" onchange="Stock.handleSelect()"></select><input type="text" id="s-new" class="hidden mt-10" placeholder="New item name..."></div>
-                    <div><label>Unit Format</label><select id="s-type"><option value="weight">Kg -> Grams</option><option value="volume">Liters -> ml</option><option value="unit">Pcs -> Pcs</option></select></div>
-                    <div><label>Qty Bought</label><input type="text" inputmode="decimal" id="s-qty" oninput="Utils.formatInput(this)"></div>
-                    <div><label>Total Price (Rp)</label><input type="text" inputmode="decimal" id="s-price" oninput="Utils.formatInput(this)"></div>
-                    <div class="flex gap-10 mb-10"><button class="btn btn-primary" onclick="Stock.add()">Record</button><button class="btn btn-danger" onclick="Stock.clear()">Clear</button></div>
-                </div>
+        <div class="flex-between mb-15 shrink-0"><h2 class="text-xl text-heavy">Inventory</h2><button class="btn btn-success btn-sm" onclick="Stock.export()">Export Excel</button></div>
+        <div class="panel mb-15 shrink-0"><div class="panel-head">Record Purchase</div><div class="panel-body p-15">
+            <div class="grid gap-15 align-end" style="grid-template-columns: 6fr 1.2fr 1fr 1.5fr auto;">
+                <div><label>Item</label><select id="s-sel" onchange="Stock.handleSelect()"></select><input type="text" id="s-new" class="hidden mt-10" placeholder="New item name..."></div>
+                <div><label>Unit Format</label><select id="s-type"><option value="weight">Kg -> Grams</option><option value="volume">Liters -> ml</option><option value="unit">Pcs -> Pcs</option></select></div>
+                <div><label>Qty Bought</label><input type="text" inputmode="decimal" id="s-qty" oninput="Utils.formatInput(this)"></div>
+                <div><label>Total Price</label><input type="text" inputmode="decimal" id="s-price" oninput="Utils.formatInput(this)"></div>
+                <div class="flex gap-10 mb-10"><button class="btn btn-primary" onclick="Stock.add()">Record</button><button class="btn btn-danger" onclick="Stock.clear()">Clear</button></div>
             </div>
-        </div>
-        
+        </div></div>
         <div class="panel flex-1"><div class="panel-body p-0 scroll-y"><table id="table-stock"></table></div></div>
     </section>
 
     <section id="purchases" class="section">
-        <div class="flex-between mb-15 shrink-0">
-            <h2 class="text-xl text-heavy">Expenses & Purchase History</h2>
-            <button class="btn btn-success btn-sm" onclick="Purchases.export()">Export History</button>
-        </div>
-
+        <div class="flex-between mb-15 shrink-0"><h2 class="text-xl text-heavy">Expenses</h2><button class="btn btn-success btn-sm" onclick="Purchases.export()">Export Excel</button></div>
         <div class="grid gap-15 flex-1" style="grid-template-columns: 1fr 320px;">
-            <div class="panel flex-col">
-                <div class="info-bar shrink-0"><span>Total Logged Expenses:</span><span id="p-total-val">Rp 0</span></div>
-                <div class="panel-body p-0 scroll-y"><table id="table-purchases"></table></div>
-            </div>
-
-            <div class="panel p-15 flex-col">
-                <h3 class="text-md text-heavy mb-15 shrink-0">Record Expense</h3>
-                <input type="hidden" id="p-id">
-                <label>Date</label><input type="date" id="p-date" class="mb-15">
-                <label>Description</label><input type="text" id="p-desc" class="mb-15" placeholder="E.g., Cups, Broom, Milk">
-                <label>Category</label>
-                <select id="p-cat" class="mb-15">
-                    <option value="Raw Material">Raw Material</option><option value="Packaging">Packaging</option>
-                    <option value="Operational">Operational</option><option value="Equipment">Equipment</option><option value="Other">Other</option>
-                </select>
-                <label>Total Cost (Rp)</label>
-                <input type="text" inputmode="decimal" id="p-cost" class="text-lg text-heavy mb-15" oninput="Utils.formatInput(this)">
-                
-                <div class="flex gap-10 mt-auto shrink-0">
-                    <button id="btn-p-save" class="btn btn-primary flex-1" style="height:45px;" onclick="Purchases.save()">RECORD</button>
-                    <button id="btn-p-cancel" class="btn btn-danger hidden shrink-0" style="height:45px;" onclick="Purchases.cancel()">CANCEL</button>
-                </div>
-            </div>
+            <div class="panel flex-col"><div class="info-bar shrink-0"><span>Total Expenses:</span><span id="p-total-val">Rp 0</span></div><div class="panel-body p-0 scroll-y"><table id="table-purchases"></table></div></div>
+            <div class="panel p-15 flex-col"><h3 class="text-md text-heavy mb-15">Record Expense</h3><input type="hidden" id="p-id"><label>Date</label><input type="date" id="p-date" class="mb-15"><label>Description</label><input type="text" id="p-desc" class="mb-15" placeholder="Milk, Cups"><label>Category</label><select id="p-cat" class="mb-15"><option value="Raw Material">Raw Material</option><option value="Packaging">Packaging</option><option value="Operational">Operational</option><option value="Equipment">Equipment</option><option value="Other">Other</option></select><label>Total Cost</label><input type="text" inputmode="decimal" id="p-cost" class="text-lg text-heavy mb-15" oninput="Utils.formatInput(this)"><div class="flex gap-10 mt-auto"><button id="btn-p-save" class="btn btn-primary flex-1" style="height:45px;" onclick="Purchases.save()">RECORD</button><button id="btn-p-cancel" class="btn btn-danger hidden" style="height:45px;" onclick="Purchases.cancel()">CANCEL</button></div></div>
         </div>
     </section>
 
     <section id="bop" class="section">
-        <div class="flex-between mb-15 shrink-0">
-            <h2 class="text-xl text-heavy">Overhead & Depreciation</h2>
-            <button class="btn btn-warning btn-sm" onclick="BOP.export()">Export Overhead</button>
-        </div>
-
+        <div class="flex-between mb-15 shrink-0"><h2 class="text-xl text-heavy">Overhead</h2><button class="btn btn-warning btn-sm" onclick="BOP.export()">Export Excel</button></div>
         <div class="grid gap-15 flex-1" style="grid-template-columns: 350px 1fr;">
-            <div class="panel">
-                <div class="panel-head">Asset & Fixed Bill Entry</div>
-                <div class="panel-body">
-                    <input type="hidden" id="b-id"> 
-                    
-                    <div id="box-asset" class="p-10 border-radius-8 mb-15" style="border:1px solid transparent; transition:0.2s;">
-                        <label>Asset Name</label><input type="text" id="b-a-name" class="mb-10">
-                        <label>Purchase Price (Rp)</label><input type="text" inputmode="decimal" id="b-a-price" class="mb-10" oninput="Utils.formatInput(this)">
-                        <label>Useful Life (Months)</label><input type="number" id="b-a-life">
-                        <div class="flex gap-10 mt-10">
-                            <button id="btn-a-save" class="btn btn-primary flex-1" onclick="BOP.save('Asset')">Add Asset</button>
-                            <button class="btn btn-danger btn-b-cancel hidden" onclick="BOP.cancel()">Cancel</button>
-                        </div>
-                    </div>
-                    
-                    <div class="border-dashed mb-15"></div>
-                    
-                    <div id="box-bill" class="p-10 border-radius-8" style="border:1px solid transparent; transition:0.2s;">
-                        <label>Monthly Bill Name</label><input type="text" id="b-b-name" class="mb-10">
-                        <label>Monthly Cost (Rp)</label><input type="text" inputmode="decimal" id="b-b-cost" class="mb-10" oninput="Utils.formatInput(this)">
-                        <div class="flex gap-10 mt-10">
-                            <button id="btn-b-save" class="btn btn-warning flex-1" onclick="BOP.save('Bill')">Add Bill</button>
-                            <button class="btn btn-danger btn-b-cancel hidden" onclick="BOP.cancel()">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="panel flex-col">
-                <div class="info-bar shrink-0"><span>Total Daily Overhead Allocation:</span><span id="b-total-val" class="text-md text-heavy">Rp 0</span></div>
-                <div class="panel-body p-0 scroll-y">
-                    <table id="table-bop">
-                        </table>
-                </div>
-            </div>
+            <div class="panel"><div class="panel-head">Fixed Bills & Assets</div><div class="panel-body"><input type="hidden" id="b-id"><div id="box-asset" class="p-10 border-radius-8 mb-15"><label>Asset Name</label><input type="text" id="b-a-name" class="mb-10"><label>Purchase Price</label><input type="text" inputmode="decimal" id="b-a-price" class="mb-10" oninput="Utils.formatInput(this)"><label>Useful Life (Months)</label><input type="number" id="b-a-life"><div class="flex gap-10 mt-10"><button id="btn-a-save" class="btn btn-primary flex-1" onclick="BOP.save('Asset')">Add Asset</button><button class="btn btn-danger btn-b-cancel hidden" onclick="BOP.cancel()">Cancel</button></div></div><div class="border-dashed mb-15"></div><div id="box-bill" class="p-10 border-radius-8"><label>Monthly Bill Name</label><input type="text" id="b-b-name" class="mb-10"><label>Monthly Cost</label><input type="text" inputmode="decimal" id="b-b-cost" class="mb-10" oninput="Utils.formatInput(this)"><div class="flex gap-10 mt-10"><button id="btn-b-save" class="btn btn-warning flex-1" onclick="BOP.save('Bill')">Add Bill</button><button class="btn btn-danger btn-b-cancel hidden" onclick="BOP.cancel()">Cancel</button></div></div></div></div>
+            <div class="panel flex-col"><div class="info-bar shrink-0"><span>Daily Overhead Allocation:</span><span id="b-total-val" class="text-md text-heavy">Rp 0</span></div><div class="panel-body p-0 scroll-y"><table id="table-bop"></table></div></div>
         </div>
     </section>
-
 </main>
 
-<div id="modal-receipt" class="modal">
-    <div class="modal-content">
-        <div class="receipt text-center mb-15 shrink-0">
-            <div class="text-md text-heavy mb-5 letter-spacing-1">TEPI KOPI</div>
-            <div class="text-xs text-muted mb-10 border-dashed pb-10">Authentic Coffee Experience</div>
-            <div class="flex-between text-xs mb-5"><span>Date:</span><span id="r-date"></span></div>
-            <div class="flex-between text-xs mb-5"><span>ID:</span><span id="r-id"></span></div>
-            <div class="flex-between text-xs mb-10 border-dashed pb-10"><span>Cust:</span><span id="r-cust"></span></div>
-            <div id="r-items" class="text-left mb-10"></div>
-            <div class="border-dashed mb-10"></div>
-            <div class="flex-between text-md text-heavy mb-10"><span>TOTAL</span><span id="r-total"></span></div>
-            <div class="flex-between text-xs mb-5"><span>Method:</span><span id="r-method"></span></div>
-            <div class="flex-between text-xs mb-5"><span>Paid/Ref:</span><span id="r-paid"></span></div>
-            <div class="flex-between text-xs mb-15"><span>Change:</span><span id="r-change"></span></div>
-            <div class="text-xs text-muted">Thank you!</div>
-        </div>
-        <button class="btn btn-primary w-100" style="height:45px;" onclick="window.print()">PRINT RECEIPT</button>
-        <button class="btn btn-danger w-100 mt-10" onclick="UI.hideModal('modal-receipt')">CLOSE</button>
-    </div>
-</div>
-
-<div id="modal-stock" class="modal">
-    <div class="modal-content">
-        <h3 class="text-lg text-heavy mb-15">Edit Stock Item</h3>
-        <input type="hidden" id="ms-old">
-        <label>Item Name</label><input type="text" id="ms-name" class="mb-10">
-        <label>Base Quantity</label><input type="number" id="ms-qty" class="mb-10">
-        <label>Avg Cost/Unit (Rp)</label><input type="number" id="ms-cost" class="mb-10">
-        <div class="highlight-box text-xs text-muted mb-15">Asset Value = Qty × Avg Cost</div>
-        <button class="btn btn-success w-100 mb-10" onclick="Stock.saveEdit()">Save Changes</button>
-        <button class="btn btn-danger w-100" onclick="UI.hideModal('modal-stock')">Cancel</button>
-    </div>
-</div>
-
-<div id="modal-products" class="modal">
-    <div class="modal-content modal-lg">
-        <h3 class="text-lg text-heavy mb-15 shrink-0">Product Sales Summary</h3>
-        <div class="flex-1 scroll-y border-radius-8" style="border:1px solid var(--border); min-height:300px; margin-bottom:15px; background: white;">
-            <table id="table-products"></table>
-        </div>
-        <button class="btn btn-primary w-100 shrink-0" style="height:45px;" onclick="UI.hideModal('modal-products')">Close</button>
-    </div>
-</div>
+<div id="modal-receipt" class="modal"><div class="modal-content"><div class="receipt text-center mb-15 shrink-0"><div class="text-md text-heavy mb-5">TEPI KOPI</div><div class="text-xs text-muted mb-10 border-dashed pb-10">Authentic Coffee Experience</div><div class="flex-between text-xs mb-5"><span>Date:</span><span id="r-date"></span></div><div class="flex-between text-xs mb-5"><span>ID:</span><span id="r-id"></span></div><div class="flex-between text-xs mb-10 border-dashed pb-10"><span>Cust:</span><span id="r-cust"></span></div><div id="r-items" class="text-left mb-10"></div><div class="border-dashed mb-10"></div><div class="flex-between text-md text-heavy mb-10"><span>TOTAL</span><span id="r-total"></span></div><div class="flex-between text-xs mb-5"><span>Method:</span><span id="r-method"></span></div><div class="flex-between text-xs mb-5"><span>Paid/Ref:</span><span id="r-paid"></span></div><div class="flex-between text-xs mb-15"><span>Change:</span><span id="r-change"></span></div><div class="text-xs text-muted">Thank you!</div></div><button class="btn btn-primary w-100" style="height:45px;" onclick="window.print()">PRINT</button><button class="btn btn-danger w-100 mt-10" onclick="UI.hideModal('modal-receipt')">CLOSE</button></div></div>
+<div id="modal-stock" class="modal"><div class="modal-content"><h3 class="text-lg text-heavy mb-15">Edit Stock</h3><input type="hidden" id="ms-old"><label>Item Name</label><input type="text" id="ms-name" class="mb-10"><label>Quantity</label><input type="number" id="ms-qty" class="mb-10"><label>Avg Cost</label><input type="number" id="ms-cost" class="mb-10"><button class="btn btn-success w-100 mb-10" onclick="Stock.saveEdit()">SAVE</button><button class="btn btn-danger w-100" onclick="UI.hideModal('modal-stock')">CANCEL</button></div></div>
+<div id="modal-products" class="modal"><div class="modal-content modal-lg"><h3 class="text-lg text-heavy mb-15 shrink-0">Product Mix</h3><div class="flex-1 scroll-y border-radius-8" style="border:1px solid var(--border); min-height:300px; margin-bottom:15px; background: white;"><table id="table-products"></table></div><button class="btn btn-primary w-100 shrink-0" style="height:45px;" onclick="UI.hideModal('modal-products')">CLOSE</button></div></div>
 
 <script>
-/** * MODULE 1: UTILS & HELPERS */
 const Utils = {
     num: (val) => { if(!val) return 0; return parseFloat(val.toString().replace(/[^0-9.]/g, '')) || 0; },
     fmt: (num) => Math.round(num).toLocaleString('en-US'),
-    formatInput: (el) => { 
-        if(!el.value) return; 
-        let val = el.value.replace(/[^0-9.]/g, ''); 
-        let p = val.split('.'); 
-        if(p[0]) p[0] = parseInt(p[0], 10).toLocaleString('en-US'); 
-        el.value = p.slice(0,2).join('.'); 
-    },
+    formatInput: (el) => { if(!el.value) return; let val = el.value.replace(/[^0-9.]/g, ''); let p = val.split('.'); if(p[0]) p[0] = parseInt(p[0], 10).toLocaleString('en-US'); el.value = p.slice(0,2).join('.'); },
     today: () => new Date().toISOString().split('T')[0],
     time: () => new Date().toLocaleTimeString(),
     id: (prefix) => prefix + '-' + Date.now().toString().slice(-6)
 };
 
-/** * MODULE 2: DATA STORE (_v16 for backwards compatibility) */
 const DB_KEYS = { stock: 'trk_stock_v16', menus: 'trk_menus_v16', sales: 'trk_sales_v16', bop: 'trk_bop_v16', purchases: 'trk_purchases_v16' };
 const Store = {
     state: { stock: [], menus: {}, sales: [], bop: [], purchases: [] },
@@ -460,22 +253,8 @@ const Store = {
     save: () => { Object.keys(DB_KEYS).forEach(k => { localStorage.setItem(DB_KEYS[k], JSON.stringify(Store.state[k])); }); }
 };
 
-/** * MODULE 3: UI CONTROLLER */
 const UI = {
-    nav: (id) => {
-        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.side-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        const idx = ['pos','sales','menu','stock','purchases','bop'].indexOf(id);
-        if(idx >= 0) document.querySelectorAll('.side-btn')[idx].classList.add('active');
-        
-        if(id === 'pos') POS.init();
-        if(id === 'menu') Menu.init();
-        if(id === 'stock') Stock.render();
-        if(id === 'purchases') Purchases.render();
-        if(id === 'bop') BOP.render();
-        if(id === 'sales') Sales.render();
-    },
+    nav: (id) => { document.querySelectorAll('.section').forEach(el => el.classList.remove('active')); document.querySelectorAll('.side-btn').forEach(el => el.classList.remove('active')); document.getElementById(id).classList.add('active'); const idx = ['pos','sales','menu','stock','purchases','bop'].indexOf(id); if(idx >= 0) document.querySelectorAll('.side-btn')[idx].classList.add('active'); if(id === 'pos') POS.init(); if(id === 'menu') Menu.init(); if(id === 'stock') Stock.render(); if(id === 'purchases') Purchases.render(); if(id === 'bop') BOP.render(); if(id === 'sales') Sales.render(); },
     showModal: (id) => document.getElementById(id).style.display = 'flex',
     hideModal: (id) => document.getElementById(id).style.display = 'none',
     html: (id, html) => document.getElementById(id).innerHTML = html,
@@ -483,323 +262,146 @@ const UI = {
     text: (id, txt) => document.getElementById(id).innerText = txt
 };
 
-/** * MODULE 4: POS LOGIC */
 const POS = {
     cart: [],
     init: () => { UI.text('pos-trx-id', Utils.id('TX')); POS.renderMenu(); POS.renderCart(); },
     renderMenu: (filter = '') => {
         let html = '';
-        Object.entries(Store.state.menus).forEach(([id, m]) => {
+        /* SORT ORDER LOGIC: Sort by the user-defined order field before rendering */
+        let list = Object.entries(Store.state.menus).sort((a,b) => (a[1].order || 0) - (b[1].order || 0));
+        list.forEach(([id, m]) => {
             if(m.name.toLowerCase().includes(filter.toLowerCase())) {
                 html += `<div class="menu-card" onclick="POS.add('${id}')"><h4>${m.name}</h4><p class="text-danger text-heavy mb-0">Rp ${Utils.fmt(m.sellPrice)}</p></div>`;
             }
         });
         UI.html('pos-menu-grid', html);
     },
-    add: (id) => {
-        let exist = POS.cart.find(x => x.id === id);
-        if(exist) exist.qty++; else POS.cart.push({ ...Store.state.menus[id], id, qty: 1 });
-        POS.renderCart();
-    },
+    add: (id) => { let exist = POS.cart.find(x => x.id === id); if(exist) exist.qty++; else POS.cart.push({ ...Store.state.menus[id], id, qty: 1 }); POS.renderCart(); },
     update: (i, change) => { POS.cart[i].qty += change; if(POS.cart[i].qty <= 0) POS.cart.splice(i, 1); POS.renderCart(); },
-    togglePayment: () => {
-        const m = UI.val('pos-method');
-        document.getElementById('box-cash').classList.toggle('hidden', m !== 'Cash');
-        document.getElementById('box-qris').classList.toggle('hidden', m !== 'QRIS');
-        POS.calc();
-    },
+    togglePayment: () => { const m = UI.val('pos-method'); document.getElementById('box-cash').classList.toggle('hidden', m !== 'Cash'); document.getElementById('box-qris').classList.toggle('hidden', m !== 'QRIS'); POS.calc(); },
     calc: () => {
         let total = POS.cart.reduce((sum, item) => sum + (item.sellPrice * item.qty), 0);
         let cash = Utils.num(UI.val('pos-cash')), method = UI.val('pos-method');
         UI.text('pos-subtotal', `Rp ${Utils.fmt(total)}`); UI.text('pos-total', `Rp ${Utils.fmt(total)}`);
-        
-        let valid = true;
-        if(method === 'Cash') {
-            let change = cash - total;
-            UI.text('pos-change', `Rp ${change >= 0 ? Utils.fmt(change) : 0}`);
-            if(cash < total) valid = false;
-        }
+        let valid = (method === 'Cash') ? (cash >= total) : true;
+        UI.text('pos-change', `Rp ${method === 'Cash' && cash >= total ? Utils.fmt(cash - total) : 0}`);
         document.getElementById('btn-checkout').disabled = (total === 0 || !valid);
     },
     renderCart: () => {
         let html = '';
         POS.cart.forEach((it, i) => {
-            html += `<div class="flex-between mb-10 border-dashed pb-10">
-                        <div class="flex-1"><div class="text-sm text-bold text-primary">${it.name}</div><div class="text-xs text-muted">@${Utils.fmt(it.sellPrice)}</div></div>
-                        <div class="flex-center gap-5">
-                            <button class="btn-icon btn-accent" onclick="POS.update(${i}, -1)">-</button>
-                            <span class="text-sm text-bold text-center" style="width:16px;">${it.qty}</span>
-                            <button class="btn-icon btn-accent" onclick="POS.update(${i}, 1)">+</button>
-                        </div>
-                        <div class="text-sm text-bold text-right ml-10" style="min-width:60px;">${Utils.fmt(it.sellPrice * it.qty)}</div>
-                     </div>`;
+            html += `<div class="flex-between mb-10 border-dashed pb-10"><div class="flex-1"><div class="text-sm text-bold text-primary">${it.name}</div><div class="text-xs text-muted">@${Utils.fmt(it.sellPrice)}</div></div><div class="flex-center gap-5"><button class="btn-icon btn-accent" onclick="POS.update(${i}, -1)">-</button><span class="text-sm text-bold text-center" style="width:16px;">${it.qty}</span><button class="btn-icon btn-accent" onclick="POS.update(${i}, 1)">+</button></div><div class="text-sm text-bold text-right ml-10" style="min-width:60px;">${Utils.fmt(it.sellPrice * it.qty)}</div></div>`;
         });
         UI.html('pos-cart-list', html); POS.calc();
     },
     checkout: () => {
-        let total = Utils.num(UI.text('pos-total')), cash = Utils.num(UI.val('pos-cash')), method = UI.val('pos-method');
-        let totalCost = 0, agg = Stock.getAgg();
-
+        let total = Utils.num(UI.text('pos-total')), cash = Utils.num(UI.val('pos-cash')), method = UI.val('pos-method'), totalCost = 0, agg = Stock.getAgg();
         POS.cart.forEach(it => {
             totalCost += (it.hpp || 0) * it.qty;
-            if(it.ings) {
-                it.ings.forEach(ing => {
-                    if(agg[ing.name]) {
-                        let q = ing.qty * it.qty, val = q * agg[ing.name].avgCost;
-                        Store.state.stock.push({ id: Date.now()+Math.random(), name: ing.name, type: 'sale_usage', buyQty: 0, totalVal: -val, totalBaseUnits: -q, useUnit: agg[ing.name].useUnit });
-                    }
-                });
-            }
+            if(it.ings) it.ings.forEach(ing => { if(agg[ing.name]) { let q = ing.qty * it.qty, val = q * agg[ing.name].avgCost; Store.state.stock.push({ id: Date.now()+Math.random(), name: ing.name, type: 'sale_usage', buyQty: 0, totalVal: -val, totalBaseUnits: -q, useUnit: agg[ing.name].useUnit }); } });
         });
-
+        /* SYNC FIX: Explicit date format ensures it never misses the sales filter */
         let sale = { id: UI.text('pos-trx-id'), date: Utils.today(), time: Utils.time(), customer: UI.val('pos-cust') || 'Guest', items: [...POS.cart], total, cost: totalCost, profit: total - totalCost, method, cash, change: method === 'Cash' ? (cash - total) : 0 };
         Store.state.sales.push(sale); Store.save();
-
-        UI.text('r-date', `${sale.date} ${sale.time}`); UI.text('r-id', sale.id); UI.text('r-cust', sale.customer);
-        UI.html('r-items', POS.cart.map(i => `<div class="flex-between"><span>${i.name} x${i.qty}</span><span>${Utils.fmt(i.sellPrice * i.qty)}</span></div>`).join(''));
-        UI.text('r-total', Utils.fmt(sale.total)); UI.text('r-method', sale.method); UI.text('r-paid', method === 'Cash' ? Utils.fmt(sale.cash) : UI.val('pos-qris-ref')); UI.text('r-change', Utils.fmt(sale.change));
-        UI.showModal('modal-receipt');
-        POS.cart = []; UI.val('pos-cust', ''); UI.val('pos-cash', ''); UI.val('pos-qris-ref', ''); POS.init();
+        UI.text('r-date', `${sale.date} ${sale.time}`); UI.text('r-id', sale.id); UI.text('r-cust', sale.customer); UI.html('r-items', POS.cart.map(i => `<div class="flex-between"><span>${i.name} x${i.qty}</span><span>${Utils.fmt(i.sellPrice * i.qty)}</span></div>`).join('')); UI.text('r-total', Utils.fmt(sale.total)); UI.text('r-method', sale.method); UI.text('r-paid', method === 'Cash' ? Utils.fmt(sale.cash) : UI.val('pos-qris-ref')); UI.text('r-change', Utils.fmt(sale.change));
+        UI.showModal('modal-receipt'); POS.cart = []; UI.val('pos-cust', ''); UI.val('pos-cash', ''); UI.val('pos-qris-ref', ''); POS.init();
     }
 };
 
-/** * MODULE 5: MENU CONFIG */
 const Menu = {
     activeId: null,
-    init: () => {
-        let sel = document.getElementById('menu-select');
-        sel.innerHTML = '<option value="">-- Select Menu --</option><option value="new" class="text-accent text-bold">+ CREATE NEW</option>';
-        Object.entries(Store.state.menus).forEach(([k, m]) => sel.add(new Option(m.name, k)));
-    },
+    init: () => { let sel = document.getElementById('menu-select'); sel.innerHTML = '<option value="">-- Select --</option><option value="new" class="text-accent text-bold">+ NEW MENU</option>'; Object.entries(Store.state.menus).forEach(([k, m]) => sel.add(new Option(m.name, k))); },
     load: () => {
-        let v = UI.val('menu-select');
-        if(v === 'new') { Menu.activeId = 'm_' + Date.now(); Store.state.menus[Menu.activeId] = { name: '', sellPrice: 0, ings: [] }; Menu.init(); UI.val('menu-select', Menu.activeId); }
-        else { Menu.activeId = v; }
-        
+        let v = UI.val('menu-select'); if(v === 'new') { Menu.activeId = 'm_' + Date.now(); Store.state.menus[Menu.activeId] = { name: '', sellPrice: 0, ings: [], order: 0 }; Menu.init(); UI.val('menu-select', Menu.activeId); } else { Menu.activeId = v; }
         let m = Store.state.menus[Menu.activeId]; if(!m) return;
-        UI.val('m-name', m.name); UI.val('m-price', m.sellPrice ? Utils.fmt(m.sellPrice) : '');
+        UI.val('m-name', m.name); UI.val('m-price', m.sellPrice ? Utils.fmt(m.sellPrice) : ''); UI.val('m-order', m.order || 0);
         UI.html('recipe-list', ''); (m.ings || []).forEach(i => Menu.addIngredient(i)); Menu.calcHPP();
     },
     create: () => { UI.val('menu-select', 'new'); Menu.load(); },
-    delete: () => { if(!Menu.activeId || Menu.activeId.startsWith('new')) return; if(confirm('Delete menu?')) { delete Store.state.menus[Menu.activeId]; Store.save(); Menu.init(); Menu.create(); } },
+    delete: () => { if(!Menu.activeId || Menu.activeId.startsWith('new')) return; if(confirm('Delete?')) { delete Store.state.menus[Menu.activeId]; Store.save(); Menu.init(); Menu.create(); } },
     addIngredient: (data = {name:'', qty:0, waste:0}) => {
         let agg = Stock.getAgg(), tr = document.createElement('tr'); tr.className = 'ing-row';
         let opts = `<option value="">Select...</option>` + Object.keys(agg).map(k => `<option value="${k}" ${data.name===k?'selected':''}>${k}</option>`).join('');
-        
-        /* MENU CONFIG INPUTS: Made Qty and Waste inputs strictly centered, visually smaller padding */
-        tr.innerHTML = `
-            <td class="p-5"><select class="i-name mb-0 w-100" onchange="Menu.updateUnit(this); Menu.calcHPP()">${opts}</select></td>
-            <td class="p-5 text-sm text-bold text-muted i-unit text-center">${data.name && agg[data.name] ? agg[data.name].useUnit : '-'}</td>
-            <td class="p-5"><input type="text" inputmode="decimal" class="i-qty mb-0 w-100 text-center" style="padding: 10px 5px;" placeholder="0" value="${data.qty || ''}" oninput="Utils.formatInput(this); Menu.calcHPP()"></td>
-            <td class="p-5"><input type="text" inputmode="decimal" class="i-waste mb-0 w-100 text-center" style="padding: 10px 5px;" placeholder="0" value="${data.waste || ''}" oninput="Utils.formatInput(this); Menu.calcHPP()"></td>
-            <td class="p-5 text-right text-bold i-cost">0</td>
-            <td class="p-5 text-center"><button class="btn-icon text-danger bg-transparent" onclick="this.closest('tr').remove(); Menu.calcHPP()">✕</button></td>
-        `;
+        /* UNIT FIX: Displays the live unit name from inventory */
+        tr.innerHTML = `<td class="p-5"><select class="i-name mb-0 w-100" onchange="Menu.updateUnit(this); Menu.calcHPP()">${opts}</select></td><td class="p-5 text-sm text-bold text-muted i-unit text-center">${data.name && agg[data.name] ? agg[data.name].useUnit : '-'}</td><td class="p-5"><input type="text" inputmode="decimal" class="i-qty mb-0 w-100 text-center" style="padding: 10px 5px;" placeholder="0" value="${data.qty || ''}" oninput="Utils.formatInput(this); Menu.calcHPP()"></td><td class="p-5"><input type="text" inputmode="decimal" class="i-waste mb-0 w-100 text-center" style="padding: 10px 5px;" placeholder="0" value="${data.waste || ''}" oninput="Utils.formatInput(this); Menu.calcHPP()"></td><td class="p-5 text-right text-bold i-cost">0</td><td class="p-5 text-center"><button class="btn-icon text-danger bg-transparent" onclick="this.closest('tr').remove(); Menu.calcHPP()">✕</button></td>`;
         document.getElementById('recipe-list').appendChild(tr); if(data.name) Menu.calcHPP();
     },
     updateUnit: (sel) => { sel.closest('tr').querySelector('.i-unit').innerText = Stock.getAgg()[sel.value]?.useUnit || '-'; },
     calcHPP: () => {
         let agg = Stock.getAgg(), totalHPP = 0;
-        document.querySelectorAll('.ing-row').forEach(row => {
-            let n = row.querySelector('.i-name').value, q = Utils.num(row.querySelector('.i-qty').value), w = Utils.num(row.querySelector('.i-waste').value);
-            if(n && agg[n]) { let cost = (q * agg[n].avgCost) * (1 + (w/100)); row.querySelector('.i-cost').innerText = Utils.fmt(cost); totalHPP += cost; }
-        });
-        
+        document.querySelectorAll('.ing-row').forEach(row => { let n = row.querySelector('.i-name').value, q = Utils.num(row.querySelector('.i-qty').value), w = Utils.num(row.querySelector('.i-waste').value); if(n && agg[n]) { let cost = (q * agg[n].avgCost) * (1 + (w/100)); row.querySelector('.i-cost').innerText = Utils.fmt(cost); totalHPP += cost; } });
         let sell = Utils.num(UI.val('m-price')), profit = sell - totalHPP, margin = sell > 0 ? ((profit/sell)*100).toFixed(1) : 0;
         UI.text('m-hpp', `Rp ${Utils.fmt(totalHPP)}`); UI.text('m-profit', `Rp ${Utils.fmt(profit)}`);
-        
-        let b = document.getElementById('m-badge');
-        b.style.background = margin < 30 ? '#fef2f2' : '#f0fdf4'; b.style.borderColor = margin < 30 ? '#fecaca' : '#bbf7d0';
-        UI.html('m-margin', `<span class="${margin < 30 ? 'text-danger' : 'text-success'}">${margin}%</span>`);
+        document.getElementById('m-badge').style.background = margin < 30 ? '#fef2f2' : '#f0fdf4'; UI.html('m-margin', `<span class="${margin < 30 ? 'text-danger' : 'text-success'}">${margin}%</span>`);
         return totalHPP;
     },
-    save: () => {
-        if(!Menu.activeId) return;
-        let ings = Array.from(document.querySelectorAll('.ing-row')).map(r => ({ name: r.querySelector('.i-name').value, qty: Utils.num(r.querySelector('.i-qty').value), waste: Utils.num(r.querySelector('.i-waste').value) })).filter(i => i.name);
-        Store.state.menus[Menu.activeId] = { name: UI.val('m-name'), sellPrice: Utils.num(UI.val('m-price')), ings, hpp: Utils.num(UI.text('m-hpp')) };
-        Store.save(); alert('Menu Saved!'); Menu.init(); UI.val('menu-select', Menu.activeId);
-    },
-    export: () => {
-        let rows = [["Menu Name", "Sell Price", "Ingredient", "Unit", "Qty Required", "Waste %", "Cost Contrib"]];
-        let agg = Stock.getAgg();
-        Object.values(Store.state.menus).forEach(m => {
-            if(!m.ings || !m.ings.length) rows.push([m.name, m.sellPrice, "NONE", "-", 0, 0, 0]);
-            else m.ings.forEach(i => rows.push([m.name, m.sellPrice, i.name, agg[i.name]?.useUnit||'-', i.qty, i.waste, (i.qty * (agg[i.name]?.avgCost||0) * (1+(i.waste/100))) ]));
-        });
-        DataBackup.xlsx(rows, "Menu_HPP_Analysis");
-    }
+    save: () => { if(!Menu.activeId) return; let ings = Array.from(document.querySelectorAll('.ing-row')).map(r => ({ name: r.querySelector('.i-name').value, qty: Utils.num(r.querySelector('.i-qty').value), waste: Utils.num(r.querySelector('.i-waste').value) })).filter(i => i.name); Store.state.menus[Menu.activeId] = { name: UI.val('m-name'), sellPrice: Utils.num(UI.val('m-price')), order: parseInt(UI.val('m-order')) || 0, ings, hpp: Utils.num(UI.text('m-hpp')) }; Store.save(); alert('Saved!'); Menu.init(); UI.val('menu-select', Menu.activeId); },
+    export: () => { let rows = [["Menu", "Price", "Item", "Unit", "Qty", "Waste", "Cost"]], agg = Stock.getAgg(); Object.values(Store.state.menus).forEach(m => { if(!m.ings || !m.ings.length) rows.push([m.name, m.sellPrice, "-", "-", 0, 0, 0]); else m.ings.forEach(i => rows.push([m.name, m.sellPrice, i.name, agg[i.name]?.useUnit||'-', i.qty, i.waste, (i.qty * (agg[i.name]?.avgCost||0) * (1+(i.waste/100))) ])); }); DataBackup.xlsx(rows, "Menu_Analysis"); }
 };
 
-/** * MODULE 6: STOCK LOGIC */
 const Stock = {
-    getAgg: () => {
-        let agg = {};
-        Store.state.stock.forEach(l => { if(!agg[l.name]) agg[l.name] = { base: 0, val: 0, unit: l.useUnit }; agg[l.name].base += l.totalBaseUnits; agg[l.name].val += l.totalVal; });
-        Object.keys(agg).forEach(k => agg[k].avgCost = agg[k].base !== 0 ? agg[k].val / agg[k].base : 0); return agg;
-    },
+    getAgg: () => { let agg = {}; Store.state.stock.forEach(l => { if(!agg[l.name]) agg[l.name] = { base: 0, val: 0, unit: l.useUnit }; agg[l.name].base += l.totalBaseUnits; agg[l.name].val += l.totalVal; }); Object.keys(agg).forEach(k => agg[k].avgCost = agg[k].base !== 0 ? agg[k].val / agg[k].base : 0); return agg; },
     render: () => {
-        let agg = Stock.getAgg(), sel = document.getElementById('s-sel');
-        sel.innerHTML = '<option value="">-- Select --</option><option value="NEW" class="text-accent text-bold">+ ADD NEW ITEM</option>';
-        Object.keys(agg).forEach(k => sel.add(new Option(k,k))); Stock.handleSelect();
-
+        let agg = Stock.getAgg(), sel = document.getElementById('s-sel'); sel.innerHTML = '<option value="">-- Select --</option><option value="NEW" class="text-accent text-bold">+ ADD NEW</option>'; Object.keys(agg).forEach(k => sel.add(new Option(k,k))); Stock.handleSelect();
         let html = `<thead><tr><th>Item</th><th>Stock</th><th>Avg Cost</th><th>Value</th><th class="text-right">Actions</th></tr></thead><tbody>`;
-        Object.entries(agg).forEach(([k, v]) => {
-            html += `<tr><td class="text-bold">${k}</td><td>${Utils.fmt(v.base)} ${v.unit}</td><td>Rp ${v.avgCost.toFixed(2)}</td><td>Rp ${Utils.fmt(v.val)}</td>
-                <td class="text-right"><div class="flex gap-5" style="justify-content:flex-end"><button class="btn-icon btn-warning" onclick="Stock.edit('${k}')">✏️</button><button class="btn-icon btn-primary" onclick="Stock.adj('${k}')">±</button><button class="btn-icon btn-danger" onclick="Stock.del('${k}')">🗑️</button></div></td></tr>`;
-        });
+        Object.entries(agg).forEach(([k, v]) => { html += `<tr><td class="text-bold">${k}</td><td>${Utils.fmt(v.base)} ${v.unit}</td><td>Rp ${v.avgCost.toFixed(2)}</td><td>Rp ${Utils.fmt(v.val)}</td><td class="text-right"><div class="flex gap-5" style="justify-content:flex-end"><button class="btn-icon btn-warning" onclick="Stock.edit('${k}')">✏️</button><button class="btn-icon btn-primary" onclick="Stock.adj('${k}')">±</button><button class="btn-icon btn-danger" onclick="Stock.del('${k}')">🗑️</button></div></td></tr>`; });
         UI.html('table-stock', html + '</tbody>');
     },
-    handleSelect: () => {
-        let v = UI.val('s-sel'); document.getElementById('s-new').classList.toggle('hidden', v !== 'NEW'); document.getElementById('s-type').disabled = (v !== 'NEW' && v !== '');
-        if(v !== 'NEW' && v !== '') { let ex = Store.state.stock.find(x => x.name === v); if(ex) UI.val('s-type', ex.type); }
-    },
-    add: () => {
-        let v = UI.val('s-sel'), name = v === 'NEW' ? UI.val('s-new').trim() : v, t = UI.val('s-type'), qty = Utils.num(UI.val('s-qty')), price = Utils.num(UI.val('s-price'));
-        if(!name || !qty || !price) return alert("Fill all fields");
-        let f = (t === 'weight' || t === 'volume') ? 1000 : 1;
-        Store.state.stock.push({ id: Date.now(), name, type: t, buyQty: qty, totalVal: price, totalBaseUnits: qty * f, useUnit: (t==='weight'?'Gram':t==='volume'?'ml':'Pcs') });
-        Store.save(); Stock.clear(); Stock.render();
-    },
+    handleSelect: () => { let v = UI.val('s-sel'); document.getElementById('s-new').classList.toggle('hidden', v !== 'NEW'); document.getElementById('s-type').disabled = (v !== 'NEW' && v !== ''); if(v !== 'NEW' && v !== '') { let ex = Store.state.stock.find(x => x.name === v); if(ex) UI.val('s-type', ex.type); } },
+    add: () => { let v = UI.val('s-sel'), name = v === 'NEW' ? UI.val('s-new').trim() : v, t = UI.val('s-type'), qty = Utils.num(UI.val('s-qty')), price = Utils.num(UI.val('s-price')); if(!name || !qty || !price) return alert("Fill fields"); let f = (t === 'weight' || t === 'volume') ? 1000 : 1; Store.state.stock.push({ id: Date.now(), name, type: t, buyQty: qty, totalVal: price, totalBaseUnits: qty * f, useUnit: (t==='weight'?'Gram':t==='volume'?'ml':'Pcs') }); Store.save(); Stock.clear(); Stock.render(); },
     clear: () => { UI.val('s-sel',''); UI.val('s-new',''); UI.val('s-qty',''); UI.val('s-price',''); Stock.handleSelect(); },
-    adj: (name) => {
-        let agg = Stock.getAgg(), item = agg[name], val = parseFloat(prompt(`Adjust ${name} (+/-):\nCurrent: ${item.base} ${item.unit}`));
-        if(!isNaN(val) && val !== 0) { Store.state.stock.push({ id: Date.now(), name, type: 'adjustment', buyQty: 0, totalVal: val*item.avgCost, totalBaseUnits: val, useUnit: item.unit }); Store.save(); Stock.render(); }
-    },
+    adj: (name) => { let agg = Stock.getAgg(), item = agg[name], val = parseFloat(prompt(`Adjust ${name} (+/-):`)); if(!isNaN(val) && val !== 0) { Store.state.stock.push({ id: Date.now(), name, type: 'adj', buyQty: 0, totalVal: val*item.avgCost, totalBaseUnits: val, useUnit: item.unit }); Store.save(); Stock.render(); } },
     edit: (name) => { let item = Stock.getAgg()[name]; UI.val('ms-old', name); UI.val('ms-name', name); UI.val('ms-qty', item.base); UI.val('ms-cost', item.avgCost.toFixed(2)); UI.showModal('modal-stock'); },
-    saveEdit: () => {
-        let old = UI.val('ms-old'), cur = UI.val('ms-name'), q = parseFloat(UI.val('ms-qty')), c = parseFloat(UI.val('ms-cost'));
-        if(!cur || isNaN(q) || isNaN(c)) return alert("Invalid Input");
-        if(old !== cur) { Store.state.stock.forEach(l => { if(l.name === old) l.name = cur; }); Object.values(Store.state.menus).forEach(m => { if(m.ings) m.ings.forEach(i => { if(i.name === old) i.name = cur; }); }); }
-        let item = Stock.getAgg()[cur] || Stock.getAgg()[old], tarVal = q * c, cQty = item ? item.base : 0, cVal = item ? item.val : 0;
-        Store.state.stock.push({ id: Date.now(), name: cur, type: 'manual_correction', buyQty: 0, totalBaseUnits: q - cQty, totalVal: tarVal - cVal, useUnit: item ? item.unit : 'Unit' });
-        Store.save(); Stock.render(); Menu.init(); UI.hideModal('modal-stock');
-    },
-    del: (name) => { if(confirm(`Delete "${name}" entirely?`)) { Store.state.stock = Store.state.stock.filter(l => l.name !== name); Store.save(); Stock.render(); Menu.init(); } },
-    export: () => { let rows = [["Item Name", "Total Stock", "Unit", "Avg Cost/Unit", "Asset Value"]]; Object.entries(Stock.getAgg()).forEach(([k,v]) => rows.push([k, v.base, v.unit, v.avgCost.toFixed(2), v.val])); DataBackup.xlsx(rows, "TK_Inventory_Report"); }
+    saveEdit: () => { let old = UI.val('ms-old'), cur = UI.val('ms-name'), q = parseFloat(UI.val('ms-qty')), c = parseFloat(UI.val('ms-cost')); if(!cur || isNaN(q) || isNaN(c)) return alert("Error"); if(old !== cur) { Store.state.stock.forEach(l => { if(l.name === old) l.name = cur; }); Object.values(Store.state.menus).forEach(m => { if(m.ings) m.ings.forEach(i => { if(i.name === old) i.name = cur; }); }); } let item = Stock.getAgg()[cur] || Stock.getAgg()[old], tarVal = q * c, cQty = item ? item.base : 0, cVal = item ? item.val : 0; Store.state.stock.push({ id: Date.now(), name: cur, type: 'edit', buyQty: 0, totalBaseUnits: q - cQty, totalVal: tarVal - cVal, useUnit: item ? item.unit : 'Unit' }); Store.save(); Stock.render(); Menu.init(); UI.hideModal('modal-stock'); },
+    del: (name) => { if(confirm(`Delete "${name}"?`)) { Store.state.stock = Store.state.stock.filter(l => l.name !== name); Store.save(); Stock.render(); Menu.init(); } },
+    export: () => { let rows = [["Item", "Stock", "Unit", "Cost", "Value"]]; Object.entries(Stock.getAgg()).forEach(([k,v]) => rows.push([k, v.base, v.unit, v.avgCost.toFixed(2), v.val])); DataBackup.xlsx(rows, "Inventory_Report"); }
 };
 
-/** * MODULE 7: PURCHASES LOGIC */
 const Purchases = {
-    render: () => {
-        let html = `<thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th class="text-right">Actions</th></tr></thead><tbody>`, total = 0;
-        [...Store.state.purchases].sort((a,b)=>b.date.localeCompare(a.date)).forEach(p => {
-            total += p.cost;
-            html += `<tr><td><b class="text-dark">${p.date}</b></td><td>${p.name}</td><td><span class="badge">${p.category}</span></td><td class="text-danger text-bold">Rp ${Utils.fmt(p.cost)}</td>
-                <td class="text-right"><div class="flex gap-5" style="justify-content:flex-end"><button class="btn-icon btn-warning" onclick="Purchases.edit(${p.id})">✏️</button><button class="btn-icon btn-danger" onclick="Purchases.del(${p.id})">🗑️</button></div></td></tr>`;
-        });
-        UI.html('table-purchases', html + '</tbody>'); UI.text('p-total-val', `Rp ${Utils.fmt(total)}`);
-    },
-    save: () => {
-        let id = UI.val('p-id'), d = UI.val('p-date'), n = UI.val('p-desc').trim(), cat = UI.val('p-cat'), c = Utils.num(UI.val('p-cost'));
-        if(!d || !n || !c) return alert("Fill date, desc, cost.");
-        if(id) { let i = Store.state.purchases.findIndex(x => x.id == id); if(i > -1) Store.state.purchases[i] = { id: parseInt(id), date: d, name: n, category: cat, cost: c }; Purchases.cancel(); } 
-        else { Store.state.purchases.push({ id: Date.now(), date: d, name: n, category: cat, cost: c }); UI.val('p-desc', ''); UI.val('p-cost', ''); }
-        Store.save(); Purchases.render();
-    },
-    edit: (id) => {
-        let p = Store.state.purchases.find(x => x.id === id); if(!p) return;
-        UI.val('p-id', p.id); UI.val('p-date', p.date); UI.val('p-desc', p.name); UI.val('p-cat', p.category); UI.val('p-cost', Utils.fmt(p.cost));
-        document.getElementById('btn-p-save').innerText = "UPDATE"; document.getElementById('btn-p-save').className = "btn btn-warning flex-1"; document.getElementById('btn-p-cancel').classList.remove('hidden');
-    },
-    cancel: () => {
-        UI.val('p-id', ''); UI.val('p-desc', ''); UI.val('p-cost', ''); UI.val('p-date', Utils.today());
-        document.getElementById('btn-p-save').innerText = "RECORD"; document.getElementById('btn-p-save').className = "btn btn-primary flex-1"; document.getElementById('btn-p-cancel').classList.add('hidden');
-    },
-    del: (id) => { if(confirm("Delete expense?")) { Store.state.purchases = Store.state.purchases.filter(p => p.id !== id); Store.save(); Purchases.render(); } },
-    export: () => { let rows = [["Date", "Description", "Category", "Cost"]]; Store.state.purchases.forEach(p => rows.push([p.date, p.name, p.category, p.cost])); DataBackup.xlsx(rows, "TK_Expenses"); }
+    render: () => { let html = `<thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th class="text-right">Actions</th></tr></thead><tbody>`, total = 0; [...Store.state.purchases].sort((a,b)=>b.date.localeCompare(a.date)).forEach(p => { total += p.cost; html += `<tr><td><b class="text-dark">${p.date}</b></td><td>${p.name}</td><td><span class="badge">${p.category}</span></td><td class="text-danger text-bold">Rp ${Utils.fmt(p.cost)}</td><td class="text-right"><div class="flex gap-5" style="justify-content:flex-end"><button class="btn-icon btn-warning" onclick="Purchases.edit(${p.id})">✏️</button><button class="btn-icon btn-danger" onclick="Purchases.del(${p.id})">🗑️</button></div></td></tr>`; }); UI.html('table-purchases', html + '</tbody>'); UI.text('p-total-val', `Rp ${Utils.fmt(total)}`); },
+    save: () => { let id = UI.val('p-id'), d = UI.val('p-date'), n = UI.val('p-desc').trim(), cat = UI.val('p-cat'), c = Utils.num(UI.val('p-cost')); if(!d || !n || !c) return alert("Error"); if(id) { let i = Store.state.purchases.findIndex(x => x.id == id); if(i > -1) Store.state.purchases[i] = { id: parseInt(id), date: d, name: n, category: cat, cost: c }; Purchases.cancel(); } else { Store.state.purchases.push({ id: Date.now(), date: d, name: n, category: cat, cost: c }); UI.val('p-desc', ''); UI.val('p-cost', ''); } Store.save(); Purchases.render(); },
+    edit: (id) => { let p = Store.state.purchases.find(x => x.id === id); if(!p) return; UI.val('p-id', p.id); UI.val('p-date', p.date); UI.val('p-desc', p.name); UI.val('p-cat', p.category); UI.val('p-cost', Utils.fmt(p.cost)); document.getElementById('btn-p-save').innerText = "UPDATE"; document.getElementById('btn-p-save').className = "btn btn-warning flex-1"; document.getElementById('btn-p-cancel').classList.remove('hidden'); },
+    cancel: () => { UI.val('p-id', ''); UI.val('p-desc', ''); UI.val('p-cost', ''); UI.val('p-date', Utils.today()); document.getElementById('btn-p-save').innerText = "RECORD"; document.getElementById('btn-p-save').className = "btn btn-primary flex-1"; document.getElementById('btn-p-cancel').classList.add('hidden'); },
+    del: (id) => { if(confirm("Delete?")) { Store.state.purchases = Store.state.purchases.filter(p => p.id !== id); Store.save(); Purchases.render(); } },
+    export: () => { let rows = [["Date", "Description", "Category", "Cost"]]; Store.state.purchases.forEach(p => rows.push([p.date, p.name, p.category, p.cost])); DataBackup.xlsx(rows, "Expenses_Report"); }
 };
 
-/** * MODULE 8: BOP LOGIC */
 const BOP = {
-    render: () => {
-        /* BOP FORMATTING FIX: Enforced identical 22% widths and strictly added 'Rp' to both Input and Daily Cost */
-        let html = `<thead><tr><th>Item</th><th>Type</th><th style="width: 22%;">Input Cost</th><th>Life (Mo)</th><th style="width: 22%;">Daily Cost</th><th class="text-right">Actions</th></tr></thead><tbody>`, total = 0;
-        Store.state.bop.forEach((b, i) => {
-            total += b.daily; 
-            let costStr = b.originVal ? b.originVal : Math.round(b.daily * (b.type==='Asset' ? b.life*30 : 30));
-            html += `<tr><td>${b.name}</td><td>${b.type}</td>
-                <td>Rp ${Utils.fmt(costStr)}</td>
-                <td>${b.type==='Asset'?b.life:'-'}</td>
-                <td class="text-bold">Rp ${Utils.fmt(b.daily)}</td>
-                <td class="text-right"><div class="flex gap-5" style="justify-content:flex-end"><button class="btn-icon btn-warning" onclick="BOP.edit(${b.id})">✏️</button><button class="btn-icon btn-danger" onclick="BOP.del(${i})">🗑️</button></div></td></tr>`;
-        });
-        UI.html('table-bop', html + '</tbody>'); UI.text('b-total-val', `Rp ${Utils.fmt(total)}`); return total;
-    },
-    save: (type) => {
-        let id = UI.val('b-id') || Date.now(), n, dCost = 0, oVal = 0, life = 0;
-        if(type === 'Asset') { n = UI.val('b-a-name'); oVal = Utils.num(UI.val('b-a-price')); life = parseFloat(UI.val('b-a-life')); if(!n || !oVal || !life) return alert("Fill asset data"); dCost = oVal / (life * 30); } 
-        else { n = UI.val('b-b-name'); oVal = Utils.num(UI.val('b-b-cost')); if(!n || !oVal) return alert("Fill bill data"); dCost = oVal / 30; }
-        if(UI.val('b-id')) Store.state.bop = Store.state.bop.filter(x => x.id != id);
-        Store.state.bop.push({ id: parseInt(id), name: n, type, daily: dCost, originVal: oVal, life });
-        Store.save(); BOP.cancel(); BOP.render();
-    },
-    edit: (id) => {
-        let b = Store.state.bop.find(x => x.id == id); if(!b) return; UI.val('b-id', id);
-        if(b.type === 'Asset') { UI.val('b-a-name', b.name); UI.val('b-a-price', Utils.fmt(b.originVal || b.daily*b.life*30)); UI.val('b-a-life', b.life||36); document.getElementById('btn-a-save').innerText = 'Update'; document.getElementById('box-asset').style.borderColor = 'var(--warning)'; document.getElementById('box-bill').style.opacity = '0.3'; } 
-        else { UI.val('b-b-name', b.name); UI.val('b-b-cost', Utils.fmt(b.originVal || b.daily*30)); document.getElementById('btn-b-save').innerText = 'Update'; document.getElementById('box-bill').style.borderColor = 'var(--warning)'; document.getElementById('box-asset').style.opacity = '0.3'; }
-        document.querySelectorAll('.btn-b-cancel').forEach(el => el.classList.remove('hidden'));
-    },
-    cancel: () => {
-        UI.val('b-id', ''); UI.val('b-a-name', ''); UI.val('b-a-price', ''); UI.val('b-a-life', ''); UI.val('b-b-name', ''); UI.val('b-b-cost', '');
-        document.getElementById('btn-a-save').innerText = 'Add Asset'; document.getElementById('btn-b-save').innerText = 'Add Bill';
-        document.getElementById('box-asset').style = 'border:1px solid transparent; opacity:1'; document.getElementById('box-bill').style = 'border:1px solid transparent; opacity:1';
-        document.querySelectorAll('.btn-b-cancel').forEach(el => el.classList.add('hidden'));
-    },
+    render: () => { let html = `<thead><tr><th>Item</th><th>Type</th><th style="width: 22%;">Input Cost</th><th>Life (Mo)</th><th style="width: 22%;">Daily Cost</th><th class="text-right">Actions</th></tr></thead><tbody>`, total = 0; Store.state.bop.forEach((b, i) => { total += b.daily; let costStr = b.originVal ? b.originVal : Math.round(b.daily * (b.type==='Asset' ? b.life*30 : 30)); html += `<tr><td>${b.name}</td><td>${b.type}</td><td>Rp ${Utils.fmt(costStr)}</td><td>${b.type==='Asset'?b.life:'-'}</td><td class="text-bold">Rp ${Utils.fmt(b.daily)}</td><td class="text-right"><div class="flex gap-5" style="justify-content:flex-end"><button class="btn-icon btn-warning" onclick="BOP.edit(${b.id})">✏️</button><button class="btn-icon btn-danger" onclick="BOP.del(${i})">🗑️</button></div></td></tr>`; }); UI.html('table-bop', html + '</tbody>'); UI.text('b-total-val', `Rp ${Utils.fmt(total)}`); return total; },
+    save: (type) => { let id = UI.val('b-id') || Date.now(), n, dCost = 0, oVal = 0, life = 0; if(type === 'Asset') { n = UI.val('b-a-name'); oVal = Utils.num(UI.val('b-a-price')); life = parseFloat(UI.val('b-a-life')); if(!n || !oVal || !life) return alert("Error"); dCost = oVal / (life * 30); } else { n = UI.val('b-b-name'); oVal = Utils.num(UI.val('b-b-cost')); if(!n || !oVal) return alert("Error"); dCost = oVal / 30; } if(UI.val('b-id')) Store.state.bop = Store.state.bop.filter(x => x.id != id); Store.state.bop.push({ id: parseInt(id), name: n, type, daily: dCost, originVal: oVal, life }); Store.save(); BOP.cancel(); BOP.render(); },
+    edit: (id) => { let b = Store.state.bop.find(x => x.id == id); if(!b) return; UI.val('b-id', id); if(b.type === 'Asset') { UI.val('b-a-name', b.name); UI.val('b-a-price', Utils.fmt(b.originVal || b.daily*b.life*30)); UI.val('b-a-life', b.life||36); document.getElementById('btn-a-save').innerText = 'Update'; document.getElementById('box-asset').style.borderColor = 'var(--warning)'; } else { UI.val('b-b-name', b.name); UI.val('b-b-cost', Utils.fmt(b.originVal || b.daily*30)); document.getElementById('btn-b-save').innerText = 'Update'; document.getElementById('box-bill').style.borderColor = 'var(--warning)'; } document.querySelectorAll('.btn-b-cancel').forEach(el => el.classList.remove('hidden')); },
+    cancel: () => { UI.val('b-id', ''); UI.val('b-a-name', ''); UI.val('b-a-price', ''); UI.val('b-a-life', ''); UI.val('b-b-name', ''); UI.val('b-b-cost', ''); document.getElementById('btn-a-save').innerText = 'Add Asset'; document.getElementById('btn-b-save').innerText = 'Add Bill'; document.getElementById('box-asset').style.borderColor = 'transparent'; document.getElementById('box-bill').style.borderColor = 'transparent'; document.querySelectorAll('.btn-b-cancel').forEach(el => el.classList.add('hidden')); },
     del: (i) => { Store.state.bop.splice(i, 1); Store.save(); BOP.render(); },
-    export: () => { let rows = [["Item", "Type", "Total Input Cost", "Life (Mo)", "Daily Cost Alloc"]]; Store.state.bop.forEach(b => rows.push([b.name, b.type, b.originVal||0, b.life||'-', Math.round(b.daily)])); DataBackup.xlsx(rows, "TK_Overhead"); }
+    export: () => { let rows = [["Item", "Type", "Cost", "Life", "Daily"]]; Store.state.bop.forEach(b => rows.push([b.name, b.type, b.originVal||0, b.life||'-', Math.round(b.daily)])); DataBackup.xlsx(rows, "Overhead_Report"); }
 };
 
-/** * MODULE 9: SALES LOGIC */
 const Sales = {
     render: () => {
         let start = UI.val('filter-start'), end = UI.val('filter-end'), data = Store.state.sales;
+        /* SYNC VERIFICATION: Clear filters to check all data entries */
         if(start && end) data = data.filter(s => s.date >= start && s.date <= end);
         let rev=0, cost=0, gProf=0, html = `<thead><tr><th>Date</th><th>ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Method</th><th>Profit</th><th class="text-right">Action</th></tr></thead><tbody>`;
-        [...data].reverse().forEach(s => {
-            rev += s.total; cost += s.cost; gProf += s.profit; let itemsStr = s.items.map(i => `${i.name} <b class="text-primary">x${i.qty}</b>`).join('<br>');
-            html += `<tr><td><b class="text-dark">${s.date}</b><br><span class="text-xs text-muted">${s.time}</span></td><td>${s.id}</td><td>${s.customer}</td><td class="text-xs text-muted">${itemsStr}</td>
-                <td>${Utils.fmt(s.total)}</td><td><span class="badge">${s.method}</span></td><td class="text-success text-bold">${Utils.fmt(s.profit)}</td><td class="text-right"><button class="btn-icon btn-danger" onclick="Sales.del('${s.id}')">🗑️</button></td></tr>`;
-        });
+        [...data].reverse().forEach(s => { rev += s.total; cost += s.cost; gProf += s.profit; let itemsStr = s.items.map(i => `${i.name} <b class="text-primary">x${i.qty}</b>`).join('<br>'); html += `<tr><td><b class="text-dark">${s.date}</b><br><span class="text-xs text-muted">${s.time}</span></td><td>${s.id}</td><td>${s.customer}</td><td class="text-xs text-muted">${itemsStr}</td><td>${Utils.fmt(s.total)}</td><td><span class="badge">${s.method}</span></td><td class="text-success text-bold">${Utils.fmt(s.profit)}</td><td class="text-right"><button class="btn-icon btn-danger" onclick="Sales.del('${s.id}')">🗑️</button></td></tr>`; });
         UI.html('table-sales', html + '</tbody>');
         let days = new Set(data.map(s => s.date)).size || 1, bopTotal = BOP.render() * days;
         UI.text('stat-tx', data.length); UI.text('stat-rev', `Rp ${Utils.fmt(rev)}`); UI.text('stat-hpp', `Rp ${Utils.fmt(cost)}`); UI.text('stat-bop', `Rp ${Utils.fmt(bopTotal)}`); UI.text('stat-profit', `Rp ${Utils.fmt(gProf - bopTotal)}`);
         Sales.renderProductSummary(data);
     },
-    del: (id) => {
-        if(!confirm("Delete record and RESTORE stock?")) return;
-        let sale = Store.state.sales.find(s => s.id === id);
-        if(sale) { let agg = Stock.getAgg(); sale.items.forEach(i => { if(i.ings) i.ings.forEach(ing => { if(agg[ing.name]) { let q = ing.qty * i.qty, v = q * agg[ing.name].avgCost; Store.state.stock.push({ id: Date.now()+Math.random(), name: ing.name, type: 'sale_reversal', buyQty: 0, totalVal: v, totalBaseUnits: q, useUnit: agg[ing.name].useUnit }); } }); }); }
-        Store.state.sales = Store.state.sales.filter(s => s.id !== id); Store.save(); Sales.render();
-    },
-    renderProductSummary: (data) => {
-        let agg = {}; data.forEach(s => s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { q:0, r:0 }; agg[i.name].q += i.qty; agg[i.name].r += (i.qty * i.sellPrice); }));
-        let html = `<thead><tr><th class="p-10">Menu</th><th class="p-10 text-right">Sold</th><th class="p-10 text-right">Revenue</th></tr></thead><tbody>`;
-        Object.entries(agg).forEach(([k,v]) => { html += `<tr><td class="p-10">${k}</td><td class="p-10 text-right">${v.q}</td><td class="p-10 text-right text-success text-bold">${Utils.fmt(v.r)}</td></tr>`; });
-        UI.html('table-products', html + '</tbody>');
-    },
-    export: () => { let rows = [["Date", "Time", "ID", "Customer", "Item", "Qty", "Price", "Total", "HPP", "Gross Profit"]]; Store.state.sales.forEach(s => s.items.forEach(i => { let iTot = i.sellPrice * i.qty, iHpp = (i.hpp||0) * i.qty; rows.push([s.date, s.time, s.id, s.customer, i.name, i.qty, i.sellPrice, iTot, iHpp, iTot-iHpp]); })); DataBackup.xlsx(rows, "TK_Sales_Report"); }
+    clearFilter: () => { UI.val('filter-start', ''); UI.val('filter-end', ''); Sales.render(); },
+    del: (id) => { if(!confirm("Restore stock?")) return; let sale = Store.state.sales.find(s => s.id === id); if(sale) { let agg = Stock.getAgg(); sale.items.forEach(i => { if(i.ings) i.ings.forEach(ing => { if(agg[ing.name]) { let q = ing.qty * i.qty, v = q * agg[ing.name].avgCost; Store.state.stock.push({ id: Date.now()+Math.random(), name: ing.name, type: 'rev', buyQty: 0, totalVal: v, totalBaseUnits: q, useUnit: agg[ing.name].useUnit }); } }); }); } Store.state.sales = Store.state.sales.filter(s => s.id !== id); Store.save(); Sales.render(); },
+    renderProductSummary: (data) => { let agg = {}; data.forEach(s => s.items.forEach(i => { if(!agg[i.name]) agg[i.name] = { q:0, r:0 }; agg[i.name].q += i.qty; agg[i.name].r += (i.qty * i.sellPrice); })); let html = `<thead><tr><th class="p-10">Menu</th><th class="p-10 text-right">Sold</th><th class="p-10 text-right">Revenue</th></tr></thead><tbody>`; Object.entries(agg).forEach(([k,v]) => { html += `<tr><td class="p-10">${k}</td><td class="p-10 text-right">${v.q}</td><td class="p-10 text-right text-success text-bold">${Utils.fmt(v.r)}</td></tr>`; }); UI.html('table-products', html + '</tbody>'); },
+    export: () => { let rows = [["Date", "Time", "ID", "Cust", "Item", "Qty", "Price", "Total", "Cost", "Profit"]]; Store.state.sales.forEach(s => s.items.forEach(i => { let iTot = i.sellPrice * i.qty, iHpp = (i.hpp||0) * i.qty; rows.push([s.date, s.time, s.id, s.customer, i.name, i.qty, i.sellPrice, iTot, iHpp, iTot-iHpp]); })); DataBackup.xlsx(rows, "Sales_Report"); }
 };
 
-/** * MODULE 10: BACKUP & DATA */
 const DataBackup = {
     export: () => { let blob = new Blob([JSON.stringify(Store.state)], {type: "application/json"}); let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `TK_Backup_${Utils.today()}.json`; a.click(); },
-    import: (e) => {
-        let f = e.target.files[0]; if(!f) return; let r = new FileReader();
-        r.onload = (evt) => { try { let d = JSON.parse(evt.target.result); if(d.stock && d.menus && d.sales && confirm("Overwrite system with backup?")) { Store.state = { stock: d.stock||[], menus: d.menus||{}, sales: d.sales||[], bop: d.bop||[], purchases: d.purchases||[] }; Store.save(); location.reload(); } } catch(err) { alert("Backup corrupted."); } }; r.readAsText(f);
-    },
+    import: (e) => { let f = e.target.files[0]; if(!f) return; let r = new FileReader(); r.onload = (evt) => { try { let d = JSON.parse(evt.target.result); if(d.stock && d.menus && d.sales && confirm("Restore?")) { Store.state = { stock: d.stock||[], menus: d.menus||{}, sales: d.sales||[], bop: d.bop||[], purchases: d.purchases||[] }; Store.save(); location.reload(); } } catch(err) { alert("Error"); } }; r.readAsText(f); },
     xlsx: (rows, name) => { let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Data"); XLSX.writeFile(wb, `${name}.xlsx`); }
 };
 
-// --- INIT APP ---
-Store.load();
-UI.val('filter-start', Utils.today()); UI.val('filter-end', Utils.today()); UI.val('p-date', Utils.today());
-UI.nav('pos');
+Store.load(); UI.val('filter-start', Utils.today()); UI.val('filter-end', Utils.today()); UI.val('p-date', Utils.today()); UI.nav('pos');
 </script>
 
-<script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(() => console.log('SW Registered'));
-    }
-</script>
+<script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').then(() => console.log('v50 Registered')); }</script>
 </body>
 </html>
