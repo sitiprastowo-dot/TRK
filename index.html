@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TK POS - Version 53</title>
+    <title>TK POS - Version 54</title>
     
     <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924514.png">
@@ -23,7 +23,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100dvh; width: 100vw; overflow: hidden; }
         
-        /* Layout Structure */
         .sidebar { width: 80px; background: var(--primary); padding: 15px 10px; color: white; flex-shrink: 0; display: flex; flex-direction: column; z-index: 100; }
         .logo-icon { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; margin: 0 auto 25px; box-shadow: 0 0 15px rgba(59,130,246,0.4); }
         .side-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 12px 0; border-radius: 10px; margin-bottom: 8px; font-size: 20px; transition: 0.2s; text-align: center; width: 100%; }
@@ -34,7 +33,6 @@
         .section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Panels & Tables */
         .panel { background: var(--card); border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; flex: 1; }
         .panel-head { padding: 12px 15px; background: white; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); text-transform: uppercase; }
         .panel-body { flex: 1; padding: 12px; overflow-y: auto; }
@@ -43,15 +41,13 @@
         th { position: sticky; top: 0; z-index: 10; background: white; padding: 12px; font-size: 10px; color: var(--muted); text-transform: uppercase; border-bottom: 2px solid var(--bg); box-shadow: inset 0 -1px 0 var(--border); }
         td { padding: 12px; border-bottom: 1px solid var(--bg); color: var(--text-dark); vertical-align: middle; }
 
-        /* Form Elements */
         input, select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; width: 100%; font-size: 13px; font-family: inherit; color: var(--text-dark); background: white; }
         label { font-size: 10px; font-weight: 700; color: var(--muted); margin-bottom: 4px; display: block; text-transform: uppercase; }
         
         .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-primary { background: var(--primary); color: white; } .btn-accent { background: var(--accent); color: white; } .btn-success { background: var(--success); color: white; } .btn-danger { background: var(--danger); color: white; } .btn-warning { background: var(--warning); color: white; }
+        .btn-primary { background: var(--primary); color: white; } .btn-accent { background: var(--accent); color: white; } .btn-success { background: var(--success); color: white; } .btn-danger { background: var(--danger); color: white; } 
         .btn-icon { width: 30px; height: 30px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 
-        /* Specific Grids */
         .pos-grid { display: grid; grid-template-columns: 1fr 280px 320px; gap: 15px; height: 100%; }
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
         .menu-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 10px; height: 110px; text-align: center; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; }
@@ -62,12 +58,10 @@
         .info-bar { background: #f0fdf4; border-bottom: 1px solid #bbf7d0; padding: 12px 15px; font-size: 12px; color: #15803d; font-weight: 800; display: flex; justify-content: space-between; }
         
         .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background: white; width: 400px; padding: 20px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; }
-        .modal-lg { width: 850px; }
+        .modal-content { background: white; width: 400px; padding: 20px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); max-height: 90vh; }
+        .receipt { font-family: 'Space Mono', monospace; color: #1e293b; font-size: 11px; }
 
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .gap-10 { gap: 10px; } .mb-10 { margin-bottom: 10px; } .mb-15 { margin-bottom: 15px; } .mt-auto { margin-top: auto; }
-        .text-heavy { font-weight: 800; } .text-success { color: var(--success); } .text-danger { color: var(--danger); } .text-accent { color: var(--accent); }
+        .hidden { display: none !important; } .flex-between { display: flex; justify-content: space-between; align-items: center; } .text-heavy { font-weight: 800; }
     </style>
 </head>
 <body>
@@ -107,7 +101,7 @@
                 </div>
             </div>
             <div class="panel">
-                <div class="panel-head">Cart</div>
+                <div class="panel-head">Cart Summary</div>
                 <div class="panel-body p-10" id="pos-cart-list"></div>
                 <div class="p-15 highlight-box" style="border-radius:0;">
                     <div class="flex-between text-xl text-heavy mb-15"><span>TOTAL</span><span id="pos-total">Rp 0</span></div>
@@ -143,19 +137,30 @@
             <div class="panel">
                 <div class="p-15 border-bottom"><select id="menu-select" class="text-bold" onchange="Menu.load()"></select></div>
                 <div class="p-15 flex-col flex-1">
-                    <div class="flex-between mb-10"><label>Recipe (Ingredients)</label><button class="btn btn-sm btn-primary" onclick="Menu.addIngredient()">+ Add</button></div>
+                    <div class="flex-between mb-10"><label>Recipe Ingredients</label><button class="btn btn-sm btn-primary" onclick="Menu.addIngredient()">+ Add</button></div>
                     <div class="flex-1 scroll-y bg-white border-radius-8" style="border:1px solid var(--border);">
-                        <table><thead><tr><th style="width:50%;">Ingredient</th><th class="text-center">Unit</th><th style="width:10%;">Qty</th><th style="width:10%;">Waste%</th><th class="text-right">Cost</th><th></th></tr></thead><tbody id="recipe-list"></tbody></table>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:50%;">Ingredient</th>
+                                    <th class="text-center">Unit</th>
+                                    <th style="width:10%;" class="text-center">Qty</th>
+                                    <th style="width:10%;" class="text-center">Waste%</th>
+                                    <th class="text-right">Cost</th>
+                                    <th style="width:40px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="recipe-list"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
             <div class="panel p-15">
                 <label>Menu Name</label><input type="text" id="m-name" class="mb-10">
-                <label>Price (Rp)</label><input type="text" id="m-price" class="text-lg text-heavy mb-10" oninput="Utils.formatInput(this); Menu.calcHPP()">
+                <label>Selling Price (Rp)</label><input type="text" id="m-price" class="text-lg text-heavy mb-10" oninput="Utils.formatInput(this); Menu.calcHPP()">
                 <label>Sort Order</label><input type="number" id="m-order" value="0" class="mb-10">
                 <div class="highlight-box mt-10">
-                    <div class="flex-between text-sm text-danger text-bold"><span>Total HPP:</span><span id="m-hpp">0</span></div>
-                    <div class="flex-between text-sm text-success text-bold mt-5"><span>Gross Profit:</span><span id="m-profit">0</span></div>
+                    <div class="flex-between text-sm text-danger text-bold"><span>Total HPP:</span><span id="m-hpp">Rp 0</span></div>
                 </div>
                 <button class="btn btn-success w-100 mt-15" style="height:45px;" onclick="Menu.save()">SAVE MENU</button>
                 <button class="btn btn-danger w-100 mt-10 btn-sm" onclick="Menu.delete()">DELETE MENU</button>
@@ -164,7 +169,7 @@
     </section>
 
     <section id="stock" class="section">
-        <div class="flex-between mb-15"><h2 class="text-xl text-heavy">Inventory Management</h2></div>
+        <div class="flex-between mb-15"><h2 class="text-xl text-heavy">Inventory</h2></div>
         <div class="panel mb-15 shrink-0">
             <div class="panel-head">Record Purchase (Inbound)</div>
             <div class="panel-body p-15">
@@ -177,14 +182,24 @@
                 </div>
             </div>
         </div>
-        <div class="panel"><div class="panel-body p-0 scroll-y"><table id="table-stock"></table></div></div>
+        <div class="panel flex-1"><div class="panel-body p-0 scroll-y"><table id="table-stock"></table></div></div>
     </section>
 
-    <section id="purchases" class="section"><h2 class="mb-15">Expenses History</h2><div class="panel"><div class="panel-body p-0 scroll-y"><table id="table-purchases"></table></div></div></section>
-    <section id="bop" class="section"><h2 class="mb-15">Overhead Analysis</h2><div class="panel"><div class="info-bar"><span>Total Daily BOP Allocation:</span><span id="bop-total-val">Rp 0</span></div><div class="panel-body p-0 scroll-y"><table id="table-bop"></table></div></div></section>
+    <section id="purchases" class="section">
+        <div class="flex-between mb-15"><h2 class="text-xl text-heavy">Expenses History</h2></div>
+        <div class="panel"><div class="panel-body p-0 scroll-y"><table id="table-purchases"></table></div></div>
+    </section>
+
+    <section id="bop" class="section">
+        <div class="flex-between mb-15"><h2 class="text-xl text-heavy">Overhead Historical</h2></div>
+        <div class="panel flex-col">
+            <div class="info-bar"><span>Daily Overhead Allocation:</span><span id="b-total-val" class="text-md text-heavy">Rp 0</span></div>
+            <div class="panel-body p-0 scroll-y"><table id="table-bop"></table></div>
+        </div>
+    </section>
 </main>
 
-<div id="modal-receipt" class="modal"><div class="modal-content"><div id="receipt-area" class="receipt text-center"></div><button class="btn btn-primary w-100 mt-15" onclick="window.print()">PRINT RECEIPT</button><button class="btn btn-danger w-100 mt-10" onclick="UI.hideModal('modal-receipt')">CLOSE</button></div></div>
+<div id="modal-receipt" class="modal"><div class="modal-content"><div id="receipt-area" class="receipt text-center"></div><button class="btn btn-primary w-100 mt-15" onclick="window.print()">PRINT</button><button class="btn btn-danger w-100 mt-10" onclick="UI.hideModal('modal-receipt')">CLOSE</button></div></div>
 
 <script>
 const Utils = {
@@ -208,9 +223,10 @@ const UI = {
         document.querySelectorAll('.section').forEach(el => el.classList.remove('active')); 
         document.querySelectorAll('.side-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(id).classList.add('active'); 
-        const btnIdx = ['pos','sales','menu','stock','purchases','bop'].indexOf(id);
-        if(btnIdx > -1) document.querySelectorAll('.side-btn')[btnIdx].classList.add('active');
-        if(id === 'pos') POS.init(); if(id === 'sales') Sales.render(); if(id === 'menu') Menu.init(); if(id === 'stock') Stock.render();
+        const btns = document.querySelectorAll('.side-btn');
+        const idx = ['pos','sales','menu','stock','purchases','bop'].indexOf(id);
+        if(idx > -1) btns[idx].classList.add('active');
+        if(id === 'pos') POS.init(); if(id === 'sales') Sales.render(); if(id === 'menu') Menu.init(); if(id === 'stock') Stock.render(); if(id === 'bop') BOP.render(); if(id === 'purchases') Purchases.render();
     },
     showModal: (id) => document.getElementById(id).style.display = 'flex',
     hideModal: (id) => document.getElementById(id).style.display = 'none',
@@ -249,7 +265,7 @@ const POS = {
         document.getElementById('pos-cart-list').innerHTML = html; POS.calc();
     },
     checkout: () => {
-        let id = document.getElementById('pos-trx-id').innerText;
+        const id = document.getElementById('pos-trx-id').innerText;
         let total = Utils.num(document.getElementById('pos-total').innerText);
         let hpp = 0, agg = Stock.getAgg();
         
@@ -266,7 +282,7 @@ const POS = {
         let sale = { id, date: Utils.today(), time: Utils.time(), customer: UI.val('pos-cust') || 'Guest', items: [...POS.cart], total, cost: hpp, profit: total - hpp, method: UI.val('pos-method') };
         Store.state.sales.push(sale); Store.save();
 
-        UI.html('receipt-area', `<div class="text-md text-heavy">TEPI KOPI</div><div class="text-xs mb-10">Historical Receipt</div><div class="flex-between text-xs"><span>ID:</span><span>${sale.id}</span></div><div class="flex-between text-xs border-bottom pb-5 mb-5"><span>Date:</span><span>${sale.date}</span></div><div class="text-left">${POS.cart.map(i => `<div class="flex-between"><span>${i.name} x${i.qty}</span><span>${Utils.fmt(i.sellPrice*i.qty)}</span></div>`).join('')}</div><div class="border-top mt-10 pt-5 text-heavy flex-between"><span>TOTAL</span><span>Rp ${Utils.fmt(sale.total)}</span></div>`);
+        UI.html('receipt-area', `<div class="text-md text-heavy">TEPI KOPI</div><div class="text-xs mb-10 border-bottom pb-10">Sales Receipt</div><div class="flex-between text-xs"><span>ID:</span><span>${sale.id}</span></div><div class="flex-between text-xs mb-10 border-bottom pb-5"><span>Date:</span><span>${sale.date}</span></div><div class="text-left">${POS.cart.map(i => `<div class="flex-between"><span>${i.name} x${i.qty}</span><span>${Utils.fmt(i.sellPrice*i.qty)}</span></div>`).join('')}</div><div class="border-top mt-10 pt-5 text-heavy flex-between"><span>TOTAL</span><span>Rp ${Utils.fmt(sale.total)}</span></div>`);
         UI.showModal('modal-receipt');
         POS.cart = []; UI.val('pos-cust', ''); UI.val('pos-cash', ''); POS.init();
     }
@@ -277,14 +293,14 @@ const Sales = {
         let start = UI.val('filter-start'), end = UI.val('filter-end'), raw = Store.state.sales;
         let data = (start && end) ? raw.filter(s => s.date >= start && s.date <= end) : raw;
         let rev=0, cost=0, gProf=0;
-        
-        let html = `<thead><tr><th>Date</th><th>TRX ID</th><th>Items</th><th>Total</th><th>Profit</th><th class="text-right">Action</th></tr></thead><tbody>`;
+        let html = `<thead><tr><th>Date</th><th>TRX ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Profit</th><th class="text-right">Action</th></tr></thead><tbody>`;
         [...data].reverse().forEach(s => { 
             rev += s.total; cost += s.cost; gProf += s.profit; 
-            html += `<tr><td>${s.date}<br>${s.time}</td><td class="text-heavy text-accent">${s.id}</td><td class="text-xs">${s.items.map(i => `${i.name} x${i.qty}`).join('<br>')}</td><td class="text-bold">Rp ${Utils.fmt(s.total)}</td><td class="text-success text-bold">Rp ${Utils.fmt(s.profit)}</td><td class="text-right"><button class="btn-icon btn-danger" onclick="Sales.del('${s.id}')">🗑️</button></td></tr>`; 
+            html += `<tr><td>${s.date}<br>${s.time}</td><td class="text-heavy text-accent">${s.id}</td><td>${s.customer}</td><td class="text-xs">${s.items.map(i => `${i.name} x${i.qty}`).join('<br>')}</td><td class="text-bold">Rp ${Utils.fmt(s.total)}</td><td class="text-success text-bold">Rp ${Utils.fmt(s.profit)}</td><td class="text-right"><button class="btn-icon btn-danger" onclick="Sales.del('${s.id}')">🗑️</button></td></tr>`; 
         });
         document.getElementById('table-sales').innerHTML = html + '</tbody>';
-        UI.text('stat-tx', data.length); UI.text('stat-rev', `Rp ${Utils.fmt(rev)}`); UI.text('stat-hpp', `Rp ${Utils.fmt(cost)}`); UI.text('stat-profit', `Rp ${Utils.fmt(gProf)}`);
+        let days = new Set(data.map(s => s.date)).size || 1, bop = BOP.render() * days;
+        UI.text('stat-tx', data.length); UI.text('stat-rev', `Rp ${Utils.fmt(rev)}`); UI.text('stat-hpp', `Rp ${Utils.fmt(cost)}`); UI.text('stat-bop', `Rp ${Utils.fmt(bop)}`); UI.text('stat-profit', `Rp ${Utils.fmt(gProf - bop)}`);
     },
     clearFilter: () => { UI.val('filter-start', ''); UI.val('filter-end', ''); Sales.render(); },
     del: (id) => {
@@ -308,7 +324,7 @@ const Menu = {
     addIngredient: (data = {name:'', qty:0, waste:0}) => {
         let agg = Stock.getAgg(), tr = document.createElement('tr'); tr.className = 'ing-row';
         let opts = `<option value="">Select...</option>` + Object.keys(agg).map(k => `<option value="${k}" ${data.name===k?'selected':''}>${k}</option>`).join('');
-        tr.innerHTML = `<td class="p-5"><select class="i-name mb-0" onchange="Menu.updateUnit(this); Menu.calcHPP()">${opts}</select></td><td class="text-xs text-center i-unit">${data.name && agg[data.name] ? agg[data.name].unit : '-'}</td><td class="p-5"><input type="text" class="i-qty text-center mb-0" style="padding:5px;" value="${data.qty||''}" oninput="Menu.calcHPP()"></td><td class="p-5"><input type="text" class="i-waste text-center mb-0" style="padding:5px;" value="${data.waste||''}" oninput="Menu.calcHPP()"></td><td class="text-right text-bold i-cost">0</td><td class="text-center"><button class="btn-icon text-danger" onclick="this.closest('tr').remove(); Menu.calcHPP()">✕</button></td>`;
+        tr.innerHTML = `<td class="p-5"><select class="i-name mb-0" onchange="Menu.updateUnit(this); Menu.calcHPP()">${opts}</select></td><td class="text-xs text-center i-unit">${data.name && agg[data.name] ? agg[data.name].unit : '-'}</td><td class="p-5 text-center"><input type="text" class="i-qty text-center mb-0" style="padding:5px;" value="${data.qty||''}" oninput="Menu.calcHPP()"></td><td class="p-5 text-center"><input type="text" class="i-waste text-center mb-0" style="padding:5px;" value="${data.waste||''}" oninput="Menu.calcHPP()"></td><td class="text-right text-bold i-cost">0</td><td class="text-center"><button class="btn-icon text-danger" onclick="this.closest('tr').remove(); Menu.calcHPP()">✕</button></td>`;
         document.getElementById('recipe-list').appendChild(tr); if(data.name) Menu.calcHPP();
     },
     updateUnit: (sel) => { let u = Stock.getAgg()[sel.value]?.unit || '-'; sel.closest('tr').querySelector('.i-unit').innerText = u; },
@@ -318,15 +334,13 @@ const Menu = {
             let n = r.querySelector('.i-name').value, q = Utils.num(r.querySelector('.i-qty').value), w = Utils.num(r.querySelector('.i-waste').value);
             if(n && agg[n]) { let c = (q * agg[n].avgCost) * (1 + (w/100)); r.querySelector('.i-cost').innerText = Utils.fmt(c); tot += c; }
         });
-        UI.text('m-hpp', `Rp ${Utils.fmt(tot)}`); 
-        let sell = Utils.num(UI.val('m-price')); UI.text('m-profit', `Rp ${Utils.fmt(sell - tot)}`);
-        return tot;
+        UI.text('m-hpp', `Rp ${Utils.fmt(tot)}`); return tot;
     },
     save: () => {
         if(!Menu.activeId) return;
         let ings = Array.from(document.querySelectorAll('.ing-row')).map(r => ({ name: r.querySelector('.i-name').value, qty: Utils.num(r.querySelector('.i-qty').value), waste: Utils.num(r.querySelector('.i-waste').value) })).filter(i => i.name);
         Store.state.menus[Menu.activeId] = { name: UI.val('m-name'), sellPrice: Utils.num(UI.val('m-price')), order: parseInt(UI.val('m-order')), ings, hpp: Utils.num(document.getElementById('m-hpp').innerText) };
-        Store.save(); alert('Saved!'); Menu.init();
+        Store.save(); alert('Menu Saved!'); Menu.init();
     },
     delete: () => { if(confirm('Delete?')) { delete Store.state.menus[Menu.activeId]; Store.save(); location.reload(); } }
 };
@@ -344,8 +358,7 @@ const Stock = {
     render: () => {
         let agg = Stock.getAgg(), sel = document.getElementById('s-sel');
         sel.innerHTML = '<option value="">-- Select Item --</option><option value="new">+ NEW ITEM</option>';
-        Object.keys(agg).forEach(k => sel.add(new Option(k,k))); Stock.handleSelect();
-
+        Object.keys(agg).forEach(k => sel.add(new Option(k,k)));
         let html = `<thead><tr><th>Item</th><th>Stock</th><th>Avg Cost</th><th>Value</th><th class="text-right">Action</th></tr></thead><tbody>`;
         Object.entries(agg).forEach(([k, v]) => { html += `<tr><td class="text-bold">${k}</td><td>${Utils.fmt(v.base)} ${v.unit}</td><td>Rp ${v.avgCost.toFixed(2)}</td><td>Rp ${Utils.fmt(v.val)}</td><td class="text-right">...</td></tr>`; });
         document.getElementById('table-stock').innerHTML = html + '</tbody>';
@@ -360,7 +373,10 @@ const Stock = {
     }
 };
 
-const DataBackup = { 
+const Purchases = { render: () => { let html = `<thead><tr><th>Date</th><th>Description</th><th>Cost</th></tr></thead><tbody>`; Store.state.purchases.forEach(p => { html += `<tr><td>${p.date}</td><td>${p.name}</td><td>Rp ${Utils.fmt(p.cost)}</td></tr>`; }); document.getElementById('table-purchases').innerHTML = html + '</tbody>'; } };
+const BOP = { render: () => { let html = `<thead><tr><th>Item</th><th>Daily Cost</th></tr></thead><tbody>`; let tot = 0; Store.state.bop.forEach(b => { tot += b.daily; html += `<tr><td>${b.name}</td><td>Rp ${Utils.fmt(b.daily)}</td></tr>`; }); document.getElementById('table-bop').innerHTML = html + '</tbody>'; UI.text('b-total-val', `Rp ${Utils.fmt(tot)}`); return tot; } };
+
+const DataBackup = {
     export: () => { let b = new Blob([JSON.stringify(Store.state)], {type:"application/json"}); let a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `TK_Backup.json`; a.click(); },
     import: (e) => { let f = e.target.files[0]; if(!f) return; let r = new FileReader(); r.onload = (evt) => { Store.state = JSON.parse(evt.target.result); Store.save(); location.reload(); }; r.readAsText(f); }
 };
