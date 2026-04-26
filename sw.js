@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tk-pos-v54'; 
+const CACHE_NAME = 'tk-pos-v55'; 
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -21,6 +21,10 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => { 
     e.respondWith(
-        caches.match(e.request).then((response) => response || fetch(e.request))
+        caches.match(e.request).then((response) => {
+            if (response) return response;
+            if (e.request.mode === 'navigate') return caches.match('./index.html');
+            return fetch(e.request);
+        })
     ); 
 });
